@@ -1,0 +1,196 @@
+21.07.2025, 0:30
+    
+    cd visualizing-geospatial-data-in-python
+    git status
+    git remote -v
+
+         git push -u origin_stick35em10 main
+            Enumerating objects: 19, done.
+            Counting objects: 100% (19/19), done.
+            Delta compression using up to 8 threads
+            Compressing objects: 100% (15/15), done.
+            Writing objects: 100% (19/19), 89.74 MiB | 1.61 MiB/s, done.
+            Total 19 (delta 1), reused 0 (delta 0), pack-reused 0
+            remote: Resolving deltas: 100% (1/1), done.
+            remote: error: Trace: 4fa8db101d89778e76add28e2467b32ae40126563cdf688f0265a3d21a409c6c
+            remote: error: See https://gh.io/lfs for more information.
+            remote: error: File data/Metro_Nashville_Police_Department_Incidents.csv is 249.01 MB; this exceeds GitHub's file size limit of 100.00 MB
+            remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
+            To github.com:stick35em10/visualizing-geospatial-data-in-python.git
+            ! [remote rejected] main -> main (pre-receive hook declined)
+            error: failed to push some refs to 'github.com:stick35em10/visualizing-geospatial-data-in-python.git'
+
+        git rm --cached data/Metro_Nashville_Police_Department_Incidents.csv 
+        git commit -m "Remove large CSV file from repo" 
+        git push -u origin_stick35em10 main
+
+    git rm data/Metro_Nashville_Police_Department_Incidents.zip
+    rm 'data/Metro_Nashville_Police_Department_Incidents.zip'
+    
+    git commit -m "deleted:    data/Metro_Nashville_Police_Department_Incidents.zip" 
+    git push -u origin_stick35em10 main
+   
+   1:22
+    mkdir visualizing-geospatial-data
+    cp -r visualizing-geospatial-data-in-python/.github visualizing-geos
+patial-data
+    cd visualizing-geospatial-data
+
+    git init && git add .github/
+    git commit -m "add new file:   .github/workflows/main.ylm"
+    git remote add origin git@github.com:stick35em10/visualizing-geospatial-data-in-python.git
+    git push -u origin main
+
+    git pull
+
+    mkdir visualizing-geospatial-data/data && cp -r visualizing-geospati
+al-data-in-python/data2  plot.py && visualizing-geospatial-data/data 
+
+   2:59
+    
+==================================================
+…or create a new repository on the command line
+    echo "# visualizing-geospatial-data-in-python" >> README.md
+    git init
+    git add README.md
+    git commit -m "first commit"
+    git branch -M main
+    git remote add origin git@github.com:stick35em10/visualizing-geospatial-data-in-python.git
+    git push -u origin main
+
+…or push an existing repository from the command line
+    git remote add origin git@github.com:stick35em10/visualizing-geospatial-data-in-python.git
+    git branch -M main
+    git push -u origin main
+
+
+20.07.2025, 02:51
+    (venv_visualizing-geospatial) jonel@DAS-IT:~/visualizing-geospatial-data-in-python$ 
+        python3 plot.py
+
+        localmente este processo leva mais de 10 minitos,
+            sugeresse fazer na cloud,
+                podendo levar menos tempo.
+
+                editasse localmente, 
+                    push for github
+                        pull for
+
+                        …or create a new repository on the command line
+                            echo "# visualizing-geospatial-data-in-python" >> README.md
+                        done:
+                            git init
+                        done: git add data/ plot.py
+                            git add README.md
+                        done: git commit -m " add data/ plot.py "
+                            git commit -m "first commit"
+
+                            git branch -M main
+                        
+                            git remote add origin git@github.com:cabicho/visualizing-geospatial-data-in-python.git
+                            git push -u origin main
+                                ERROR: Permission to cabicho/visualizing-geospatial-data-in-python.git denied to stick35em10.
+                                fatal: Could not read from remote repository.
+
+                                    git remote add origin_stick35em10 git@github.com:stick35em10/visualizing-geospatial-data-in-python.git
+                                    git push -u origin_stick35em10 main
+                                        remote: error: Trace: d59b45cc7124f1022bc25c715f3d18020014ee09b727149f3fde91adf08c81dc
+                                        remote: error: See https://gh.io/lfs for more information.
+                                        remote: error: File data/Metro_Nashville_Police_Department_Incidents.csv is 249.01 MB; this exceeds GitHub's file size limit of 100.00 MB
+                                        remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.
+                                        To github.com:stick35em10/visualizing-geospatial-data-in-python.git
+                                        ! [remote rejected] main -> main (pre-receive hook declined)
+                                        error: failed to push some refs to 'github.com:stick35em10/visualizing-geospatial-data-in-python.git'
+
+                                        Try to solve
+                                            zip Metro_Nashville_Police_Department_Incidents.csv
+                                            remove Metro_Nashville_Police_Department_Incidents.csv
+                                                rm Metro_Nashville_Police_Department_Incidents.csv
+                                            
+                                            git rm Metro_Nashville_Police_Department_Incidents.csv
+                                            git add Metro_Nashville_Police_Department_Incidents.zip
+                                            git commit -m " remove Metro_Nashville_Police_Department_Incidents.csv and add Metro_Nashville_Police_Department_Incidents.zip "
+                                            git push -u origin_stick35em10 main
+
+
+                        …or push an existing repository from the command line
+                            git remote add origin git@github.com:cabicho/visualizing-geospatial-data-in-python.git
+                            git branch -M main
+                            git push -u origin main
+                7:00
+                    git add .github/workflows/main.ylm
+                    git commit -m " add .github/workflows/main.ylm "
+                    git push -u origin_stick35em10 main
+
+                07:24
+                    git add .github/workflows/main.ylm
+                    git commit -m " update .github/workflows/main.ylm "
+                    git push -u origin_stick35em10 main
+
+
+19.07.2025
+
+    cd visualizing-geospatial-data-in-python    
+
+    source venv_visualizing-geospatial/bin/activate  # Linux/macOS
+    python3 plot.py
+        localmente este processo leva mais de 10 minitos,
+            sugeresse fazer na cloud,
+                podendo levar menos tempo.
+
+                editasse localmente, 
+                    push for github
+                        pull for 
+18.07.2025
+
+
+    1 Building 2-Layer Maps : 
+        Combining Polygons and Scatterplots
+
+        In this chapter, 
+        you will learn how to create a two-layer map by first plotting regions 
+        from a shapefile and then plotting location points as a scatterplot.
+
+        stick35em10@gmail.com: https://docs.google.com/document/d/1CW26pmChHUAnTmfJMcHI4t-b3Z8am0JSwfbVpImJ3g0/edit?tab=t.rrlqx3r3g78p
+
+    python3 -m venv venv_visualizing-geospatial
+    source venv_visualizing-geospatial/bin/activate  # Linux/macOS
+        
+    python3 plot.py
+        Traceback (most recent call last):
+        File "/home/jonel/visualizing-geospatial-data-in-python/plot.py", line 1, in <module>
+            import matplotlib.pyplot as plt
+        ModuleNotFoundError: No module named 'matplotlib'
+
+    pip install matplotlib
+        Successfully installed contourpy-1.3.2 cycler-0.12.1 fonttools-4.59.0 kiwisolver-1.4.8 matplotlib-3.10.3 numpy-2.3.1 packaging-25.0 pillow-11.3.0 pyparsing-3.2.3 python-dateutil-2.9.0.post0 six-1.17.0
+
+    python3 plot.py
+Traceback (most recent call last):
+  File "/home/jonel/visualizing-geospatial-data-in-python/plot.py", line 3, in <module>
+    plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='p')
+                ^^^^^^^
+NameError: name 'schools' is not defined
+
+with chat GPT-4.1
+
+please find for me a link of data base for schools with longitude latitude for location of Nashvile public shools
+
+
+    Traceback (most recent call last):
+    File "/home/jonel/visualizing-geospatial-data-in-python/plot.py", line 1, in <module>
+        import pandas as pd
+    ModuleNotFoundError: No module named 'pandas'
+    
+    pip install pandas
+        Successfully installed pandas-2.3.1 pytz-2025.2 tzdata-2025.2
+
+    Your error means your script is trying to download data from the internet, but your machine does not have a working internet connection or DNS resolution.
+
+    How to fix:
+
+    Download the CSV manually:
+    Go to Metro Nashville Public Schools - School Directory in your browser, click Export > CSV, and save the file as schools.csv in your project folder.
+
+    Update your code to use the local file:
+    Change your code to read the local CSV file instead of the URL.
