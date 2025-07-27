@@ -22,6 +22,18 @@ schools = pd.read_csv(path_file)  # Make sure this file exists and has Longitude
 print(schools.columns)
 
 ## Scatterplot 1 - father heights vs. son heights with darkred square markers
+# como usar um helper para plotar scatterplot
+# Create a scatterplot of father and son heights with a square marker (encoded as s)
+#
+def create_scatterplot(x, y, color='darkred', marker='s', xlabel='X-axis', ylabel='Y-axis', title='Scatterplot'):
+    plt.scatter(x, y, c=color, marker=marker)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.title(title)
+    plt.show()
+    plt.savefig(f"img/{x}_{y}_school_locations_s.png")  # Save the plot as a PNG image
+
+# Create_scatterplot of school locations with a pentagon marker (encoded as 'p') that is 'darkgreen'.
 plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='s') #'p')
 
 plt.xlabel('Longitude')
@@ -30,3 +42,18 @@ plt.title('School Locations')
 plt.savefig("img/school_locations_s.png")  # Save the plot as a PNG image
 #plt.show() # Show your plot
 
+#Create a scatterplot of father and son heights with a square marker (encoded as s) that is 'darkred'. Show your plot.
+#plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='s') #'p')
+
+# plt.scatter(father_son.fheight, father_son.sheight, ____ = 'darkred', ____ = 's')
+# NameError: name 'father_son' is not defined
+# plt.scatter(father_son.fheight, father_son.sheight, c = 'darkred', marker= 's')
+# plt.xlabel('Father Height (inches)')
+# plt.ylabel('Son Height (inches)')
+# plt.title('Father vs Son Heights')
+# plt.xlabel('Longitude')
+# plt.ylabel('Latitude')
+# plt.title('School Locations')
+#plt.show()
+# plt.savefig("img/scatter_school_locations_s.png")  # Save the plot as a PNG image
+# "
