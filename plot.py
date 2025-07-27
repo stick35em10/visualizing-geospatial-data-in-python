@@ -21,11 +21,12 @@ schools = pd.read_csv(path_file)  # Make sure this file exists and has Longitude
        'Incident_Reported']"""
 print(schools.columns)
 
+## Scatterplot 1 - father heights vs. son heights with darkred square markers
+plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='s') #'p')
 
-plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='p')
-"""
 plt.xlabel('Longitude')
 plt.ylabel('Latitude')
 plt.title('School Locations')
-plt.show()
-"""
+plt.savefig("img/school_locations_s.png")  # Save the plot as a PNG image
+#plt.show() # Show your plot
+
