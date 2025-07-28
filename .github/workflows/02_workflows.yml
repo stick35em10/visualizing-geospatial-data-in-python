@@ -28,12 +28,41 @@ jobs:
         run: |
           mkdir -p data
           unzip -o data/Metro_Nashville_Police_Department_Incidents.zip -d data
+      
+      - name: 1. Limites Administrativos de Moçambique (inclui Maputo) | Unzip data file
+        run: |
+          wget https://geodata.ucdavis.edu/gadm/gadm4.1/shp/gadm41_MOZ_shp.zip
+          unzip gadm41_MOZ_shp.zip
+          # O arquivo gadm41_MOZ_2.shp estará extraído
+      
+      - name: 2. Vias de acesso e hospitais (OpenStreetMap) | Unzip data file
+        run: |
+          wget https://download.geofabrik.de/africa/mozambique-latest-free.shp.zip
+          unzip mozambique-latest-free.shp.zip
+          # Os arquivos gis_osm_roads_free_1.shp (vias) e gis_osm_pois_free_1.shp (POIs, incluindo hospitais) estarão extraídos
+      
 
+      - name: 3. Como filtrar apenas hospitais (opcional, usando ogr2ogr)
+        run: |
+          ogr2ogr -where "fclass='hospital'" hospitais_maputo.shp gis_osm_pois_free_1.shp
+      
       - name: Download Natural Earth Admin 0 Countries shapefile
         run: |
           mkdir -p data/maps
           wget -O data/maps/ne_110m_admin_0_countries.zip "https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_countries.zip"
           unzip -o data/maps/ne_110m_admin_0_countries.zip -d data/maps
+
+      - name: Filtrar apenas Maputo dos limites administrativos
+        run: |
+          ogr2ogr -where "NAME_1='Maputo'" maputo_admin.shp gadm41_MOZ_2.shp
+
+      - name: Filtrar apenas hospitais de todo o país
+        run: |
+          ogr2ogr -where "fclass='hospital'" hospitais_all.shp gis_osm_pois_free_1.shp
+
+      - name: Filtrar hospitais apenas dentro de Maputo
+        run: |
+          ogr2ogr -clipsrc maputo_admin.shp hospitais_maputo.shp hospitais_all.shp
 
       - name: Run plot.py
         env:
