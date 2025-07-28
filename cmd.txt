@@ -6,11 +6,43 @@
         
         git push --set-upstream origin 01_workflows
 
+        cp .github/workflows/main.yml .github/workflows/01_workflows.yml
+            git add .github/workflows/01_workflows.yml  && git commit -m " add .github/workflows/01_workflows.yml " && git push --set-upstream origin 01_workflows
+        
         try solve failure in main.yml 
 
         git add img && git commit -m "add folder img" && git push
+    3 AM
+         
+        git add .github/workflows/01_workflows.yml  && git commit -m " update and Upload the image as an artifact in your workflow .github/workflows/01_workflows.yml " && git push --set-upstream origin 01_workflows
 
+        git add requirements.txt plot.py .github/workflows/main.yml  && git commit -m " update Upload the image as an artifact in your workflow requirements.txt and update plot.py .github/workflows/main.yml " && git push 
+        
+        1. Using Artifacts (Recommended for CI/CD)
+            git add .github/workflows/01_workflows.yml  && git commit -m " update 1. Using Artifacts (Recommended for CI/CD) and Upload the image as an artifact in your workflow .github/workflows/01_workflows.yml " && git push --set-upstream origin 01_workflows
+        cp .github/workflows/01_workflows.yml .github/workflows/02_workflows.yml
 
+        2. Committing the Image to the Repo (Not Recommended for Many Images)
+            This workflow will automatically commit and push the generated image back to your repository.
+            Warning: This will increase your repo size if you do this on every run!
+                git add .github/workflows/02_workflows.yml  && git commit -m " add 02_workflows.yml 2. Committing the Image to the Repo (Not Recommended for Many Images) and Upload the image as an artifact in your workflow .github/workflows/01_workflows.yml " && git push --set-upstream origin 01_workflows            
+            
+            git add .github/workflows/02_workflows.yml  && git commit -m " Enable "Read and write permissions" for Actions in repo settings to solve error Error: Process completed with exit code 128. 02_workflows.yml 2. Committing the Image to the Repo (Not Recommended for Many Images) and Upload the image as an artifact in your workflow .github/workflows/01_workflows.yml " && git push --set-upstream origin 01_workflows            
+
+                git add .github/workflows/02_workflows.yml  && git commit -m " Enable (Read and write permissions) for Actions in repo settings to solve error Error: Process completed with exit code 128. 02_workflows.yml 2. Committing the Image to the Repo (Not Recommended for Many Images) and Upload the image as an artifact in your workflow .github/workflows/01_workflows.yml " && git push --set-upstream origin 01_workflows                
+            4 AM 
+                plt.grid()
+                    git add plot.py  && git commit -m " add plt.grid() in plot.py " && git push --set-upstream origin 01_workflows
+                        rm img/Longitude_Latitude_school_locations_s.png
+                        git commit -m "rm img/Longitude_Latitude_school_locations_s.png"
+                        git pull
+
+     git branch 01_ex_02_Extracting_longitude_and_latitude
+     git checkout 01_ex_02_Extracting_longitude_and_latitude
+        git commit -m "rm img/Longitude_Latitude_school_locations_s.png"
+            git add .github/workflows/02_workflows.yml cmd.txt && git commit -m " update .github/workflows/02_workflows.yml cmd.txt " && git push --set-upstream origin 01_ex_02_Extracting_longitude_and_latitude
+         
+         
 27.07.2025, 18:18 PM
     cd visualizing-geospatial-data 
     source ../visualizing-geospatial-data-in-python/venv_visualizing-geospatial/bin/activate

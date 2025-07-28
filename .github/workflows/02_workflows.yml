@@ -2,7 +2,7 @@ name: CI with Commit Image | Artifact
 
 on:
   push:
-    branches: ["01_workflows"]
+    branches: ["01_ex_02_Extracting_longitude_and_latitude"]
 
 jobs:
   build:
