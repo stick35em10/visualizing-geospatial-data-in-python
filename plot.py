@@ -119,7 +119,7 @@ print(service_district.loc[0, 'geometry'])
 service_district.plot(edgecolor='black', color='lightblue')
 #AttributeError: 'GeoDataFrame' object has no attribute 'title'
 #Error: Process completed with exit code 1.
-service_district.title("Mozambique - Geometry Map")
+#service_district.title("Mozambique - Geometry Map")
 #plt.show()
 
 service_district.savefig("img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps/Mozambique_Geometry_Map.png")  # Save the plot as a PNG image
