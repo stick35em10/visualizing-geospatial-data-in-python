@@ -1,4 +1,4 @@
-name: CI with Commit Image
+name: CI with Commit Image | Artifact
 
 on:
   push:
