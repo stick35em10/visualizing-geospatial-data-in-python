@@ -99,9 +99,11 @@ print("world = gpd.read_file(shapefile_path)")
 #mozambique = world[world.name == "Mozambique"]
 print(world.sample(10))
 
-mozambique = world[world['NAME'] == 'Mozambique']
-print("mozambique = world[world['NAME'] == 'Mozambique']")
-print("mozambique = world[world.name ==")
+print(world.columns)
+
+mozambique = world[world['admin'] == 'Mozambique']
+print("mozambique = world[world['admin'] == 'Mozambique']")
+print("mozambique = world[world.admin ==")
 # Plot
 mozambique.plot(edgecolor='black', color='lightblue')
 plt.title("Mozambique - Geometry Map")
