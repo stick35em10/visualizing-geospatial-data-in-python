@@ -8,7 +8,6 @@ jobs:
     CI:
         runs-on: ubuntu-latest
         steps:
-
             - name: Build Docker image
             - run: echo "Obter o código"
             - run: echo "Executar o docker build"
