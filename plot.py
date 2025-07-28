@@ -123,3 +123,15 @@ ax = service_district.plot(edgecolor='black', color='lightblue')
 plt.title("Mozambique - Geometry Map")  # Defina o título
 plt.savefig("img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 plt.close()  # Fecha a figura para liberar memória (opcional)
+
+
+#import geopandas as gpd
+
+# Limite de Maputo
+maputo = gpd.read_file("maputo_admin.shp")
+
+# Vias de acesso
+roads = gpd.read_file("gis_osm_roads_free_1.shp")
+
+# Hospitais em Maputo
+hospitais = gpd.read_file("hospitais_maputo.shp")
