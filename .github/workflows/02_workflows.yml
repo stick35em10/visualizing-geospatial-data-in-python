@@ -2,7 +2,7 @@ name: CI with Commit Image | Artifact
 
 on:
   push:
-    branches: ["01_ex_02_Extracting_longitude_and_latitude"]
+    branches: ["01_ex_03_Plotting_chicken_locations"]
 
 jobs:
   build:

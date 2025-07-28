@@ -36,11 +36,14 @@
                         rm img/Longitude_Latitude_school_locations_s.png
                         git commit -m "rm img/Longitude_Latitude_school_locations_s.png"
                         git pull
-
+            5 AM
+                git branch 01_ex_03_Plotting_chicken_locations &&  git checkout 01_ex_03_Plotting_chicken_locations
+                git add plot.py cmd.txt .github/workflows/02_workflows.yml && git commit -m " update add plot.py cmd.txt .github/workflows/02_workflows.yml " && git push --set-upstream origin 01_ex_03_Plotting_chicken_locations && git pull origin 01_ex_03_Plotting_chicken_locations
+                
      git branch 01_ex_02_Extracting_longitude_and_latitude
      git checkout 01_ex_02_Extracting_longitude_and_latitude
         git commit -m "rm img/Longitude_Latitude_school_locations_s.png"
-            git add .github/workflows/02_workflows.yml cmd.txt && git commit -m " update .github/workflows/02_workflows.yml cmd.txt " && git push --set-upstream origin 01_ex_02_Extracting_longitude_and_latitude
+            git add .github/workflows/02_workflows.yml cmd.txt && git commit -m " update .github/workflows/02_workflows.yml cmd.txt " && git push --set-upstream origin 01_ex_02_Extracting_longitude_and_latitude && git pull
          
          
 27.07.2025, 18:18 PM

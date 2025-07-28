@@ -7,7 +7,10 @@ import os
 #schools = pd.read_csv('https://data.nashville.gov/Education/Metro-Nashville-Public-Schools-School-Directory/7qhq-4vgb')  # Make sure this file exists and has Longitude/Latitude columns
 
 path_file = 'data/Metro_Nashville_Police_Department_Incidents.csv'
+chickens_path = 'https://assets.datacamp.com/production/repositories/2409/datasets/fa767727ef9a7b39fb9f34bee3b1bc2f02682c81/Domesticated_Hen_Permits_clean_adjusted_lat_lng.csv'
+
 schools = pd.read_csv(path_file)  # Make sure this file exists and has Longitude/Latitude columns
+chickens = pd.read_csv(chickens_path)
 
 """['X', 'Y', 'OBJECTID', 'Primary_Key', 'Incident_Number', 'Report_Type',
        'Report_Type_Description', 'Incident_Status_Code',
@@ -46,25 +49,33 @@ create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker=
 # Create_scatterplot of school locations with a pentagon marker (encoded as 'p') that is 'darkgreen'.
 #plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='s') #'p')
 
+# print the first few rows of df 
+print(df.head())
+
+# extract latitude to a new column: lat
+#df['lat'] = [loc[0] for loc in df.Location]
+
+# extract longitude to a new column: lng
+#df['lng'] = [loc[1] for loc in df.Location]
+
+# print the first few rows of df again
+#print(df.head())
+
 #plt.xlabel('Longitude')
 #plt.ylabel('Latitude')
 #plt.title('School Locations')
 #plt.savefig("img/school_locations_s.png")  # Save the plot as a PNG image
 #plt.show() # Show your plot
 
-#Create a scatterplot of father and son heights with a square marker (encoded as s) that is 'darkred'. Show your plot.
-#plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='s') #'p')
+# Look at the first few rows of the chickens DataFrame
+print(chickens.head())
 
-# plt.scatter(father_son.fheight, father_son.sheight, ____ = 'darkred', ____ = 's')
-# NameError: name 'father_son' is not defined
-# plt.scatter(father_son.fheight, father_son.sheight, c = 'darkred', marker= 's')
-# plt.xlabel('Father Height (inches)')
-# plt.ylabel('Son Height (inches)')
-# plt.title('Father vs Son Heights')
-# plt.xlabel('Longitude')
-# plt.ylabel('Latitude')
-# plt.title('School Locations')
+# Plot the locations of all Nashville chicken permits
+#plt.scatter(x = chickens.lat, y = chickens.lng)
+
+#create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker='s', xlabel='Longitude', ylabel='Latitude', title='School Locations', file_name=f"img/Longitude_Latitude_school_locations_s.png")
+create_scatterplot(chickens.lat, chickens.lng, color='darkred', marker='p', xlabel='Longitude', ylabel='Latitude', title='Chicken Locations', file_name=f"img/Chicken_Locations.png")
+
+# Show the plot
 #plt.show()
-# plt.savefig("img/scatter_school_locations_s.png")  # Save the plot as a PNG image
-
 
