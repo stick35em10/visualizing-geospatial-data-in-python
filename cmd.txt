@@ -1,3 +1,23 @@
+28.07.2025, 0 AM,
+    2 AM
+        git add requirements.txt plot.py .github/workflows/main.yml  && git commit -m " add requirements.txt and update plot.py .github/workflows/main.yml " && git push 
+        
+        git add .github/workflows/main.yml  && git commit -m " update .github/workflows/main.yml " && git push --set-upstream origin 01_workflows
+        
+        git push --set-upstream origin 01_workflows
+
+        try solve failure in main.yml 
+
+        git add img && git commit -m "add folder img" && git push
+
+
+27.07.2025, 18:18 PM
+    cd visualizing-geospatial-data 
+    source ../visualizing-geospatial-data-in-python/venv_visualizing-geospatial/bin/activate
+
+    git add plot.py && git commit -m " add plot.py " && git push 
+    git add img && git commit -m "add folder img" && git push
+
 21.07.2025, 0:30
     
     cd visualizing-geospatial-data-in-python
