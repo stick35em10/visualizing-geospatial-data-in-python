@@ -27,7 +27,16 @@ jobs:
           unzip -o data/Metro_Nashville_Police_Department_Incidents.zip -d data
 
       - name: Run plot.py
+        env:
+          RUN_DATE: ${{ github.run_started_at }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: python plot.py
+
+      - name: Upload plot image as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: school-plot-${{ github.run_number }}
+          path: img/
 
       - run: echo "Executar o docker build"
       - run: echo "Enviar a imagem Docker para o Docker hub"
