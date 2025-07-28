@@ -102,3 +102,23 @@ plt.savefig("img/1_Building_2_Layer_Maps/Mozambique_Geometry_Map.png")  # Save t
 print("plt.savefig(")
 #plt.show() # Show your plot
 
+# https://campus.datacamp.com/courses/visualizing-geospatial-data-in-python/building-2-layer-maps-combining-polygons-and-scatterplots?ex=7
+#1.2.1 Creating a GeoDataFrame & examining the geometry
+# Import geopandas
+#import geopandas as gpd
+
+print(shapefile_path)
+
+# Read in the services district shapefile and look at the first few rows.
+service_district = gpd.read_file(shapefile_path)
+print(service_district.head())
+
+# Print the contents of the service districts geometry in the first row
+print(service_district.loc[0, 'geometry'])
+
+service_district.plot(edgecolor='black', color='lightblue')
+service_district.title("Mozambique - Geometry Map")
+#plt.show()
+
+service_district.savefig("img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps/Mozambique_Geometry_Map.png")  # Save the plot as a PNG image
+print("plt.savefig(")
