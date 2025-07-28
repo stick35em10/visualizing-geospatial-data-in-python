@@ -2,7 +2,7 @@ name: CI-cd
 
 on:
  push:
-    branches: ["main"]
+    branches: ["01_workflows"]
 
 jobs:
     CI:
