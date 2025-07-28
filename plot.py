@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 # Load the data
 #C:\Users\Admin\Downloads\Metro_Nashville_Police_Department_Incidents.csv
@@ -31,10 +32,15 @@ def create_scatterplot(x, y, color='darkred', marker='s', xlabel='X-axis', ylabe
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
+    plt.grid()
+    run_date = os.getenv("RUN_DATE", "local")
+    run_number = os.getenv("RUN_NUMBER", "0")
+    img_name = f"img/school_locations_{run_date}_run{run_number}.png"
+    plt.savefig(img_name)
     #plt.show()
-    plt.savefig(file_name)  # Save the plot as a PNG image
-    filename='img/school_locations_s.png'
-    file_name = file_name if f"img/{x}_{y}_{title}_s.png" else filename
+    #plt.savefig(file_name)  # Save the plot as a PNG image
+    #filename='img/school_locations_s.png'
+    #file_name = file_name if f"img/{x}_{y}_{title}_s.png" else filename
 
 create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker='s', xlabel='Longitude', ylabel='Latitude', title='School Locations', file_name=f"img/Longitude_Latitude_school_locations_s.png")
 # Create_scatterplot of school locations with a pentagon marker (encoded as 'p') that is 'darkgreen'.
@@ -60,4 +66,5 @@ create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker=
 # plt.title('School Locations')
 #plt.show()
 # plt.savefig("img/scatter_school_locations_s.png")  # Save the plot as a PNG image
-# "
+
+
