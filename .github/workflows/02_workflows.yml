@@ -59,13 +59,15 @@ jobs:
       #  run: |
       #    ogr2ogr -where "NAME_1='Maputo'" maputo_admin.shp gadm41_MOZ_2.shp
 
-      - name: Filtrar apenas hospitais de todo o país
-        run: |
-          ogr2ogr -where "fclass='hospital'" hospitais_all.shp gis_osm_pois_free_1.shp
+      # /home/runner/work/_temp/6e1de597-e970-4af9-aca5-7a4d03dbbab0.sh: line 1: ogr2ogr: command not found
+      # Error: Process completed with exit code 127.
+      #- name: Filtrar apenas hospitais de todo o país
+      #  run: |
+      #    ogr2ogr -where "fclass='hospital'" hospitais_all.shp gis_osm_pois_free_1.shp
 
-      - name: Filtrar hospitais apenas dentro de Maputo
-        run: |
-          ogr2ogr -clipsrc maputo_admin.shp hospitais_maputo.shp hospitais_all.shp
+      #- name: Filtrar hospitais apenas dentro de Maputo
+      #  run: |
+      #    ogr2ogr -clipsrc maputo_admin.shp hospitais_maputo.shp hospitais_all.shp
 
       - name: Run plot.py
         env:
