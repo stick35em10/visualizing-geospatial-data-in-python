@@ -97,9 +97,9 @@ print("world = gpd.read_file(shapefile_path)")
 
 # Filter for Mozambique
 #mozambique = world[world.name == "Mozambique"]
-print(world.sample(10))
+print("world.sample(10)", world.sample(10))
 
-print(world.columns)
+print("world.columns", world.columns)
 
 mozambique = world[world['admin'] == 'Mozambique']
 print("mozambique = world[world['admin'] == 'Mozambique']")
