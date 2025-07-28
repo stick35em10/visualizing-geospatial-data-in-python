@@ -117,6 +117,8 @@ print(service_district.head())
 print(service_district.loc[0, 'geometry'])
 
 service_district.plot(edgecolor='black', color='lightblue')
+#AttributeError: 'GeoDataFrame' object has no attribute 'title'
+#Error: Process completed with exit code 1.
 service_district.title("Mozambique - Geometry Map")
 #plt.show()
 
