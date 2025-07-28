@@ -121,5 +121,5 @@ service_district.plot(edgecolor='black', color='lightblue')
 #Error: Process completed with exit code 1.
 ax = service_district.plot(edgecolor='black', color='lightblue')
 plt.title("Mozambique - Geometry Map")  # Defina o título
-plt.savefig("img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps/Mozambique_Geometry_Map.png")
+plt.savefig("img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 plt.close()  # Fecha a figura para liberar memória (opcional)
