@@ -79,21 +79,33 @@ create_scatterplot(chickens.lng, chickens.lat,  color='darkred', marker='p', xla
 
 # Show the plot
 #plt.show()
-
+print(" import geopandas")
 import geopandas as gpd
 import matplotlib.pyplot as plt
 
+print("world = gpd.read_file(gpd.datasets.get_path(")
 # Load the world map
-world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+
+# Update the path to where you unzipped the shapefile
+shapefile_path = "data/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp"
+world = gpd.read_file(shapefile_path)
+# Alternatively, you can use the built-in dataset
+# world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+print("world = gpd.read_file(shapefile_path)")
+#world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
 
 # Filter for Mozambique
-mozambique = world[world.name == "Mozambique"]
+#mozambique = world[world.name == "Mozambique"]
 
+mozambique = world[world['NAME'] == 'Mozambique']
+print("mozambique = world[world['NAME'] == 'Mozambique']")
+print("mozambique = world[world.name ==")
 # Plot
 mozambique.plot(edgecolor='black', color='lightblue')
 plt.title("Mozambique - Geometry Map")
-plt.show()
+#plt.show()
 
-plt.savefig("img/Mozambique_Geometry_Map.png")  # Save the plot as a PNG image
+plt.savefig("img/1_Building_2_Layer_Maps/Mozambique_Geometry_Map.png")  # Save the plot as a PNG image
+print("plt.savefig(")
 #plt.show() # Show your plot
 
