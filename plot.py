@@ -90,18 +90,7 @@ print("world = gpd.read_file(gpd.datasets.get_path(")
 #shapefile_path = "data/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp"
 shapefile_path = "data/maps/ne_110m_admin_0_countries.shp"
 world = gpd.read_file(shapefile_path)
-# Alternatively, you can use the built-in dataset
-# world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-print("world = gpd.read_file(shapefile_path)")
-#world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
-
-# Filter for Mozambique
-#mozambique = world[world.name == "Mozambique"]
-print("world.sample(10)", world.sample(10))
-
-print("world.columns", world.columns)
-
-mozambique = world[world['admin'] == 'Mozambique']
+mozambique = world[world['ADMIN'] == 'Mozambique']
 print("mozambique = world[world['admin'] == 'Mozambique']")
 print("mozambique = world[world.admin ==")
 # Plot
