@@ -42,9 +42,9 @@ jobs:
           # Os arquivos gis_osm_roads_free_1.shp (vias) e gis_osm_pois_free_1.shp (POIs, incluindo hospitais) estarão extraídos
       
 
-      - name: 3. Como filtrar apenas hospitais (opcional, usando ogr2ogr)
-        run: |
-          ogr2ogr -where "fclass='hospital'" hospitais_maputo.shp gis_osm_pois_free_1.shp
+      #- name: 3. Como filtrar apenas hospitais (opcional, usando ogr2ogr)
+      #  run: |
+      #    #ogr2ogr -where "fclass='hospital'" hospitais_maputo.shp gis_osm_pois_free_1.shp
       
       - name: Download Natural Earth Admin 0 Countries shapefile
         run: |
