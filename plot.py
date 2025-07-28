@@ -1,6 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+import geopandas as gpd
 
 # Load the data
 #C:\Users\Admin\Downloads\Metro_Nashville_Police_Department_Incidents.csv
@@ -78,4 +79,21 @@ create_scatterplot(chickens.lng, chickens.lat,  color='darkred', marker='p', xla
 
 # Show the plot
 #plt.show()
+
+import geopandas as gpd
+import matplotlib.pyplot as plt
+
+# Load the world map
+world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+
+# Filter for Mozambique
+mozambique = world[world.name == "Mozambique"]
+
+# Plot
+mozambique.plot(edgecolor='black', color='lightblue')
+plt.title("Mozambique - Geometry Map")
+plt.show()
+
+plt.savefig("img/Mozambique_Geometry_Map.png")  # Save the plot as a PNG image
+#plt.show() # Show your plot
 
