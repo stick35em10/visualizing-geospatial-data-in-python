@@ -25,21 +25,25 @@ print(schools.columns)
 # como usar um helper para plotar scatterplot
 # Create a scatterplot of father and son heights with a square marker (encoded as s)
 #
-def create_scatterplot(x, y, color='darkred', marker='s', xlabel='X-axis', ylabel='Y-axis', title='Scatterplot'):
+
+def create_scatterplot(x, y, color='darkred', marker='s', xlabel='X-axis', ylabel='Y-axis', title='Scatterplot', file_name=f"img/Longitude_Latitude_school_locations_s.png"):
     plt.scatter(x, y, c=color, marker=marker)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
-    plt.show()
-    plt.savefig(f"img/{x}_{y}_school_locations_s.png")  # Save the plot as a PNG image
+    #plt.show()
+    plt.savefig(file_name)  # Save the plot as a PNG image
+    filename='img/school_locations_s.png'
+    file_name = file_name if f"img/{x}_{y}_{title}_s.png" else filename
 
+create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker='s', xlabel='Longitude', ylabel='Latitude', title='School Locations', file_name=f"img/Longitude_Latitude_school_locations_s.png")
 # Create_scatterplot of school locations with a pentagon marker (encoded as 'p') that is 'darkgreen'.
-plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='s') #'p')
+#plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='s') #'p')
 
-plt.xlabel('Longitude')
-plt.ylabel('Latitude')
-plt.title('School Locations')
-plt.savefig("img/school_locations_s.png")  # Save the plot as a PNG image
+#plt.xlabel('Longitude')
+#plt.ylabel('Latitude')
+#plt.title('School Locations')
+#plt.savefig("img/school_locations_s.png")  # Save the plot as a PNG image
 #plt.show() # Show your plot
 
 #Create a scatterplot of father and son heights with a square marker (encoded as s) that is 'darkred'. Show your plot.
