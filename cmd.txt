@@ -65,6 +65,16 @@
                             Replace 'NAME' with the correct column (likely 'admin').
                                 git add cmd.txt plot.py && git commit -m " update plot.py saving img from mozambique  " && git push --set-upstream origin 01_ex_03_Plotting_chicken_locations && git pull origin 01_ex_03_Plotting_chicken_locations
 
+                                    how i can use the link https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_admin_0_countries.zip to download
+                                        A. In your GitHub Actions workflow
+                                            Download Natural Earth Admin 0 Countries shapefile
+                                        After downloading and unzipping, use this path in your Python code:
+
+                                            shapefile_path = "data/maps/ne_110m_admin_0_countries.shp"
+                                        
+                                        git add cmd.txt plot.py .github/workflows/02_workflows.yml && git commit -m " update shapefile_path in plot.py" && git push --set-upstream origin 01_ex_03_Plotting_chicken_locations && git pull origin 01_ex_03_Plotting_chicken_locations
+
+
 27.07.2025, 18:18 PM
     cd visualizing-geospatial-data plot.py .github/workflows/02_workflows.yml
     source ../visualizing-geospatial-data-in-python/venv_visualizing-geospatial/bin/activate

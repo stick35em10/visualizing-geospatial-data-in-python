@@ -88,7 +88,7 @@ print("world = gpd.read_file(gpd.datasets.get_path(")
 
 # Update the path to where you unzipped the shapefile
 #shapefile_path = "data/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp"
-shapefile_path ="data/maps/ne_110m_admin_1_states_provinces.shp"
+shapefile_path = "data/maps/ne_110m_admin_0_countries.shp"
 world = gpd.read_file(shapefile_path)
 # Alternatively, you can use the built-in dataset
 # world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
