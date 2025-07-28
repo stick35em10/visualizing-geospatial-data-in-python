@@ -60,7 +60,9 @@
                 
                 pyogrio.errors.DataSourceError: data/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp: No such file or directory
                     git add data/maps/ cmd.txt plot.py && git commit -m " update plot.py saving img from mozambique  " && git push --set-upstream origin 01_ex_03_Plotting_chicken_locations && git pull origin 01_ex_03_Plotting_chicken_locations
-                
+
+                        KeyError: 'NAME
+                        
 
 27.07.2025, 18:18 PM
     cd visualizing-geospatial-data plot.py .github/workflows/02_workflows.yml
