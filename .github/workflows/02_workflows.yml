@@ -32,6 +32,7 @@ jobs:
       - name: 1. Limites Administrativos de Moçambique (inclui Maputo) | Unzip data file
         run: |
           pwd
+          mkdir -p data/maps
           ls -l data/maps/
           wget https://geodata.ucdavis.edu/gadm/gadm4.1/shp/gadm41_MOZ_shp.zip
           unzip -o gadm41_MOZ_shp.zip -d data/maps
