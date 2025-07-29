@@ -2,28 +2,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import geopandas as gpd
-
-# Load the data
-#C:\Users\Admin\Downloads\Metro_Nashville_Police_Department_Incidents.csv
-#schools = pd.read_csv('https://data.nashville.gov/Education/Metro-Nashville-Public-Schools-School-Directory/7qhq-4vgb')  # Make sure this file exists and has Longitude/Latitude columns
-
-path_file = 'data/Metro_Nashville_Police_Department_Incidents.csv'
-chickens_path = 'https://assets.datacamp.com/production/repositories/2409/datasets/fa767727ef9a7b39fb9f34bee3b1bc2f02682c81/Domesticated_Hen_Permits_clean_adjusted_lat_lng.csv'
+from path import path_file, chickens_path
 
 schools = pd.read_csv(path_file)  # Make sure this file exists and has Longitude/Latitude columns
 chickens = pd.read_csv(chickens_path)
 
-"""['X', 'Y', 'OBJECTID', 'Primary_Key', 'Incident_Number', 'Report_Type',
-       'Report_Type_Description', 'Incident_Status_Code',
-       'Incident_Status_Description', 'Investigation_Status',
-       'Incident_Location', 'Latitude', 'Longitude', 'RPA', 'Zone',
-       'Location_Code', 'Location_Description', 'Offense_Number',
-       'Offense_NIBRS', 'Offense_Description', 'Weapon_Description',
-       'Victim_Number', 'Domestic_Related', 'Victim_Type',
-       'Victim_Description', 'Victim_Gender', 'Victim_Race',
-       'Victim_Ethnicity', 'Victim_County_Resident', 'Mapped_Location',
-       'POINT_X', 'POINT_Y', 'ZIP_Code', 'Weapon_Primary', 'Incident_Occurred',
-       'Incident_Reported']"""
 print(schools.columns)
 
 ## Scatterplot 1 - father heights vs. son heights with darkred square markers
