@@ -4,6 +4,11 @@
         git pull origin 01_03_01_Scatterplots_overpolygons
         git add app/helper_function.py cmd.txt && git commit -m " add add app/path.py  and update app/plot.py cmd.txt " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
         git pull origin 01_03_01_Scatterplots_overpolygons
+        
+        14:16
+            
+            git add app/helper_function.py cmd.txt && git commit -m " add add app/path.py  and update app/plot.py cmd.txt " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
+            git pull origin 01_03_01_Scatterplots_overpolygons
 
     13:28
 

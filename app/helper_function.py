@@ -1,3 +1,6 @@
+import os
+#python/app/helper_function.py", line 13, in create_scatterplot
+#    run_date = os.getenv("RUN_DATE", "local")
 import matplotlib.pyplot as plt
 
 #plt.scatter(x, y, c=color, marker=marker)
