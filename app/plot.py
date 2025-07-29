@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from path import path_file, chickens_path, shapefile_path, hospitais_path, roads_path_, maputo_path
 
-from helper_function import create_scatterplot
+from helper_function import create_scatterplot, print_world_info, create_scatterplot_shapefile
 
 schools = pd.read_csv(path_file)  # Make sure this file exists and has Longitude/Latitude columns
 chickens = pd.read_csv(chickens_path)
@@ -65,43 +65,14 @@ print("world = gpd.read_file(gpd.datasets.get_path(")
 
 world = gpd.read_file(shapefile_path)
 
-def print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
-    
-    print(world.head())  # Print the first few rows of the world GeoDataFrame
-    print(world.columns)  # Print the columns of the world GeoDataFrame 
-    
-    mozambique = world[world['ADMIN'] == moz]
-    #print("mozambique = world[world['admin'] == 'Mozambique']")
-    #print("mozambique = world[world.admin ==")
-    # Plot
-    mozambique.plot(edgecolor='black', color='lightblue')
-    plt.title(title_)
-    #plt.show()
-
-    plt.savefig(file_name_)  # Save the plot as a PNG image
-    print("plt.savefig saved ")
-    #plt.show() # Show your plot
 
 # https://campus.datacamp.com/courses/visualizing-geospatial-data-in-python/building-2-layer-maps-combining-polygons-and-scatterplots?ex=7
 #1.2.1 Creating a GeoDataFrame & examining the geometry
 # Import geopandas
 #import geopandas as gpd
 
+#print_world_info(world)
+
 print(shapefile_path)
 
-# Read in the services district shapefile and look at the first few rows.
-service_district = gpd.read_file(shapefile_path)
-print(service_district.head())
-
-# Print the contents of the service districts geometry in the first row
-print(service_district.loc[0, 'geometry'])
-
-service_district.plot(edgecolor='black', color='lightblue')
-#AttributeError: 'GeoDataFrame' object has no attribute 'title'
-#Error: Process completed with exit code 1.
-ax = service_district.plot(edgecolor='black', color='lightblue')
-plt.title("Mozambique - Geometry Map")  # Defina o título
-plt.savefig("img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
-plt.close()  # Fecha a figura para liberar memória (opcional)
-
-
+create_scatterplot_shapefile(shapefile_path)
