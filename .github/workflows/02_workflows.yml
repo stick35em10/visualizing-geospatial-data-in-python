@@ -31,16 +31,21 @@ jobs:
       
       - name: 1. Limites Administrativos de Moçambique (inclui Maputo) | Unzip data file
         run: |
+          pwd
+          ls -l data/maps/
           wget https://geodata.ucdavis.edu/gadm/gadm4.1/shp/gadm41_MOZ_shp.zip
-          unzip gadm41_MOZ_shp.zip
+          unzip -o gadm41_MOZ_shp.zip -d data/maps
           pwd
           ls -l data/maps/
           # O arquivo gadm41_MOZ_2.shp estará extraído
       
       - name: 2. Vias de acesso e hospitais (OpenStreetMap) | Unzip data file
         run: |
+          mkdir -p data/maps
+          pwd
+          ls -l data/maps/
           wget https://download.geofabrik.de/africa/mozambique-latest-free.shp.zip
-          unzip mozambique-latest-free.shp.zip
+          unzip -o mozambique-latest-free.shp.zip -d data/maps
           pwd
           ls -l data/maps/
           # Os arquivos gis_osm_roads_free_1.shp (vias) e gis_osm_pois_free_1.shp (POIs, incluindo hospitais) estarão extraídos

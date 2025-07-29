@@ -128,10 +128,10 @@ plt.close()  # Fecha a figura para liberar memória (opcional)
 #import geopandas as gpd
 
 # Limite de Maputo
-maputo = gpd.read_file("maputo_admin.shp")
+maputo = gpd.read_file("data/maps/maputo_admin.shp")
 
 # Vias de acesso
-roads = gpd.read_file("gis_osm_roads_free_1.shp")
+roads = gpd.read_file("data/maps/gis_osm_roads_free_1.shp")
 
 # Hospitais em Maputo
-hospitais = gpd.read_file("hospitais_maputo.shp")
+hospitais = gpd.read_file("data/maps/hospitais_maputo.shp")
