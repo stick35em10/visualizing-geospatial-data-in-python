@@ -3,11 +3,14 @@ import os
 #    run_date = os.getenv("RUN_DATE", "local")
 import matplotlib.pyplot as plt
 
+import geopandas as gpd
+
 #plt.scatter(x, y, c=color, marker=marker)
 #    ^^^
 #NameError: name 'plt' is not defined
+from path import shapefile_path #, hospitais_path, roads_path_, maputo_path
 
-sub create_scatterplot_shapefile(shapefile_path):
+sub create_scatterplot_shapefile(shapefile_path, title_="Mozambique - Geometry Map", file_name_"img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):
     # Read in the services district shapefile and look at the first few rows.
     service_district = gpd.read_file(shapefile_path)
     print(service_district.head())
@@ -21,8 +24,8 @@ sub create_scatterplot_shapefile(shapefile_path):
     #AttributeError: 'GeoDataFrame' object has no attribute 'title'
     #Error: Process completed with exit code 1.
     ax = service_district.plot(edgecolor='black', color='lightblue')
-    plt.title("Mozambique - Geometry Map")  # Defina o título
-    plt.savefig("img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
+    plt.title(title_)  # Defina o título
+    plt.savefig(file_name_)
     plt.close()  # Fecha a figura para liberar memória (opcional)
 
 
