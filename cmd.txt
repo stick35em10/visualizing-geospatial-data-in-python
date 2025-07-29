@@ -1,4 +1,29 @@
-28.07.2025, 0 AM,
+29.07.2025
+    10:26
+        git branch 01_03_01_Scatterplots_overpolygons && git checkout 01_03_01_Scatterplots_overpolygons
+        
+        git add app .github/workflows/02_workflows.yml cmd.txt && git commit -m " try  solver pyogrio.errors.DataSourceError: data/maps/maputo_admin.shp: No such file or directory " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
+        git pull origin 01_03_01_Scatterplots_overpolygons
+
+    07:02
+        pyogrio.errors.DataSourceError: data/maps/maputo_admin.shp: No such file or directory
+        add mkdir -p data/maps in 02_workflows.yml in line 35
+            git add .github/workflows/02_workflows.yml plot.py && git commit -m " try  solver pyogrio.errors.DataSourceError: data/maps/maputo_admin.shp: No such file or directory " && git push --set-upstream origin 01_ex_03_Plotting_chicken_locations && git pull origin 01_ex_03_Plotting_chicken_locations
+
+        adicionando e -o -d data/maps
+        git add .github/workflows/02_workflows.yml plot.py && git commit -m " try  links directos para download dos limites administrativos de maputo com os respectivas vias de acesso e hospitais " && git push --
+set-upstream origin 01_ex_03_Plotting_chicken_locations && git pull origin 01_ex_03_Plotting_chicken_locations
+
+28.07.2025, 
+    19:17(7:17PM)
+    
+        git add .github/workflows/02_workflows.yml && git commit -m " try  links directos para download dos limites administrativos de maputo com os respectivas vias de acesso e hospitais " && git push --
+set-upstream origin 01_ex_03_Plotting_chicken_locations && git pull origin 01_ex
+_03_Plottingit add .github/workflows/02_workflows.yml && git commit -m " try  links directos para download dos limites administrativos de maputo com os respectivas vias de acesso e hospitais " && git push --
+set-upstream origin 01_ex_03_Plotting_chicken_locations && git pull origin 01_ex
+_03_Plotting_chicken_locationsg_chicken_locations
+
+    0 AM,
     2 AM
         git add requirements.txt plot.py .github/workflows/main.yml  && git commit -m " add requirements.txt and update plot.py .github/workflows/main.yml " && git push 
         

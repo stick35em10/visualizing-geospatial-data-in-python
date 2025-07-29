@@ -2,7 +2,7 @@ name: CI with Commit Image | Artifact
 
 on:
   push:
-    branches: ["01_ex_03_Plotting_chicken_locations"]
+    branches: ["01_03_01_Scatterplots_overpolygons"]
 
 jobs:
   build:
@@ -85,7 +85,7 @@ jobs:
         env:
           RUN_DATE: ${{ github.run_started_at }}
           RUN_NUMBER: ${{ github.run_number }}
-        run: python plot.py
+        run: python app/plot.py
 
       - name: Commit and push generated image
         run: |
