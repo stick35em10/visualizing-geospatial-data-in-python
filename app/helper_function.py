@@ -1,3 +1,9 @@
+import matplotlib.pyplot as plt
+
+#plt.scatter(x, y, c=color, marker=marker)
+#    ^^^
+#NameError: name 'plt' is not defined
+
 def create_scatterplot(x, y, color='darkred', marker='s', xlabel='X-axis', ylabel='Y-axis', title='Scatterplot', file_name=f"img/Longitude_Latitude_school_locations_s.png"):
     plt.scatter(x, y, c=color, marker=marker)
     plt.xlabel(xlabel)
