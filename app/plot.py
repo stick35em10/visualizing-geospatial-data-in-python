@@ -71,7 +71,11 @@ print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", fi
 
 # File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 70
 #    print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
-                                                                                                                                                                                        ^
+#
+#  File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 74
+#    ^
+#IndentationError: unexpected indent
+#Error: Process completed with exit code 1.                                                                                                                                                                                        
 # SyntaxError: invalid syntax
 # Error: Process completed with exit code 1.
 
