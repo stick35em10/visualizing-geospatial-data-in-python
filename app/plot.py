@@ -67,7 +67,13 @@ print("world = gpd.read_file(gpd.datasets.get_path(")
 
 world = gpd.read_file(shapefile_path)
 
-print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
+
+# File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 70
+#    print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+                                                                                                                                                                                        ^
+# SyntaxError: invalid syntax
+# Error: Process completed with exit code 1.
 
 # https://campus.datacamp.com/courses/visualizing-geospatial-data-in-python/building-2-layer-maps-combining-polygons-and-scatterplots?ex=7
 #1.2.1 Creating a GeoDataFrame & examining the geometry
