@@ -41,8 +41,13 @@ def print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map"
     mozambique.plot(edgecolor='black', color='lightblue')
     plt.title(title_)
     #plt.show()
+    
+    run_date = os.getenv("RUN_DATE", "local")
+    run_number = os.getenv("RUN_NUMBER", "0")
+    img_name = f"img/1_Building_2_Layer_Maps/world_{moz}_{run_date}_run{run_number}.png"
+    plt.savefig(img_name)
 
-    plt.savefig(file_name_)  # Save the plot as a PNG image
+    #plt.savefig(file_name_)  # Save the plot as a PNG image
     print("plt.savefig saved ")
     #plt.show() # Show your plot
 
