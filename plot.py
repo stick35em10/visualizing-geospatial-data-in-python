@@ -126,12 +126,21 @@ plt.close()  # Fecha a figura para liberar memória (opcional)
 
 
 #import geopandas as gpd
+#gadm41_MOZ_3.shp
+#maputo = gpd.read_file("data/maps/maputo_admin.shp")
+maputo = gpd.read_file("data/maps/gadm41_MOZ_3.shp")
 
+#data/maps/ne_110m_admin_0_countries.shp
+#maputo = gpd.read_file("data/maps/ne_110m_admin_0_countries.shp")
+#inflating: data/maps/gadm41_MOZ_0.shp
+#  inflating: data/maps/gadm41_MOZ_1.shp
+# inflating: data/maps/gadm41_MOZ_2.shp
+# inflating: data/maps/gadm41_MOZ_3.shp 
 # Limite de Maputo
-maputo = gpd.read_file("data/maps/maputo_admin.shp")
 
 # Vias de acesso
 roads = gpd.read_file("data/maps/gis_osm_roads_free_1.shp")
 
 # Hospitais em Maputo
 hospitais = gpd.read_file("data/maps/hospitais_maputo.shp")
+# gadm41_MOZ_1.shp, gadm41_MOZ_2.shp, gadm41_MOZ_3.shp, ne_110m_admin_1_states_provinces.shp
