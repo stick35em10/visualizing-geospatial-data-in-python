@@ -19,7 +19,16 @@ roads = gpd.read_file(roads_path_)
 hospitais = gpd.read_file(hospitais_path)  #gadm41_MOZ_1.shp, gadm41_MOZ_2.shp, gadm41_MOZ_3.shp, ne_110m_admin_1_states_provinces.shp, 
 
 
+world = gpd.read_file(shapefile_path)
+
 print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
+
+#Traceback (most recent call last):
+#  File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 22, in <module>
+#    print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
+#                     ^^^^^
+#NameError: name 'world' is not defined
+
 #print(schools.columns)
 
 ## Scatterplot 1 - father heights vs. son heights with darkred square markers
@@ -65,7 +74,6 @@ print("world = gpd.read_file(gpd.datasets.get_path(")
 # Load the world map
 
 
-world = gpd.read_file(shapefile_path)
 
 print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 
