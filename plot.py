@@ -142,5 +142,7 @@ maputo = gpd.read_file("data/maps/gadm41_MOZ_3.shp")
 roads = gpd.read_file("data/maps/gis_osm_roads_free_1.shp")
 
 # Hospitais em Maputo
-hospitais = gpd.read_file("data/maps/hospitais_maputo.shp")
+#hospitais = gpd.read_file("data/maps/hospitais_maputo.shp")
 # gadm41_MOZ_1.shp, gadm41_MOZ_2.shp, gadm41_MOZ_3.shp, ne_110m_admin_1_states_provinces.shp
+#pyogrio.errors.DataSourceError: data/maps/hospitais_maputo.shp: No such file or directory
+hospitais = gpd.read_file("data/maps/gadm41_MOZ_0.shp") 
