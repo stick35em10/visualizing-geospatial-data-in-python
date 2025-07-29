@@ -28,7 +28,11 @@ def create_scatterplot_shapefile(shapefile_path, title_="Mozambique - Geometry M
     plt.savefig(file_name_)
     plt.close()  # Fecha a figura para liberar memória (opcional)
 
+# print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
+#                     ^^^^^
+# NameError: name 'world' is not defined
 
+#world = gpd.read_file(shapefile_path)
 def print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
     
     print(world.head())  # Print the first few rows of the world GeoDataFrame
