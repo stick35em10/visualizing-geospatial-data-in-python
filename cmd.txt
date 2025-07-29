@@ -1,3 +1,5 @@
+30.07.2025
+    git add app/plot.py  cmd.txt && git commit -m " update app/plot.py trying using print_world_info and cmd.txt " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
 29.07.2025
     17:09
          

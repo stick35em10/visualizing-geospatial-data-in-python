@@ -18,6 +18,8 @@ roads = gpd.read_file(roads_path_)
 
 hospitais = gpd.read_file(hospitais_path)  #gadm41_MOZ_1.shp, gadm41_MOZ_2.shp, gadm41_MOZ_3.shp, ne_110m_admin_1_states_provinces.shp, 
 
+
+print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 #print(schools.columns)
 
 ## Scatterplot 1 - father heights vs. son heights with darkred square markers
