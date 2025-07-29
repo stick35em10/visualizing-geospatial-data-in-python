@@ -1,20 +1,34 @@
 29.07.2025
+    13:28
+
+        git pull origin 01_03_01_Scatterplots_overpolygons
+        git add app/path.py app/plot.py cmd.txt && git commit -m " add add app/path.py  and update app/plot.py cmd.txt " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
+        git pull origin 01_03_01_Scatterplots_overpolygons
+        
+        git add app/world.py app/path.py  app/plot.py cmd.txt && git commit -m " add add app/path.py  and update app/plot.py cmd.txt " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
+        git pull origin 01_03_01_Scatterplots_overpolygons
+
     13:11
+
         git pull origin 01_03_01_Scatterplots_overpolygons
         git add app/helper_function.py app/plot.py cmd.txt && git commit -m " add add app/path.py  and update app/plot.py cmd.txt " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
-        
+        git pull origin 01_03_01_Scatterplots_overpolygons
+
     12:18
+
         git add app/path.py  app/plot.py cmd.txt && git commit -m " add add app/path.py  and update app/plot.py cmd.txt " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
         
         git pull origin 01_03_01_Scatterplots_overpolygons
         
     10:26
+
         git branch 01_03_01_Scatterplots_overpolygons && git checkout 01_03_01_Scatterplots_overpolygons
         
         git add app .github/workflows/02_workflows.yml cmd.txt && git commit -m " try  solver pyogrio.errors.DataSourceError: data/maps/maputo_admin.shp: No such file or directory " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
         git pull origin 01_03_01_Scatterplots_overpolygons
 
     07:02
+
         pyogrio.errors.DataSourceError: data/maps/maputo_admin.shp: No such file or directory
         add mkdir -p data/maps in 02_workflows.yml in line 35
             git add .github/workflows/02_workflows.yml plot.py && git commit -m " try  solver pyogrio.errors.DataSourceError: data/maps/maputo_admin.shp: No such file or directory " && git push --set-upstream origin 01_ex_03_Plotting_chicken_locations && git pull origin 01_ex_03_Plotting_chicken_locations

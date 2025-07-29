@@ -1,8 +1,10 @@
-import pandas as pd
-import matplotlib.pyplot as plt
 import os
+
+import pandas as pd
 import geopandas as gpd
-from path import path_file, chickens_path
+import matplotlib.pyplot as plt
+
+from path import path_file, chickens_path, shapefile_path
 from helper_function import create_scatterplot
 
 schools = pd.read_csv(path_file)  # Make sure this file exists and has Longitude/Latitude columns
@@ -13,8 +15,6 @@ print(schools.columns)
 ## Scatterplot 1 - father heights vs. son heights with darkred square markers
 # como usar um helper para plotar scatterplot
 # Create a scatterplot of father and son heights with a square marker (encoded as s)
-#
-
 
 create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker='s', xlabel='Longitude', ylabel='Latitude', title='School Locations', file_name=f"img/Longitude_Latitude_school_locations_s.png")
 # Create_scatterplot of school locations with a pentagon marker (encoded as 'p') that is 'darkgreen'.
@@ -24,13 +24,13 @@ create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker=
 print(schools.head())
 
 # extract latitude to a new column: lat
-#df['lat'] = [loc[0] for loc in df.Location]
+# df['lat'] = [loc[0] for loc in df.Location]
 
 # extract longitude to a new column: lng
 #df['lng'] = [loc[1] for loc in df.Location]
 
 # print the first few rows of df again
-#print(df.head())
+# print(df.head())
 
 #plt.xlabel('Longitude')
 #plt.ylabel('Latitude')
@@ -50,15 +50,11 @@ create_scatterplot(chickens.lng, chickens.lat,  color='darkred', marker='p', xla
 # Show the plot
 #plt.show()
 print(" import geopandas")
-import geopandas as gpd
-import matplotlib.pyplot as plt
 
 print("world = gpd.read_file(gpd.datasets.get_path(")
 # Load the world map
 
-# Update the path to where you unzipped the shapefile
-#shapefile_path = "data/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp"
-shapefile_path = "data/maps/ne_110m_admin_0_countries.shp"
+
 world = gpd.read_file(shapefile_path)
 mozambique = world[world['ADMIN'] == 'Mozambique']
 print("mozambique = world[world['admin'] == 'Mozambique']")
