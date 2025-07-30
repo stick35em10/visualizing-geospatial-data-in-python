@@ -13,17 +13,25 @@ from path import shapefile_path #, hospitais_path, roads_path_, maputo_path
 
 
 def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+    service_district = gpd.read_file(shapefile_path)
     # Plot the service district shapefile
-    # service_district.plot(column="name")
-    maputo_.plot(edgecolor='black', color='lightblue')
+    service_district.plot(column="name")
+    #maputo_path
+    #ImportError: cannot import name 'maputo_' from 'path' (/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/path.py)
     
-    #service_district.head()
-    maputo_.head()
+    #maputo_.plot(edgecolor='black', color='lightblue')
+    
+    service_district.head()
+    #maputo_.head()
     # Add the chicken locations
     plt.scatter(x=chickens.lng, y=chickens.lat, c = 'black')
 
     # Show the plot
-    plt.show()
+    #plt.show()
+    plt.title(title_)  # Defina o título
+    plt.savefig(file_name_)
+    plt.close()  # Fecha a figura para liberar memória (opcional)
+
 
 
 def create_scatterplot_shapefile(shapefile_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):

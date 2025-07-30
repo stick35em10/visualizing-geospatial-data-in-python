@@ -15,7 +15,7 @@ shapefile_path = "data/maps/ne_110m_admin_0_countries.shp"
 #maputo = gpd.read_file("data/maps/gadm41_MOZ_3.shp")
 maputo_path = "data/maps/gadm41_MOZ_3.shp"
 
-#maputo = gpd.read_file(maputo_path)
+maputo_ = gpd.read_file(maputo_path)
 #maputo_path = "data/maps/gadm41_MOZ_3.shp"
 
 #data/maps/ne_110m_admin_0_countries.shp
