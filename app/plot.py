@@ -21,6 +21,13 @@ hospitais = gpd.read_file(hospitais_path)  #gadm41_MOZ_1.shp, gadm41_MOZ_2.shp, 
 
 world = gpd.read_file(shapefile_path)
 
+
+#1.3.1
+# Plot the service district shapefile
+Plot_the_service_district_shapefile(shapefile_path, chickens, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
+
+#1.3.2
+                                    
 print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 
 #Traceback (most recent call last):
