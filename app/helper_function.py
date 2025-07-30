@@ -9,7 +9,7 @@ import geopandas as gpd
 #plt.scatter(x, y, c=color, marker=marker)
 #    ^^^
 #NameError: name 'plt' is not defined
-from path import shapefile_path #, hospitais_path, roads_path_, maputo_path
+from path import chickens, shapefile_path #, hospitais_path, roads_path_, maputo_path
 
 
 def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
@@ -28,6 +28,7 @@ def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="M
     service_district.head()
     #maputo_.head()
     # Add the chicken locations
+    
     plt.scatter(x=chickens.lng, y=chickens.lat, c = 'black')
 
     # Show the plot
