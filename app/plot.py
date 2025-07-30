@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from path import path_file, chickens_path, shapefile_path, hospitais_path, roads_path_, maputo_path
 
-from helper_function import create_scatterplot, print_world_info, create_scatterplot_shapefile
+from helper_function import Plot_the_service_district_shapefile, create_scatterplot, print_world_info, create_scatterplot_shapefile
 
 schools = pd.read_csv(path_file)  # Make sure this file exists and has Longitude/Latitude columns
 chickens = pd.read_csv(chickens_path)
