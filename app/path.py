@@ -1,3 +1,4 @@
+import geopandas as gpd
 # Load the data
 #C:\Users\Admin\Downloads\Metro_Nashville_Police_Department_Incidents.csv
 #schools = pd.read_csv('https://data.nashville.gov/Education/Metro-Nashville-Public-Schools-School-Directory/7qhq-4vgb')  # Make sure this file exists and has Longitude/Latitude columns
