@@ -1,5 +1,15 @@
 30.07.2025
+    9:16
+        KeyError: 'name'
+            git add app/helper_function.py cmd.txt && git commit -m " try solve KeyError: 'name'  " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
+    
 
+    8:58
+        maputo_ = gpd.read_file(maputo_path)
+              ^^^
+        NameError: name 'gpd' is not defined
+            git add app/path.py && git commit -m " update NameError: name 'gpd' is not defined " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
+    
     8:45
         git add app/helper_function.py app/path.py cmd.txt && git commit -m " update app/plot.py trying create and use Plot_the_service_district_shapefile " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
     
