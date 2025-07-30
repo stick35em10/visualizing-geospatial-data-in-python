@@ -1,0 +1,96 @@
+name: CI with Commit Image | Artifact
+
+on:
+  push:
+    branches: ["01_03_01_Plotting_points_over_polygons_part_2"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt 
+        # pandas matplotlib
+
+      - name: Unzip data file
+        run: |
+          mkdir -p data
+          unzip -o data/Metro_Nashville_Police_Department_Incidents.zip -d data
+      
+      - name: 1. Limites Administrativos de Moçambique (inclui Maputo) | Unzip data file
+        run: |
+          pwd
+          mkdir -p data/maps
+          ls -l data/maps/
+          wget https://geodata.ucdavis.edu/gadm/gadm4.1/shp/gadm41_MOZ_shp.zip
+          unzip -o gadm41_MOZ_shp.zip -d data/maps
+          pwd
+          ls -l data/maps/
+          # O arquivo gadm41_MOZ_2.shp estará extraído
+      
+      - name: 2. Vias de acesso e hospitais (OpenStreetMap) | Unzip data file
+        run: |
+          mkdir -p data/maps
+          pwd
+          ls -l data/maps/
+          wget https://download.geofabrik.de/africa/mozambique-latest-free.shp.zip
+          unzip -o mozambique-latest-free.shp.zip -d data/maps
+          pwd
+          ls -l data/maps/
+          # Os arquivos gis_osm_roads_free_1.shp (vias) e gis_osm_pois_free_1.shp (POIs, incluindo hospitais) estarão extraídos
+      
+
+      #- name: 3. Como filtrar apenas hospitais (opcional, usando ogr2ogr)
+      #  run: |
+      #    #ogr2ogr -where "fclass='hospital'" hospitais_maputo.shp gis_osm_pois_free_1.shp
+      # /home/runner/work/_temp/a0fb5630-cdf9-4436-beb6-a9c311867b9d.sh: line 1: ogr2ogr: command not found
+
+      - name: Download Natural Earth Admin 0 Countries shapefile
+        run: |
+          mkdir -p data/maps
+          wget -O data/maps/ne_110m_admin_0_countries.zip "https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_countries.zip"
+          unzip -o data/maps/ne_110m_admin_0_countries.zip -d data/maps
+          pwd
+          ls -l data/maps/
+
+      # /home/runner/work/_temp/470675ab-1c81-475a-8b32-41c8246ec8ce.sh: line 1: ogr2ogr: command not found
+      # Error: Process completed with exit code 127.    
+      #- name: Filtrar apenas Maputo dos limites administrativos
+      #  run: |
+      #    ogr2ogr -where "NAME_1='Maputo'" maputo_admin.shp gadm41_MOZ_2.shp
+
+      # /home/runner/work/_temp/6e1de597-e970-4af9-aca5-7a4d03dbbab0.sh: line 1: ogr2ogr: command not found
+      # Error: Process completed with exit code 127.
+      #- name: Filtrar apenas hospitais de todo o país
+      #  run: |
+      #    ogr2ogr -where "fclass='hospital'" hospitais_all.shp gis_osm_pois_free_1.shp
+
+      #- name: Filtrar hospitais apenas dentro de Maputo
+      #  run: |
+      #    ogr2ogr -clipsrc maputo_admin.shp hospitais_maputo.shp hospitais_all.shp
+
+      - name: Run plot.py
+        env:
+          RUN_DATE: ${{ github.run_started_at }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: python app/plot.py
+
+      - name: Commit and push generated image
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add img/
+          git commit -m "Add generated plot image [skip ci]" || echo "No changes to commit"
+          git push

@@ -1,4 +1,20 @@
 30.07.2025
+
+    10:35
+         git add .github/workflows/01_03_workflows.yml cmd.txt && git commit -m " remove img   " && git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2 && git pull origin 01_03_01_Plotting_points_over_polygons_part_2
+         
+         git rm img/school_locations__run4.png img/school_locations_s.png plot.py && git commit -m " remove img and plot.py  " && git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2 && git pull origin 01_03_01_Plotting_points_over_polygons_part_2
+        
+
+    9:46
+        git branch 01_03_01_Plotting_points_over_polygons_part_2 && git checkout 01_03_01_Plotting_points_over_polygons_part_2
+        git branch 01_03_01_Plotting_points_over_polygons_part_2 && git checkout 01_03_01_Plotting_points_over_polygons_part_2
+        
+        git rm .github/workflows/01_workflows.yml .github/workflows/02_workflows.yml img/1_Building_2_Layer_Maps/school_locations.png  img/1_Building_2_Layer_Maps/world_Mozambique__run48.png  img/school_locations.png img/school_locations__run16.png img/school_locations__run17.png img/school_locations__run22.png img/school_locations__run26.png img/school_locations__run32.png img/school_locations__run33.png img/school_locations__run34.png img/school_locations__run34.png img/school_locations__run38.png img/school_locations__run42.png img/school_locations__run48.png img/school_locations__run6.png && git commit -m " remove img   " && git push --set-upstream origin 01_03_01_Scatterplots_overpolygons && git pull origin 01_03_01_Scatterplots_overpolygons
+
+
+    
+
     9:32
         plt.scatter(x=chickens.lng, y=chickens.lat, c = 'black')
                   ^^^^^^^^
