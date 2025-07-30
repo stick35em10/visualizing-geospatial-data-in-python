@@ -14,10 +14,11 @@ from path import shapefile_path #, hospitais_path, roads_path_, maputo_path
 
 def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
     # Plot the service district shapefile
-    service_district.plot(column="name")
-
-    service_district.head()
-
+    # service_district.plot(column="name")
+    maputo_.plot(edgecolor='black', color='lightblue')
+    
+    #service_district.head()
+    maputo_.head()
     # Add the chicken locations
     plt.scatter(x=chickens.lng, y=chickens.lat, c = 'black')
 

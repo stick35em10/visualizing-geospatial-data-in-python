@@ -4,7 +4,7 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 
-from path import path_file, chickens_path, shapefile_path, hospitais_path, roads_path_, maputo_path
+from path import maputo_, path_file, chickens_path, shapefile_path, hospitais_path, roads_path_, maputo_path
 
 from helper_function import Plot_the_service_district_shapefile, create_scatterplot, print_world_info, create_scatterplot_shapefile
 
