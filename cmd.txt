@@ -1,4 +1,18 @@
 31.07.2025
+    07:27
+        python/app/helper_function.py", line 12, in <module>
+            from path import shapefile_path, chickens, service_district  #, hospitais_path, roads_path_, maputo_path
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+            ImportError: cannot import name 'service_district' from 'path' (/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/path.py)
+                define app/path.py
+                service_district = gpd.read_file(shapefile_path)
+                
+                    git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+                    git add app/helper_function.py  app/path.py cmd.txt  
+                    git commit -m " create service_district in app/path.py" 
+                    git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+                    git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
     07:19AM
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         git add .github/workflows/01_03_workflows.yml app/plot.py cmd.txt 

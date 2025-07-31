@@ -10,7 +10,7 @@ chickens = gpd.read_file(chickens_path)
 # Update the path to where you unzipped the shapefile
 #shapefile_path = "data/ne_110m_admin_0_countries/ne_110m_admin_0_countries.shp"
 shapefile_path = "data/maps/ne_110m_admin_0_countries.shp"
-
+service_district = gpd.read_file(shapefile_path)
 #import geopandas as gpd
 #gadm41_MOZ_3.shp
 #maputo = gpd.read_file("data/maps/maputo_admin.shp")
