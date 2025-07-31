@@ -42,7 +42,7 @@ print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", fi
 # como usar um helper para plotar scatterplot
 # Create a scatterplot of father and son heights with a square marker (encoded as s)
 
-create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker='s', xlabel='Longitude', ylabel='Latitude', title='School Locations', file_name=f"img/Longitude_Latitude_school_locations_s.png")
+create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker='s', xlabel='Longitude', ylabel='Latitude', title='School Locations') #, file_name=f"img/Longitude_Latitude_school_locations_s.png")
 # Create_scatterplot of school locations with a pentagon marker (encoded as 'p') that is 'darkgreen'.
 #plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='s') #'p')
 
@@ -71,7 +71,7 @@ create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker=
 #plt.scatter(x = chickens.lat, y = chickens.lng)
 
 #create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker='s', xlabel='Longitude', ylabel='Latitude', title='School Locations', file_name=f"img/Longitude_Latitude_school_locations_s.png")
-create_scatterplot(chickens.lng, chickens.lat,  color='darkred', marker='p', xlabel='Longitude', ylabel='Latitude', title='Chicken Locations', file_name=f"img/Chicken_Locations.png")
+create_scatterplot(chickens.lng, chickens.lat,  color='darkred', marker='p', xlabel='Longitude', ylabel='Latitude', title='Chicken Locations') #, file_name=f"img/Chicken_Locations.png")
 
 # Show the plot
 #plt.show()

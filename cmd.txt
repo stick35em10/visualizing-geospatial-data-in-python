@@ -1,4 +1,19 @@
 31.07.2025
+    07:19AM
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        git add .github/workflows/01_03_workflows.yml app/plot.py cmd.txt 
+        git commit -m " in .yml update branch to 01_03_01_Plotting_points_over_polygons_part_2_01 and remove file_name in function create_scatterplot():" 
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+    
+        
+    06:49AM
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        git add app/plot.py cmd.txt 
+        git commit -m " remover file name in function create_scatterplot " 
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+    
     06:46AM
         git branch 01_03_01_Plotting_points_over_polygons_part_2_01
         git checkout 01_03_01_Plotting_points_over_polygons_part_2_01
@@ -7,9 +22,7 @@
         git commit -m " import shapefile_path, use and def Plotting_points_over_polygons__part_2    " 
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
-        
-        rm -r Geometry Plotting_points_over_polygons__part_2
-        
+    
     03:29AM
     04:22AM
         git branch 01_03_01_Plotting_points_over_polygons_part_2_01 

@@ -2,7 +2,7 @@ name: CI with Commit Image | Artifact
 
 on:
   push:
-    branches: ["01_03_01_Plotting_points_over_polygons_part_2"]
+    branches: ["01_03_01_Plotting_points_over_polygons_part_2_01"]
 
 jobs:
   build:
