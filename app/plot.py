@@ -102,5 +102,5 @@ print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", fi
 #print_world_info(world)
 
 print(shapefile_path)
-
-create_scatterplot_shapefile(shapefile_path)
+#def create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):
+create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" )

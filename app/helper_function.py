@@ -85,8 +85,9 @@ def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="M
 
 
 
+def create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):
 
-def create_scatterplot_shapefile(shapefile_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):
+#def create_scatterplot_shapefile(shapefile_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):
 #def create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):
 
     # Read in the services district shapefile and look at the first few rows.

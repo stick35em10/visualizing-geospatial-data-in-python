@@ -1,4 +1,21 @@
+
 31.07.2025
+    23:08
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        git add app/helper_function.py  app/plot.py cmd.txt
+        git commit -m " app/helper_function.py  app/plot.py cmd.txt" 
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+    08:19
+
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        git rm .github/workflows/main.ylm .github/workflows/main.yml img/school_locations__run55.png img/school_locations__run43.png  img/school_locations__run1.png img/Longitude_Latitude_school_locations_s.png
+        git commit -m " remove files like .github/workflows/main.ylm .github/workflows/main.yml img/" 
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+
     07:27
         python/app/helper_function.py", line 12, in <module>
             from path import shapefile_path, chickens, service_district  #, hospitais_path, roads_path_, maputo_path
@@ -6,12 +23,23 @@
             ImportError: cannot import name 'service_district' from 'path' (/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/path.py)
                 define app/path.py
                 service_district = gpd.read_file(shapefile_path)
-                
+
                     git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
                     git add app/helper_function.py  app/path.py cmd.txt  
                     git commit -m " create service_district in app/path.py" 
                     git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
                     git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+                        07:59
+                            FileNotFoundError: [Errno 2] No such file or directory: 
+                                'img/1_Building_2_Layer_Maps/1.Introduction/school_locations__run3.png'
+                                    
+                                    git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01                            
+                                    git add  img/1_Building_2_Layer_Maps/1.Introduction/
+                                    git commit -m " in .yml update branch to 01_03_01_Plotting_points_over_polygons_part_2_01 and remove file_name in function create_scatterplot():" 
+                                    git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+                                    git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+    
 
     07:19AM
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
