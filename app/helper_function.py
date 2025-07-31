@@ -9,12 +9,14 @@ import geopandas as gpd
 #plt.scatter(x, y, c=color, marker=marker)
 #    ^^^
 #NameError: name 'plt' is not defined
-from path import chickens, shapefile_path #, hospitais_path, roads_path_, maputo_path
+from path import shapefile_path, chickens, service_district  #, hospitais_path, roads_path_, maputo_path
 
+service_district = gpd.read_file(shapefile_path)
 
-def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
-    service_district = gpd.read_file(shapefile_path)
-    # Plot the service district shapefile
+#def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+
+def Plotting_points_over_polygons__part_2(service_district, title_="Plotting_points_over_polygons__part_2", file_name_="img/1.3.3_Plotting_points_over_polygons__part_2/1.3.3Plotting_points_over_polygons__part_2.png"):
+        # Plot the service district shapefile
     service_district.head()  # Look at the first few rows of the service district GeoDataFrame
     print(service_district.head())
     # KeyError: 'name'
@@ -25,7 +27,51 @@ def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="M
     
     #maputo_.plot(edgecolor='black', color='lightblue')
     
-    service_district.head()
+    #service_district.head()
+    #maputo_.head()
+    # Add the chicken locations
+    
+    plt.scatter(x=chickens.lng, y=chickens.lat, c = 'black')
+
+    # Show the plot
+    #plt.show()
+    plt.title(title_)  # Defina o título
+    plt.savefig(file_name_)
+    plt.close()  # Fecha a figura para liberar memória (opcional)
+
+    #service_district.head()
+
+    # Plot the service district shapefile
+    service_district.plot(column="name", legend=True)
+
+    #plt.show()
+    # Add the chicken locations
+    #plt.scatter(x=____, y=____, c=____, edgecolor = 'white')
+
+
+    # Add labels and title
+    #plt.____('Nashville Chicken Permits')
+    #plt.xlabel(____)
+    #plt.ylabel(____)
+
+    # Add grid lines and show the plot
+    #plt.____()
+    #plt.____()
+
+def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1.3.2_Plotting_points_over_polygons__part_1/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+    #service_district = gpd.read_file(shapefile_path)
+    # Plot the service district shapefile
+    #service_district.head()  # Look at the first few rows of the service district GeoDataFrame
+    print(" in line 65 and inside Plot_the_service_district_shapefile", service_district.head())
+    # KeyError: 'name'
+    #service_district.plot(column="name")
+    
+    #maputo_path
+    #ImportError: cannot import name 'maputo_' from 'path' (/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/path.py)
+    
+    #maputo_.plot(edgecolor='black', color='lightblue')
+    
+    #service_district.head()
     #maputo_.head()
     # Add the chicken locations
     
@@ -85,15 +131,21 @@ def print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map"
     #plt.show() # Show your plot
 
 
-def create_scatterplot(x, y, color='darkred', marker='s', xlabel='X-axis', ylabel='Y-axis', title='Scatterplot', file_name=f"img/Longitude_Latitude_school_locations_s.png"):
+def create_scatterplot(x, y, color='darkred', marker='s', xlabel='X-axis', ylabel='Y-axis', title='Scatterplot'):#, file_name=f"img/Longitude_Latitude_school_locations_s.png"):
+    
     plt.scatter(x, y, c=color, marker=marker)
+    
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.title(title)
     plt.grid()
+    
     run_date = os.getenv("RUN_DATE", "local")
     run_number = os.getenv("RUN_NUMBER", "0")
-    img_name = f"img/school_locations_{run_date}_run{run_number}.png"
+    
+    img_name = f"img/1_Building_2_Layer_Maps/1.Introduction/school_locations_{run_date}_run{run_number}.png"
+    #file_name = file_name if f"img/{x}_{y}_{title}_s.png" else img_name
+    
     plt.savefig(img_name)
     #plt.show()
     #plt.savefig(file_name)  # Save the plot as a PNG image
