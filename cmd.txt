@@ -1,6 +1,37 @@
 
+01.08.2025,
+    06:38AM
+        
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+        git add  app/path.py cmd.txt
+        git commit -m " change to maputo_admin.shp where is gadm41_MOZ_3.shp at maputo_path " 
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+
+        File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 106, in <module>
+            create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" )
+                
+                comment function create_scatterplot_shapefile
+                    git add  app/plot.py app/path.py cmd.txt 
+                    git commit -m " coment create_scatterplot_shapefile and change to maputo_admin.shp where is gadm41_MOZ_3.shp at maputo_path " 
+                    git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+                    git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+
+
+    06:36AM
+
+        deletando imagens
+            
+            git rm img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png img/1_Building_2_Layer_Maps/Mozambique_Geometry_Map.png  img/1_Building_2_Layer_Maps/world_Mozambique__run1.png img/1_Building_2_Layer_Maps/world_Mozambique__run55.png 
+            git commit -m " app/helper_function.py  app/plot.py cmd.txt" 
+            git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+
+    como usar os dados de Mozambique
+
 31.07.2025
     23:08
+
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         git add app/helper_function.py  app/plot.py cmd.txt
         git commit -m " app/helper_function.py  app/plot.py cmd.txt" 

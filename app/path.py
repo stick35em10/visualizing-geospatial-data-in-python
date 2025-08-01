@@ -12,11 +12,13 @@ chickens = gpd.read_file(chickens_path)
 shapefile_path = "data/maps/ne_110m_admin_0_countries.shp"
 service_district = gpd.read_file(shapefile_path)
 #import geopandas as gpd
+
 #gadm41_MOZ_3.shp
 #maputo = gpd.read_file("data/maps/maputo_admin.shp")
 #maputo = gpd.read_file("data/maps/gadm41_MOZ_3.shp")
-maputo_path = "data/maps/gadm41_MOZ_3.shp"
+#maputo_path = "data/maps/gadm41_MOZ_3.shp"
 
+maputo_path ="data/maps/maputo_admin.shp"
 maputo_ = gpd.read_file(maputo_path)
 #maputo_path = "data/maps/gadm41_MOZ_3.shp"
 
