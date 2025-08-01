@@ -20,7 +20,10 @@ service_district = gpd.read_file(shapefile_path)
 
 #pyogrio.errors.DataSourceError: data/maps/maputo_admin.shp: No such file or directory
 #maputo_path ="data/maps/maputo_admin.shp"
-maputo_path ="maputo_admin.shp"
+# pyogrio.errors.DataSourceError: maputo_admin.shp: No such file or directory
+#maputo_path ="maputo_admin.shp"
+
+maputo_path = "data/maps/ne_110m_admin_0_countries.shp"
 
 #maputo_path = "data/maps/ne_110m_admin_1_states_provinces.shp"
 maputo_ = gpd.read_file(maputo_path)
