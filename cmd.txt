@@ -1,5 +1,15 @@
 
 01.08.2025,
+
+    07:08AM
+         update to maputo_admin.shp where maputo_path =data/maps/maputo_admin.shp
+
+         git add app/path.py cmd.txt 
+         git commit -m " update to maputo_admin.shp where maputo_path =data/maps/maputo_admin.shp " 
+         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+
+    
     06:38AM
         
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01    
@@ -17,6 +27,7 @@
                     git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
                     git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01    
 
+    
 
     06:36AM
 
