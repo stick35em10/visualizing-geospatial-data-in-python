@@ -16,7 +16,9 @@ from path import shapefile_path, chickens, service_district  #, hospitais_path, 
 #service_district = gpd.read_file(shapefile_path)
 # Carregar pontos de distribuição de água
 # agua = pd.read_csv("data/agua.csv")
-Plot_the_Marracuene_service_district_shapefile(marracuene, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+
+#def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1.3.2_Plotting_points_over_polygons__part_1/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):   
+def Plot_the_Marracuene_service_district_shapefile(marracuene, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
     agua = pd.read_json("data/Marracune/export.geojson") #pd.read_csv("data/agua.csv")
     agua_gdf = gpd.GeoDataFrame(
         agua,
@@ -37,6 +39,7 @@ Plot_the_Marracuene_service_district_shapefile(marracuene, title_="distritos de 
 
 
 #def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+
 def Plotting_points_over_polygons__part_2(service_district, title_="Plotting_points_over_polygons__part_2", file_name_="img/1.3.3_Plotting_points_over_polygons__part_2/1.3.3Plotting_points_over_polygons__part_2.png"):
         # Plot the service district shapefile
     service_district.head()  # Look at the first few rows of the service district GeoDataFrame
