@@ -13,11 +13,10 @@ from path import shapefile_path, chickens, service_district  #, hospitais_path, 
 
 
 
-service_district = gpd.read_file(shapefile_path)
-
+#service_district = gpd.read_file(shapefile_path)
+# Carregar pontos de distribuição de água
+# agua = pd.read_csv("data/agua.csv")
 Plot_the_Marracuene_service_district_shapefile(marracuene, chickens, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
-    # Carregar pontos de distribuição de água
-    #agua = pd.read_csv("data/agua.csv")
     agua = pd.read_json("data/Marracune/export.geojson") #pd.read_csv("data/agua.csv")
     agua_gdf = gpd.GeoDataFrame(
         agua,
