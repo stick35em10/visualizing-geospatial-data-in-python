@@ -2,9 +2,14 @@ import os
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-from path import schools, chickens, world,  shapefile_path # , roads, hospitais, maputo, roads,  path_file, chickens_path, hospitais_path, roads_path_, maputo_, pathmaputo_,
+from path import marracuene, schools, chickens, world,  shapefile_path # , roads, hospitais, maputo, roads,  path_file, chickens_path, hospitais_path, roads_path_, maputo_, pathmaputo_,
 from helper_function import Plot_the_service_district_shapefile, create_scatterplot, print_world_info # , create_scatterplot_shapefile
 
+#Carregar distritos de Marracuene
+#distritos = gpd.read_file("data/maps/marracuene_distritos.shp")
+
+Plot_the_Marracuene_service_district_shapefile(marracuene, chickens, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
+    
 #1.3.1 # Plot the service district shapefile
 Plot_the_service_district_shapefile(shapefile_path, chickens, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 

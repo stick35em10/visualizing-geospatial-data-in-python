@@ -1,6 +1,10 @@
 import pandas as pd
 import geopandas as gpd
 
+gdf = gpd.read_file("data/maps/gadm41_MOZ_2.shp")  # ou o arquivo baixado
+marracuene = gdf[gdf["NAME_2"] == "Marracuene"]
+marracuene.to_file("marracuene_distrito.shp")
+
 path_file   = 'data/Metro_Nashville_Police_Department_Incidents.csv'
 schools     = pd.read_csv(path_file)  # Make sure this file exists and has Longitude/Latitude columns
 
