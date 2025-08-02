@@ -1,5 +1,14 @@
-02.08.2025
-    07:42, 6:48, 
+02.08.
+
+    08:20, 07:42, 6:48, 
+        ImportError: cannot import name 'Plot_the_Marracuene_service_district_shapefile' from 'helper_function'
+            
+            git add app/helper_function.py data/Marracune/ cmd.txt
+            git commit -m "ImportError: cannot import name 'Plot_the_Marracuene_service_district_shapefile'"
+            git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01   
+
+
         NameError: name 'Plot_the_Marracuene_service_district_shapefile' is not defined. Did you mean: 'Plot_the_service_district_shapefile'?
 
             git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01    

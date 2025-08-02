@@ -11,10 +11,33 @@ import geopandas as gpd
 #NameError: name 'plt' is not defined
 from path import shapefile_path, chickens, service_district  #, hospitais_path, roads_path_, maputo_path
 
+
+
 service_district = gpd.read_file(shapefile_path)
 
-#def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+Plot_the_Marracuene_service_district_shapefile(marracuene, chickens, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+    # Carregar pontos de distribuição de água
+    #agua = pd.read_csv("data/agua.csv")
+    agua = pd.read_json("data/Marracune/export.geojson") #pd.read_csv("data/agua.csv")
+    agua_gdf = gpd.GeoDataFrame(
+        agua,
+        geometry=gpd.points_from_xy(agua.longitude, agua.latitude),
+        crs="EPSG:4326"
+    )
 
+    # Plotar
+    fig, ax = plt.subplots(figsize=(10, 10))
+    distritos.plot(ax=ax, edgecolor='black', color='lightblue', alpha=0.5)
+    agua_gdf.plot(ax=ax, color='blue', marker='o', label='Distribuição de Água')
+
+    plt.title("Distritos de Marracuene e Distribuição da Água")
+    plt.legend()
+    plt.savefig(file_name_)
+    plt.close()
+    #plt.show()
+
+
+#def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
 def Plotting_points_over_polygons__part_2(service_district, title_="Plotting_points_over_polygons__part_2", file_name_="img/1.3.3_Plotting_points_over_polygons__part_2/1.3.3Plotting_points_over_polygons__part_2.png"):
         # Plot the service district shapefile
     service_district.head()  # Look at the first few rows of the service district GeoDataFrame
