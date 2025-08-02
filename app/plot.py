@@ -4,30 +4,15 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 
-from path import maputo_, path_file, chickens_path, shapefile_path, hospitais_path, roads_path_, maputo_path
+from path import schools, chickens, roads, hospitais, world, maputo, roads, maputo_, path_file, chickens_path, shapefile_path, hospitais_path, roads_path_, maputo_path
 
 from helper_function import Plot_the_service_district_shapefile, create_scatterplot, print_world_info, create_scatterplot_shapefile
-
-schools = pd.read_csv(path_file)  # Make sure this file exists and has Longitude/Latitude columns
-chickens = pd.read_csv(chickens_path)
-
-# 1.3 
-maputo = gpd.read_file(maputo_path)
-
-roads = gpd.read_file(roads_path_)
-
-hospitais = gpd.read_file(hospitais_path)  #gadm41_MOZ_1.shp, gadm41_MOZ_2.shp, gadm41_MOZ_3.shp, ne_110m_admin_1_states_provinces.shp, 
-
-
-world = gpd.read_file(shapefile_path)
-
 
 #1.3.1
 # Plot the service district shapefile
 Plot_the_service_district_shapefile(shapefile_path, chickens, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 
-#1.3.2
-                                    
+#1.3.2                                    
 print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 
 #Traceback (most recent call last):
@@ -77,20 +62,20 @@ create_scatterplot(chickens.lng, chickens.lat,  color='darkred', marker='p', xla
 #plt.show()
 #print(" import geopandas")
 
-print("world = gpd.read_file(gpd.datasets.get_path(")
+# print("world = gpd.read_file(gpd.datasets.get_path(")
 # Load the world map
 
 
 
-print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
+# print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 
 # File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 70
 #    print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
 #
 #  File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 74
 #    ^
-#IndentationError: unexpected indent
-#Error: Process completed with exit code 1.                                                                                                                                                                                        
+# IndentationError: unexpected indent
+# Error: Process completed with exit code 1.                                                                                                                                                                                        
 # SyntaxError: invalid syntax
 # Error: Process completed with exit code 1.
 
@@ -101,6 +86,6 @@ print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", fi
 
 #print_world_info(world)
 
-print(shapefile_path)
-#def create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):
-#create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" )
+# print(shapefile_path)
+# def create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):
+# create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" )
