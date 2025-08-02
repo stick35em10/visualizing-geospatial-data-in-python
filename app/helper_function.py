@@ -31,7 +31,7 @@ def Plot_the_Marracuene_service_district_shapefile(marracuene, title_="distritos
     marracuene.plot(ax=ax, edgecolor='black', color='lightblue', alpha=0.5)
     agua_gdf.plot(ax=ax, color='blue', marker='o', label='Distribuição de Água')
 
-    plt.title("Distritos de Marracuene e Distribuição da Água")
+    # plt.title("Distritos de Marracuene e Distribuição da Água")
     plt.legend()
     plt.savefig(file_name_)
     plt.close()
