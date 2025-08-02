@@ -1,5 +1,14 @@
 02.08.2025
     07:42, 6:48, 
+        NameError: name 'Plot_the_Marracuene_service_district_shapefile' is not defined. Did you mean: 'Plot_the_service_district_shapefile'?
+
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+            git add app/path.py  app/plot.py cmd.txt
+            git commit -m "NameError: name 'Plot_the_Marracuene_service_district_shapefile' is not defined"
+            git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01   
+
+
         Baixe: gadm41_MOZ_shp.zip
         Extraia e filtre Marracuene para criar data/maps/marracuene_distritos.shp.
 

@@ -3,7 +3,7 @@ import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
 from path import marracuene, schools, chickens, world,  shapefile_path # , roads, hospitais, maputo, roads,  path_file, chickens_path, hospitais_path, roads_path_, maputo_, pathmaputo_,
-from helper_function import Plot_the_service_district_shapefile, create_scatterplot, print_world_info # , create_scatterplot_shapefile
+from helper_function import Plot_the_Marracuene_service_district_shapefile, Plot_the_service_district_shapefile, create_scatterplot, print_world_info # , create_scatterplot_shapefile
 
 #Carregar distritos de Marracuene
 #distritos = gpd.read_file("data/maps/marracuene_distritos.shp")
