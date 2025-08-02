@@ -1,91 +1,28 @@
 import os
-
 import pandas as pd
 import geopandas as gpd
 import matplotlib.pyplot as plt
-
 from path import schools, chickens, roads, hospitais, world, maputo, roads, maputo_, path_file, chickens_path, shapefile_path, hospitais_path, roads_path_, maputo_path
-
 from helper_function import Plot_the_service_district_shapefile, create_scatterplot, print_world_info, create_scatterplot_shapefile
 
-#1.3.1
-# Plot the service district shapefile
+#1.3.1 # Plot the service district shapefile
 Plot_the_service_district_shapefile(shapefile_path, chickens, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 
 #1.3.2                                    
 print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
 
-#Traceback (most recent call last):
-#  File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 22, in <module>
-#    print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
-#                     ^^^^^
-#NameError: name 'world' is not defined
-
-#print(schools.columns)
-
-## Scatterplot 1 - father heights vs. son heights with darkred square markers
-# como usar um helper para plotar scatterplot
+## Scatterplot 1 - father heights vs. son heights with darkred square markers# como usar um helper para plotar scatterplot
 # Create a scatterplot of father and son heights with a square marker (encoded as s)
-
 create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker='s', xlabel='Longitude', ylabel='Latitude', title='School Locations') #, file_name=f"img/Longitude_Latitude_school_locations_s.png")
 # Create_scatterplot of school locations with a pentagon marker (encoded as 'p') that is 'darkgreen'.
 #plt.scatter(schools.Longitude, schools.Latitude, c='darkgreen', marker='s') #'p')
 
-# print the first few rows of df 
-#print(schools.head())
-
-# extract latitude to a new column: lat
-# df['lat'] = [loc[0] for loc in df.Location]
-
-# extract longitude to a new column: lng
-#df['lng'] = [loc[1] for loc in df.Location]
-
-# print the first few rows of df again
-# print(df.head())
-
-#plt.xlabel('Longitude')
-#plt.ylabel('Latitude')
-#plt.title('School Locations')
-#plt.savefig("img/school_locations_s.png")  # Save the plot as a PNG image
-#plt.show() # Show your plot
-
-# Look at the first few rows of the chickens DataFrame
-#print(chickens.head())
-
-# Plot the locations of all Nashville chicken permits
-#plt.scatter(x = chickens.lat, y = chickens.lng)
-
 #create_scatterplot(schools.Longitude, schools.Latitude, color='darkred', marker='s', xlabel='Longitude', ylabel='Latitude', title='School Locations', file_name=f"img/Longitude_Latitude_school_locations_s.png")
 create_scatterplot(chickens.lng, chickens.lat,  color='darkred', marker='p', xlabel='Longitude', ylabel='Latitude', title='Chicken Locations') #, file_name=f"img/Chicken_Locations.png")
-
-# Show the plot
-#plt.show()
-#print(" import geopandas")
-
-# print("world = gpd.read_file(gpd.datasets.get_path(")
-# Load the world map
-
-
-
-# print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png")
-
-# File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 70
-#    print_world_info(world, moz='Mozambique', title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_world_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
-#
-#  File "/home/runner/work/visualizing-geospatial-data-in-python/visualizing-geospatial-data-in-python/app/plot.py", line 74
-#    ^
-# IndentationError: unexpected indent
-# Error: Process completed with exit code 1.                                                                                                                                                                                        
-# SyntaxError: invalid syntax
-# Error: Process completed with exit code 1.
 
 # https://campus.datacamp.com/courses/visualizing-geospatial-data-in-python/building-2-layer-maps-combining-polygons-and-scatterplots?ex=7
 #1.2.1 Creating a GeoDataFrame & examining the geometry
 # Import geopandas
-#import geopandas as gpd
 
-#print_world_info(world)
-
-# print(shapefile_path)
 # def create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" ):
 # create_scatterplot_shapefile(service_district, title_="Mozambique - Geometry Map", file_name_="img/1_Building_2_Layer_Maps/2._1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png" )
