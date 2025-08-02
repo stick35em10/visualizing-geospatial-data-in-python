@@ -4,7 +4,7 @@ import os
 import matplotlib.pyplot as plt
 
 import geopandas as gpd
-
+import pandas as pd
 
 #plt.scatter(x, y, c=color, marker=marker)
 #    ^^^
@@ -16,7 +16,7 @@ from path import shapefile_path, chickens, service_district  #, hospitais_path, 
 #service_district = gpd.read_file(shapefile_path)
 # Carregar pontos de distribuição de água
 # agua = pd.read_csv("data/agua.csv")
-Plot_the_Marracuene_service_district_shapefile(marracuene, chickens, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+Plot_the_Marracuene_service_district_shapefile(marracuene, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
     agua = pd.read_json("data/Marracune/export.geojson") #pd.read_csv("data/agua.csv")
     agua_gdf = gpd.GeoDataFrame(
         agua,
@@ -26,7 +26,7 @@ Plot_the_Marracuene_service_district_shapefile(marracuene, chickens, title_="dis
 
     # Plotar
     fig, ax = plt.subplots(figsize=(10, 10))
-    distritos.plot(ax=ax, edgecolor='black', color='lightblue', alpha=0.5)
+    marracuene.plot(ax=ax, edgecolor='black', color='lightblue', alpha=0.5)
     agua_gdf.plot(ax=ax, color='blue', marker='o', label='Distribuição de Água')
 
     plt.title("Distritos de Marracuene e Distribuição da Água")
