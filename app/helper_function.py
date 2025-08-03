@@ -19,28 +19,29 @@ from path import shapefile_path, chickens, service_district  #, hospitais_path, 
 
 #def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1.3.2_Plotting_points_over_polygons__part_1/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):   
 def Plot_the_Marracuene_service_district_shapefile(marracuene, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
-    #agua = pd.read_json("data/Marracune/export.geojson") #pd.read_csv("data/agua.csv")
     agua = gpd.read_file("data/Marracune/export.geojson")
-    # Extrair longitude e latitude da coluna geometry
+    if agua.empty:
+        print("Nenhum ponto de água encontrado em export.geojson. O mapa será gerado apenas com os distritos.")
+        fig, ax = plt.subplots(figsize=(10, 10))
+        marracuene.plot(ax=ax, edgecolor='black', color='lightblue', alpha=0.5)
+        plt.title(title_)
+        plt.savefig(file_name_)
+        plt.close()
+        return
+
     agua["longitude"] = agua.geometry.x
     agua["latitude"] = agua.geometry.y
 
-    print(agua[["longitude", "latitude"]].head())
-
-    print("agua.head() : ",agua.head())
     agua_gdf = gpd.GeoDataFrame(
         agua,
         geometry=gpd.points_from_xy(agua.longitude, agua.latitude),
         crs="EPSG:4326"
     )
 
-    # Plotar
     fig, ax = plt.subplots(figsize=(10, 10))
     marracuene.plot(ax=ax, edgecolor='black', color='lightblue', alpha=0.5)
     agua_gdf.plot(ax=ax, color='blue', marker='o', label='Distribuição de Água')
-
-    # plt.title("Distritos de Marracuene e Distribuição da Água")
-    plt.title(title_)  # Defina o título
+    plt.title(title_)
     plt.legend()
     plt.savefig(file_name_)
     plt.close()
