@@ -1,4 +1,11 @@
 03.08.2025
+    21:18
+        comentando as restantes funções
+            git add cmd.txt app/plot.py
+            git commit -m " comentando as restantes funções "
+            git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01   
+        
     19:38
         Traceback (most recent call last):
             ValueError: aspect must be finite and positive 
