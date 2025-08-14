@@ -21,7 +21,7 @@ from path import shapefile_path, chickens, service_district  #, hospitais_path, 
 def Plot_the_Marracuene_service_district_shapefile(marracuene, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
     agua = gpd.read_file("data/Marracune/export.geojson")
     if agua.empty:
-        print("Nenhum ponto de água encontrado em export.geojson. O mapa será gerado apenas com os distritos.")
+        print(" 14.08 Nenhum ponto de água encontrado em export.geojson. O mapa será gerado apenas com os distritos.")
         fig, ax = plt.subplots(figsize=(10, 10))
         marracuene.plot(ax=ax, edgecolor='black', color='lightblue', alpha=0.5)
         plt.title(title_)
