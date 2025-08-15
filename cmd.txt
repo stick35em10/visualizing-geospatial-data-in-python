@@ -1,7 +1,21 @@
 15.08.2025
+    16:27
+        KeyError: 'name'
+        Error: Process completed with exit code 1.
+
+        git add app/1.3.2_script_PlottingShapefilePolygons.py cmd.txt
+        git commit -m " 15.08: 16'28  KeyError: 'name' update .github/workflows/01_03_workflows.yml add app/helper_function.py"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+        
+
+    16:15
+        git add app/1.3.2_script_PlottingShapefilePolygons.py
+        git commit -m " 15.08: 16'16  update .github/workflows/01_03_workflows.yml add app/helper_function.py"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+        
     15:53
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
-        
+        app/1.3.2_script_PlottingShapefilePolygons.py
         git add  .github/workflows/01_03_workflows.yml app/1.3.1_script_service_district.py app/path.py cmd.txt
         git commit -m " 15.08: 16'00  update .github/workflows/01_03_workflows.yml add app/helper_function.py"
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 

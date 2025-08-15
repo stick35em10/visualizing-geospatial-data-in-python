@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # Plot the Service Districts without any additional arguments
 #service_district.plot()
 #plt.show()
-
+print(service_district.head())
 # Plot the Service Districts, color them according to name, and show a legend
 service_district.plot(column = 'name', legend = True)
 #plt.show()
