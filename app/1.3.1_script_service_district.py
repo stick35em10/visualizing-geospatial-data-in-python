@@ -1,6 +1,8 @@
 # Import geopandas
 import geopandas as gpd
 
+#https://campus.datacamp.com/courses/visualizing-geospatial-data-in-python/building-2-layer-maps-combining-polygons-and-scatterplots?ex=7
+# Creating a GeoDataFrame & examining the geometry
 shapefile_path = "data/Service District/geo_export_ca87c034-2403-454e-8057-a3776934ed64.shp"
 #geo_export_ca87c034-2403-454e-8057-a3776934ed64.shp
 #print(shapefile_path)

@@ -1,6 +1,9 @@
 import pandas as pd
 import geopandas as gpd
 
+# Carregar o shapefile do distrito de serviço
+service_district = gpd.read_file("data/Service District/geo_export_ca87c034-2403-454e-8057-a3776934ed64.shp")
+
 gdf = gpd.read_file("data/maps/gadm41_MOZ_2.shp")  # ou o arquivo baixado
 marracuene = gdf[gdf["NAME_2"] == "Marracuene"]
 marracuene.to_file("marracuene_distrito.shp")
