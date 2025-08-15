@@ -1,5 +1,15 @@
+15.08.2025
+    8:21
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01   
+        
+        git add cmd.txt app/helper_function.py
+        git commit -m " add date 14.08 comentando as restantes funções "    
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+        
+        
 14.08.2025
     12:55
+        
         git add cmd.txt app/helper_function.py
         git commit -m " add date 14.08 comentando as restantes funções "    
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 

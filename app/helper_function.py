@@ -17,8 +17,11 @@ from path import shapefile_path, chickens, service_district  #, hospitais_path, 
 # Carregar pontos de distribuição de água
 # agua = pd.read_csv("data/agua.csv")
 
+img_district_Marracuene="img/1_Building_2_Layer_Maps/1.3.1_Geometry/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"
 #def Plot_the_service_district_shapefile(shapefile_path, chickens_path, title_="Mozambique - Geometry Map", file_name_="img/1.3.2_Plotting_points_over_polygons__part_1/1.3.1_service_district_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):   
-def Plot_the_Marracuene_service_district_shapefile(marracuene, title_="distritos de Marracuene", file_name_="img/1_Building_2_Layer_Maps/1.3.1_service_district_Marracuene_Building_2_Layer_Maps_Mozambique_Geometry_Map.png"):
+def Plot_the_Marracuene_service_district_shapefile(marracuene, 
+                                                   title_="distritos de Marracuene", 
+                                                   file_name_=img_district_Marracuene):
     agua = gpd.read_file("data/Marracune/export.geojson")
     if agua.empty:
         print(" 14.08 Nenhum ponto de água encontrado em export.geojson. O mapa será gerado apenas com os distritos.")
