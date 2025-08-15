@@ -10,7 +10,10 @@ import matplotlib.pyplot as plt
 print(service_district.columns)
 print(service_district.head())
 # Plot the Service Districts, color them according to name, and show a legend
-service_district.plot(column = 'name', legend = True)
+#service_district.plot(column = 'name', legend = True)
+
+service_district.plot(column = 'featurecla', legend = True)
+
 #plt.show()
 #file_naimg/1_Building_2_Layer_Maps/1.3.1_Geometry/_2.PlottingShapefil
 #ePpolygons.png
