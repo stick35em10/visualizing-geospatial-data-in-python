@@ -82,11 +82,13 @@ jobs:
       #  run: |
       #    ogr2ogr -clipsrc maputo_admin.shp hospitais_maputo.shp hospitais_all.shp
 
-      - name: Run plot.py
+      - name: Run 1.3.1_script_service_district.py and plot.py
         env:
           RUN_DATE: ${{ github.run_started_at }}
           RUN_NUMBER: ${{ github.run_number }}
-        run: python app/plot.py
+        run: | 
+          python app/plot.py
+          python app/1.3.1_script_service_district.py   
 
       - name: Commit and push generated image
         run: |
