@@ -18,4 +18,4 @@ service_district.plot(column = 'featurecla', legend = True)
 #file_naimg/1_Building_2_Layer_Maps/1.3.1_Geometry/_2.PlottingShapefil
 #ePpolygons.png
 img_file_name = "img/1_Building_2_Layer_Maps/1.3.1_Geometry/_2.PlottingShapefilePpolygons.png"
-plt.savefig(img_file_name_)
+plt.savefig(img_file_name)
