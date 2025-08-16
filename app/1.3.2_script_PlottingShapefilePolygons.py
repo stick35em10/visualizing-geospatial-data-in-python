@@ -13,7 +13,7 @@ print(service_district.head())
 #service_district.plot(column = 'name', legend = True)
 # ['featurecla', 'scalerank', 'LABELRANK', 'SOVEREIGNT', 'SOV_A3',
 #       'ADM0_DIF', 'LEVEL', 'TYPE', 'TLC', 'ADMIN'
-service_district.plot(column = 'TYPE', legend = True)
+service_district.plot(column = 'LEVEL', legend = True)
 
 #plt.show()
 #file_naimg/1_Building_2_Layer_Maps/1.3.1_Geometry/_2.PlottingShapefil
