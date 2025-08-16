@@ -6,18 +6,20 @@ import matplotlib.pyplot as plt
 # districts = gpd.read_file("data/maps/marracuene_distritos.shp")
 districts = gpd.read_file("data/Service District/geo_export_ca87c034-2403-454e-8057-a3776934ed64.shp")
 
+# data/maps/gis_osm_water_a_free_1.shp
 # Load water points (CSV with longitude/latitude)
-water = pd.read_csv("data/agua.csv")
-water_gdf = gpd.GeoDataFrame(
+# FileNotFoundError: [Errno 2] No such file or directory: 'data/agua.csv'
+#water = pd.read_csv("data/agua.csv")
+"""water_gdf = gpd.GeoDataFrame(
     water,
     geometry=gpd.points_from_xy(water.longitude, water.latitude),
     crs="EPSG:4326"
 )
-
+"""
 # Plot
 fig, ax = plt.subplots(figsize=(10, 10))
 districts.plot(ax=ax, edgecolor='black', color='lightblue', alpha=0.5)
-water_gdf.plot(ax=ax, color='blue', marker='o', label='Water Points')
+# water_gdf.plot(ax=ax, color='blue', marker='o', label='Water Points')
 
 plt.title("Marracuene Districts and Water Distribution")
 plt.legend()
