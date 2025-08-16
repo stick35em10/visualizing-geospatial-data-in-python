@@ -1,4 +1,14 @@
 16.08.2025
+    11:15
+
+    11:01
+        how can i create geospatial visualization with two layers by plotting a polygon map of service districts and then adding a scatterplot to see where the water are in Marracuene, maputo, Mozambique_Geometry_Map
+
+            git rm img/1_Building_2_Layer_Maps/1.3.1_Geometry/_2.PlottingShapefilePpolygons.png
+            git add  .github/workflows/01_03_workflows.yml  app/1.3.3_script_CombiningPolygonsAndScatterPlots.py img/1_Building_2_Layer_Maps/1.3.3_CombiningPolygonsAndScatterplots/ cmd.txt
+            git commit -m " 16.08: 11'01  update .github/workflows/01_03_workflows.yml add app/helper_function.py"
+            git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01 
+                
     8:38
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         
