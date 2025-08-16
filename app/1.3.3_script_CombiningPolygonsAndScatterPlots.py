@@ -1,9 +1,9 @@
 import geopandas as gpd
 import pandas as pd
 import matplotlib.pyplot as plt
-from path import districts 
+# from path import districts 
 # Load polygon layer (districts)
-#districts = gpd.read_file("data/maps/marracuene_distritos.shp")
+# districts = gpd.read_file("data/maps/marracuene_distritos.shp")
 districts = gpd.read_file("data/Service District/geo_export_ca87c034-2403-454e-8057-a3776934ed64.shp")
 
 # Load water points (CSV with longitude/latitude)
