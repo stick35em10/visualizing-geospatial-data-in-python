@@ -1,4 +1,14 @@
 18.08.2025
+    13:39
+        git add README.md cmd.txt
+        git commit -m "18.08, 13:39 update README.md cmd.txt"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+    13:23
+        git add index.html
+        git commit -m "18.08, 13:25 add index.html"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        
     13:01
         git add mapa_marracuene.py data/export.geojson cmd.txt .github/workflows/01_03_workflows.yml
         git commit -m "18.08: 13'01 add mapa_marracuene.py data/export.geojson"
