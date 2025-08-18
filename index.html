@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_f1ee83ad175d971d66a6eb8e0bf98c59 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_f1ee83ad175d971d66a6eb8e0bf98c59" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_f1ee83ad175d971d66a6eb8e0bf98c59 = L.map(
+                "map_f1ee83ad175d971d66a6eb8e0bf98c59",
+                {
+                    center: [-25.8, 32.65],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 11,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_758d7f2c700864c7f5f636e21f3d4e3c = L.tileLayer(
+                "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 20,
+  "maxNativeZoom": 20,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors \u0026copy; \u003ca href=\"https://carto.com/attributions\"\u003eCARTO\u003c/a\u003e",
+  "subdomains": "abcd",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_758d7f2c700864c7f5f636e21f3d4e3c.addTo(map_f1ee83ad175d971d66a6eb8e0bf98c59);
+        
+    
+        function geo_json_a72c80008d69732ec890c3f47a34d449_styler(feature) {
+            switch(feature.properties.name) {
+                default:
+                    return {"color": "black", "fillColor": "#1f77b4", "fillOpacity": 0.5, "weight": 1};
+            }
+        }
+
+        function geo_json_a72c80008d69732ec890c3f47a34d449_onEachFeature(feature, layer) {
+
+            layer.on({
+            });
+        };
+        var geo_json_a72c80008d69732ec890c3f47a34d449 = L.geoJson(null, {
+                onEachFeature: geo_json_a72c80008d69732ec890c3f47a34d449_onEachFeature,
+            
+                style: geo_json_a72c80008d69732ec890c3f47a34d449_styler,
+            ...{
+}
+        });
+
+        function geo_json_a72c80008d69732ec890c3f47a34d449_add (data) {
+            geo_json_a72c80008d69732ec890c3f47a34d449
+                .addData(data);
+        }
+            geo_json_a72c80008d69732ec890c3f47a34d449_add({"features": [{"geometry": {"coordinates": [[[32.61, -25.82], [32.65, -25.82], [32.65, -25.78], [32.61, -25.78], [32.61, -25.82]]], "type": "Polygon"}, "properties": {"color": "#1f77b4", "name": "Posto Administrativo de Marracuene"}, "type": "Feature"}], "type": "FeatureCollection"});
+
+        
+    
+            geo_json_a72c80008d69732ec890c3f47a34d449.bindTooltip(
+                `<div>
+                     Posto Administrativo de Marracuene
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            geo_json_a72c80008d69732ec890c3f47a34d449.addTo(map_f1ee83ad175d971d66a6eb8e0bf98c59);
+        
+    
+        function geo_json_27dc4cd389c804ca8bc9a4a002abc092_styler(feature) {
+            switch(feature.properties.name) {
+                default:
+                    return {"color": "black", "fillColor": "#ff7f0e", "fillOpacity": 0.5, "weight": 1};
+            }
+        }
+
+        function geo_json_27dc4cd389c804ca8bc9a4a002abc092_onEachFeature(feature, layer) {
+
+            layer.on({
+            });
+        };
+        var geo_json_27dc4cd389c804ca8bc9a4a002abc092 = L.geoJson(null, {
+                onEachFeature: geo_json_27dc4cd389c804ca8bc9a4a002abc092_onEachFeature,
+            
+                style: geo_json_27dc4cd389c804ca8bc9a4a002abc092_styler,
+            ...{
+}
+        });
+
+        function geo_json_27dc4cd389c804ca8bc9a4a002abc092_add (data) {
+            geo_json_27dc4cd389c804ca8bc9a4a002abc092
+                .addData(data);
+        }
+            geo_json_27dc4cd389c804ca8bc9a4a002abc092_add({"features": [{"geometry": {"coordinates": [[[32.7, -25.78], [32.74, -25.78], [32.74, -25.74], [32.7, -25.74], [32.7, -25.78]]], "type": "Polygon"}, "properties": {"color": "#ff7f0e", "name": "Posto Administrativo de Machubo"}, "type": "Feature"}], "type": "FeatureCollection"});
+
+        
+    
+            geo_json_27dc4cd389c804ca8bc9a4a002abc092.bindTooltip(
+                `<div>
+                     Posto Administrativo de Machubo
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            geo_json_27dc4cd389c804ca8bc9a4a002abc092.addTo(map_f1ee83ad175d971d66a6eb8e0bf98c59);
+        
+    
+            var marker_04a65aac498dd517de98a483669feaad = L.marker(
+                [-25.3999446, 32.8038068],
+                {
+}
+            ).addTo(map_f1ee83ad175d971d66a6eb8e0bf98c59);
+        
+    
+        var popup_2f850c3dbe70cb081cdf10d8cc205dfe = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_539b0f9f72fb4ecb79dd16fe8cbc1800 = $(`<div id="html_539b0f9f72fb4ecb79dd16fe8cbc1800" style="width: 100.0%; height: 100.0%;"><h4>Ponto de Água</h4><b>@id:</b> node/3712321786<br><b>man_made:</b> water_well<br></div>`)[0];
+                popup_2f850c3dbe70cb081cdf10d8cc205dfe.setContent(html_539b0f9f72fb4ecb79dd16fe8cbc1800);
+            
+        
+
+        marker_04a65aac498dd517de98a483669feaad.bindPopup(popup_2f850c3dbe70cb081cdf10d8cc205dfe)
+        ;
+
+        
+    
+    
+            marker_04a65aac498dd517de98a483669feaad.bindTooltip(
+                `<div>
+                     Ponto de Água
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_d0be67fa6e3bc3742bdde39752df2b90 = L.marker(
+                [-25.9132473, 32.5277275],
+                {
+}
+            ).addTo(map_f1ee83ad175d971d66a6eb8e0bf98c59);
+        
+    
+        var popup_69f73d4b1f97105e41a843f6bf83bef5 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_a5f07446e5d7e3311c7a5e0a271fec01 = $(`<div id="html_a5f07446e5d7e3311c7a5e0a271fec01" style="width: 100.0%; height: 100.0%;"><h4>Ponto de Água</h4><b>@id:</b> node/4887897324<br><b>amenity:</b> drinking_water<br><b>description:</b> Aguas de Maputo<br><b>name:</b> FIPAG<br></div>`)[0];
+                popup_69f73d4b1f97105e41a843f6bf83bef5.setContent(html_a5f07446e5d7e3311c7a5e0a271fec01);
+            
+        
+
+        marker_d0be67fa6e3bc3742bdde39752df2b90.bindPopup(popup_69f73d4b1f97105e41a843f6bf83bef5)
+        ;
+
+        
+    
+    
+            marker_d0be67fa6e3bc3742bdde39752df2b90.bindTooltip(
+                `<div>
+                     FIPAG
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_b18e35c9d672a0b16ee6c5f45180ce0c = L.marker(
+                [-25.9192005, 32.5269469],
+                {
+}
+            ).addTo(map_f1ee83ad175d971d66a6eb8e0bf98c59);
+        
+    
+        var popup_c38c070b138532f2dead2f6fd272a864 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_8d8692f21ec474e2d442264c6a290358 = $(`<div id="html_8d8692f21ec474e2d442264c6a290358" style="width: 100.0%; height: 100.0%;"><h4>Ponto de Água</h4><b>@id:</b> node/4893664670<br><b>amenity:</b> drinking_water<br></div>`)[0];
+                popup_c38c070b138532f2dead2f6fd272a864.setContent(html_8d8692f21ec474e2d442264c6a290358);
+            
+        
+
+        marker_b18e35c9d672a0b16ee6c5f45180ce0c.bindPopup(popup_c38c070b138532f2dead2f6fd272a864)
+        ;
+
+        
+    
+    
+            marker_b18e35c9d672a0b16ee6c5f45180ce0c.bindTooltip(
+                `<div>
+                     Ponto de Água
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_0d54201033f8b574a64fffefae7e8571 = L.marker(
+                [-26.4498377, 32.9251255],
+                {
+}
+            ).addTo(map_f1ee83ad175d971d66a6eb8e0bf98c59);
+        
+    
+        var popup_27c6b981942db16708b78502dc825335 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_1ecb2995ef93811e5f3994411a4b2f06 = $(`<div id="html_1ecb2995ef93811e5f3994411a4b2f06" style="width: 100.0%; height: 100.0%;"><h4>Ponto de Água</h4><b>@id:</b> node/6026755923<br><b>description:</b> Non-drinkable water found in this well. To be used for cooking and washing<br><b>man_made:</b> water_well<br><b>operator:</b> Open to Public<br></div>`)[0];
+                popup_27c6b981942db16708b78502dc825335.setContent(html_1ecb2995ef93811e5f3994411a4b2f06);
+            
+        
+
+        marker_0d54201033f8b574a64fffefae7e8571.bindPopup(popup_27c6b981942db16708b78502dc825335)
+        ;
+
+        
+    
+    
+            marker_0d54201033f8b574a64fffefae7e8571.bindTooltip(
+                `<div>
+                     Ponto de Água
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+</script>
+</html>
