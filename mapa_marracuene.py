@@ -86,7 +86,7 @@ for feature in water_points_data['features']:
         ).add_to(m)
 
 # 6. Salvar o mapa em um arquivo HTML
-output_file = 'mapa_marracuene.html'
+output_file = 'index.html'
 m.save(output_file)
 
 print(f"Mapa salvo com sucesso em '{output_file}'.")

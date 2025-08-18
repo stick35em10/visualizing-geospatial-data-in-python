@@ -1,5 +1,10 @@
 18.08.2025
-    13:39
+    13:[53,39]
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        git add mapa_marracuene.py cmd.txt
+        git commit -m "18.08, 13:52 update mapa_marracuene.py to save in index.html and cmd.txt"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
         git add README.md cmd.txt
         git commit -m "18.08, 13:39 update README.md cmd.txt"
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
