@@ -87,6 +87,7 @@ jobs:
           RUN_DATE: ${{ github.run_started_at }}
           RUN_NUMBER: ${{ github.run_number }}
         run: | 
+          python mapa_marracuene.py
           python app/1.3.3_script_mapa_marracuene_bobole.py
           python app/1.3.3_script_CombiningPolygonsAndScatterPlots.py
           python app/1.3.2_script_PlottingShapefilePolygons.py

@@ -1,0 +1,72 @@
+{
+  "type": "FeatureCollection",
+  "generator": "overpass-turbo",
+  "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL.",
+  "timestamp": "2025-08-18T04:15:49Z",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/3712321786",
+        "man_made": "water_well"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.8038068,
+          -25.3999446
+        ]
+      },
+      "id": "node/3712321786"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4887897324",
+        "amenity": "drinking_water",
+        "description": "Aguas de Maputo",
+        "name": "FIPAG"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.5277275,
+          -25.9132473
+        ]
+      },
+      "id": "node/4887897324"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/4893664670",
+        "amenity": "drinking_water"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.5269469,
+          -25.9192005
+        ]
+      },
+      "id": "node/4893664670"
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "@id": "node/6026755923",
+        "description": "Non-drinkable water found in this well. To be used for cooking and washing",
+        "man_made": "water_well",
+        "operator": "Open to Public"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.9251255,
+          -26.4498377
+        ]
+      },
+      "id": "node/6026755923"
+    }
+  ]
+}
