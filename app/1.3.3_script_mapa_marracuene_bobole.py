@@ -21,6 +21,6 @@ for local in locais:
     ).add_to(mapa)
 
 # Guardar o mapa em HTML
-mapa.save("mapa_marracuene_bobole.html")
+mapa.save("img/mapa_marracuene_bobole.html")
 
 print("✅ Mapa criado: abra o ficheiro mapa_marracuene_bobole.html no navegador.")
