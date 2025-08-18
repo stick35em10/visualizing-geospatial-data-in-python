@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_5e0f90ba2f00e2eb108c614212f4277f {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+            <div class="folium-map" id="map_5e0f90ba2f00e2eb108c614212f4277f" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_5e0f90ba2f00e2eb108c614212f4277f = L.map(
+                "map_5e0f90ba2f00e2eb108c614212f4277f",
+                {
+                    center: [-25.73, 32.65],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 11,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_2e9ad11d0784dd5c14b83703ba0c7d54 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_2e9ad11d0784dd5c14b83703ba0c7d54.addTo(map_5e0f90ba2f00e2eb108c614212f4277f);
+        
+    
+            var marker_1e870571cde10d5b3f88bd2e7cc54971 = L.marker(
+                [-25.703, 32.676],
+                {
+}
+            ).addTo(map_5e0f90ba2f00e2eb108c614212f4277f);
+        
+    
+            var icon_1d6708c405bd468df29421f706508334 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "tint",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_08e9bf3b97231747f26fa71a10ea8e05 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8ca7a4dda4ae1b7f17b3e7aa3982ecda = $(`<div id="html_8ca7a4dda4ae1b7f17b3e7aa3982ecda" style="width: 100.0%; height: 100.0%;">Marracuene - Sede (Fontanário) (Fontanário Público)</div>`)[0];
+                popup_08e9bf3b97231747f26fa71a10ea8e05.setContent(html_8ca7a4dda4ae1b7f17b3e7aa3982ecda);
+            
+        
+
+        marker_1e870571cde10d5b3f88bd2e7cc54971.bindPopup(popup_08e9bf3b97231747f26fa71a10ea8e05)
+        ;
+
+        
+    
+    
+            marker_1e870571cde10d5b3f88bd2e7cc54971.bindTooltip(
+                `<div>
+                     Marracuene - Sede (Fontanário)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_1e870571cde10d5b3f88bd2e7cc54971.setIcon(icon_1d6708c405bd468df29421f706508334);
+            
+    
+            var marker_f0d5dd0e5c71ee9bf3c9a92aa2bdd69a = L.marker(
+                [-25.75, 32.72],
+                {
+}
+            ).addTo(map_5e0f90ba2f00e2eb108c614212f4277f);
+        
+    
+            var icon_d2bfde43dea9a14b1b5f9b034bfe3225 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "tint",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_dd3efb6e4c5ae6c36851752d7ec2296d = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_8fdd961e1f4e3fa75f40097e598a91a3 = $(`<div id="html_8fdd961e1f4e3fa75f40097e598a91a3" style="width: 100.0%; height: 100.0%;">Mahubo (Reservatório) (Reservatório)</div>`)[0];
+                popup_dd3efb6e4c5ae6c36851752d7ec2296d.setContent(html_8fdd961e1f4e3fa75f40097e598a91a3);
+            
+        
+
+        marker_f0d5dd0e5c71ee9bf3c9a92aa2bdd69a.bindPopup(popup_dd3efb6e4c5ae6c36851752d7ec2296d)
+        ;
+
+        
+    
+    
+            marker_f0d5dd0e5c71ee9bf3c9a92aa2bdd69a.bindTooltip(
+                `<div>
+                     Mahubo (Reservatório)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_f0d5dd0e5c71ee9bf3c9a92aa2bdd69a.setIcon(icon_d2bfde43dea9a14b1b5f9b034bfe3225);
+            
+    
+            var marker_c28c3abf0eafd15b6df8b9ae38bd2e2b = L.marker(
+                [-25.83, 32.58],
+                {
+}
+            ).addTo(map_5e0f90ba2f00e2eb108c614212f4277f);
+        
+    
+            var icon_54c5a39d07a4c739bcf021f3baacd23e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "tint",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_f406991ebcb9012b4d2bcfd5f7da2041 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_43d0d140006d34a2588f32f96bef9be2 = $(`<div id="html_43d0d140006d34a2588f32f96bef9be2" style="width: 100.0%; height: 100.0%;">Bobole (Furo Comunitário) (Furo / Poço)</div>`)[0];
+                popup_f406991ebcb9012b4d2bcfd5f7da2041.setContent(html_43d0d140006d34a2588f32f96bef9be2);
+            
+        
+
+        marker_c28c3abf0eafd15b6df8b9ae38bd2e2b.bindPopup(popup_f406991ebcb9012b4d2bcfd5f7da2041)
+        ;
+
+        
+    
+    
+            marker_c28c3abf0eafd15b6df8b9ae38bd2e2b.bindTooltip(
+                `<div>
+                     Bobole (Furo Comunitário)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_c28c3abf0eafd15b6df8b9ae38bd2e2b.setIcon(icon_54c5a39d07a4c739bcf021f3baacd23e);
+            
+    
+            var marker_141daaf5f7f9a44024ab3b678ce02240 = L.marker(
+                [-25.69, 32.61],
+                {
+}
+            ).addTo(map_5e0f90ba2f00e2eb108c614212f4277f);
+        
+    
+            var icon_9f28a808486655704d8907a3dd22fba8 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "tint",
+  "prefix": "fa",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_132a6ffc82cc83401b82f89c6d3fe760 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0d20d46163214d61e81a46df54e3e1a8 = $(`<div id="html_0d20d46163214d61e81a46df54e3e1a8" style="width: 100.0%; height: 100.0%;">Estrada Marracuene–Macaneta (Ponto de Água) (Fontanário Informal)</div>`)[0];
+                popup_132a6ffc82cc83401b82f89c6d3fe760.setContent(html_0d20d46163214d61e81a46df54e3e1a8);
+            
+        
+
+        marker_141daaf5f7f9a44024ab3b678ce02240.bindPopup(popup_132a6ffc82cc83401b82f89c6d3fe760)
+        ;
+
+        
+    
+    
+            marker_141daaf5f7f9a44024ab3b678ce02240.bindTooltip(
+                `<div>
+                     Estrada Marracuene–Macaneta (Ponto de Água)
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+                marker_141daaf5f7f9a44024ab3b678ce02240.setIcon(icon_9f28a808486655704d8907a3dd22fba8);
+            
+</script>
+</html>
