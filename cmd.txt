@@ -1,4 +1,12 @@
 19.08.2025
+    15:38
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+        git add README.md cmd.txt html/19.08/camera_upload_complete.html
+        git commit -m "19.08, 07:02 update README.md cmd.txt "
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+
     06:[58, 31, 18]
 
         git add README.md cmd.txt
