@@ -41,16 +41,22 @@ def upload_data():
     
     # 1. Extrair os dados da requisição
     photo_data_url = data.get('photo')
+    print(photo_data_url)
     coords = data.get('coords')
-
+    print(coords)
+    
+    # Verificar se os dados estão completos 
     if not photo_data_url or not coords:
         return jsonify({"message": "Dados incompletos"}), 400
 
     # 2. Processar a foto e as coordenadas
     latitude = coords.get('latitude')
+    print(latitude)
     longitude = coords.get('longitude')
+    print(longitude)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
+    print(timestamp)
+    
     # # Salva a foto (opcional, pode ser adaptado)
     # photo_base64 = photo_data_url.split(',')[1]
     # photo_bytes = base64.b64decode(photo_base64)
@@ -62,6 +68,8 @@ def upload_data():
 
     # 3. Gravar no Google Sheets
     sheets_client = setup_google_sheets(os.environ.get('GSPREAD_CREDENTIALS'))
+    print(sheets_client)
+    
     if sheets_client:
         data_to_write = [timestamp, latitude, longitude]
         if write_to_sheet(sheets_client, "Registo de Fotos", data_to_write):
