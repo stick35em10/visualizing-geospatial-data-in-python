@@ -24,3 +24,5 @@ Clique [aqui](https://stick35em10.github.io/visualizing-geospatial-data-in-pytho
 [Capturar e Enviar Foto](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html)
 
 [Ver no Mapa](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/19.08/19.08_19:24_script_opencv_foto_mapa_.html)
+
+[Tentando o completo](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/19.08/camera_upload_complete.html)
