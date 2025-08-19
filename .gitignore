@@ -7,7 +7,13 @@ venv/
 .env
 
 # Generated images and plots
-img/
+#img/
 
 # Uploaded photos
-photos/
+# photos/
+
+#git config set advice.addIgnoredFile false
+#The following paths are ignored by one of your .gitignore files:
+#img
+#hint: Use -f if you really want to add them.
+#hint: Disable this message with "git config set advice.addIgnoredFile false"
