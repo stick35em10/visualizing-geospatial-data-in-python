@@ -3,7 +3,7 @@
    20:17
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         git add .
-        git commit -m "19.08, 17:11 update  requirements_for_render.txt Dockerfile cmd.txt " 
+        git commit -m "19.08, 20:21 update  requirements_for_render.txt Dockerfile cmd.txt " 
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
 
