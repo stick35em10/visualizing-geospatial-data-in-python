@@ -1,5 +1,11 @@
 19.08.2025
-    02:05
+    02:[24,05,]
+
+        git add app/19.08/19.08_19:24_script_opencv_foto_mapa_.py cmd.txt
+        git commit -m "19.08, 02:08 add app/19.08/19.08_19:24_script_opencv_foto_mapa_.py"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
         git add app/19.08/19.08_19:24_script_opencv_foto_mapa_.py  requirements.txt cmd.txt  .github/workflows/01_03_workflows.yml

@@ -7,8 +7,8 @@ import random # Usado para simular coordenadas de GPS
 
 # Tente 1 ou 2 se 0 não funcionar
 camera = cv2.VideoCapture(1)
-if not camera.isOpened():
-    camera = cv2.VideoCapture(0)  # Tenta a câmara padrão se a 1 não estiver disponível ou falhar   
+if not camera.isOpened():#camera = cv2.VideoCapture(0) para camera = cv2.VideoCapture(2) try solve can't open camera by index
+    camera = cv2.VideoCapture(2)  # Tenta a câmara padrão se a 1 não estiver disponível ou falhar   
 def take_photo_with_geo(output_folder):
     """
     Tira uma foto usando a câmara e associa coordenadas de geolocalização.
@@ -26,7 +26,7 @@ def take_photo_with_geo(output_folder):
     print(f"Coordenadas de geolocalização obtidas: Lat: {latitude:.4f}, Lon: {longitude:.4f}")
 
     # 2. Capturar a imagem
-    camera = cv2.VideoCapture(0) # '0' refere-se à primeira câmara
+    camera = cv2.VideoCapture(2) # '0' refere-se à primeira câmara
     if not camera.isOpened():
         print("Erro: Não foi possível aceder à câmara.")
         return None, None
