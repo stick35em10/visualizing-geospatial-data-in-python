@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Capturar e Enviar Foto</title>
+</head>
+<body>
+    <h1>Tirar Foto e Enviar para a Nuvem</h1>
+    <video id="videoElement" autoplay></video>
+    <button id="captureBtn">Tirar Foto e Enviar</button>
+    <div id="status">Aguardando a câmara...</div>
+    <div id="output"></div>
+
+    <script>
+        const video = document.getElementById('videoElement');
+        const captureBtn = document.getElementById('captureBtn');
+        const statusDiv = document.getElementById('status');
+        const outputDiv = document.getElementById('output');
+
+        let stream = null;
+
+        // URL do seu servidor Flask (substitua por sua URL do Render)
+        const SERVER_URL = 'https://seu-servico-render.onrender.com/upload'; 
+
+        // Inicia a câmara
+        function startCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(s) {
+                        stream = s;
+                        video.srcObject = stream;
+                        statusDiv.innerHTML = "Câmara pronta. Clique no botão para tirar a foto.";
+                    })
+                    .catch(function(err) {
+                        statusDiv.innerHTML = "Erro ao aceder à câmara. Verifique as permissões.";
+                        console.error("Erro ao aceder à câmara: ", err);
+                    });
+            } else {
+                statusDiv.innerHTML = "Seu navegador não suporta a API de câmara.";
+            }
+        }
+
+        // Obtém a geolocalização
+        function getGeolocation() {
+            return new Promise((resolve, reject) => {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const coords = {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude
+                            };
+                            resolve(coords);
+                        },
+                        (error) => {
+                            reject("Erro ao obter a geolocalização: " + error.message);
+                        }
+                    );
+                } else {
+                    reject("Geolocalização não suportada neste navegador.");
+                }
+            });
+        }
+
+        // Envia a foto e as coordenadas para o servidor
+        async function sendDataToServer(photoDataUrl, coords) {
+            try {
+                const response = await fetch(SERVER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        photo: photoDataUrl,
+                        coords: coords
+                    })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    outputDiv.innerHTML = `<p><strong>Sucesso!</strong> ${result.message}</p>`;
+                    console.log('Resposta do servidor:', result);
+                } else {
+                    const error = await response.json();
+                    outputDiv.innerHTML = `<p><strong>Erro do servidor:</strong> ${error.message}</p>`;
+                    console.error('Erro do servidor:', error);
+                }
+            } catch (err) {
+                outputDiv.innerHTML = `<p>Erro de rede: Não foi possível conectar ao servidor.</p>`;
+                console.error('Erro de rede:', err);
+            }
+        }
+
+        // Lidar com o clique do botão
+        captureBtn.addEventListener('click', async function() {
+            statusDiv.innerHTML = "Capturando foto e localização...";
+            
+            if (!stream) {
+                statusDiv.innerHTML = "A câmara não está ativa.";
+                return;
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const photoDataUrl = canvas.toDataURL('image/jpeg');
+
+            try {
+                const coords = await getGeolocation();
+                await sendDataToServer(photoDataUrl, coords);
+            } catch (error) {
+                statusDiv.innerHTML = `<p>Erro: ${error}</p>`;
+                console.error(error);
+            }
+        });
+
+        // Inicia o processo quando a página carrega
+        startCamera();
+    </script>
+</body>
+</html>
+<!--
+Fonte:
+https://gemini.google.com/app/6e8f5f9c7ad7c796?utm_source=app_launcher&utm_medium=owned&utm_campaign=base_all
+
+como enviar o código html/javascript para o programa que vai correr na nuvem
+
+Para enviar o código HTML/JavaScript para um programa que corre na nuvem, como o que está a usar com o Render, você precisa de uma arquitetura cliente-servidor. O JavaScript no navegador do cliente (seu computador ou telefone) é responsável por capturar a foto e a geolocalização e depois enviar esses dados para o seu programa na nuvem, que age como um servidor.
+
+O processo de envio de dados do JavaScript para o seu servidor Python é feito através de uma requisição HTTP POST. A forma mais moderna e flexível de fazer isso é usando a função fetch() do JavaScript.
+
+Aqui está como você pode modificar o seu código JavaScript e a sua aplicação Python para que eles se comuniquem corretamente.
+
+1. Código HTML/JavaScript (o Cliente)
+Este código é executado no navegador. Ele obtém a foto e a localização e, quando o botão é clicado, envia a informação para o seu servidor na nuvem.
+
+-->

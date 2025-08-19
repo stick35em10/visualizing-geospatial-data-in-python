@@ -1,4 +1,23 @@
 19.08.2025
+    05:04
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        
+        git add Dockerfile  app/19.08/19.08_04:43_script_foto_mapa_.py  requirements_for_render.txt  html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html cmd.txt
+        git commit -m "19.08, 02:44 add html and update the rest"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+    04:34
+        touch html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html
+        touch app/18.08_16:32_script_foto_mapa_exifread.py
+
+    03:48
+        
+        . ../visualizing-geospatial-data-in-python/venv_visualizing-geospatial/bin/activate
+        
+        Successfully installed cachetools-5.5.2 google-auth-2.40.3 google-auth-oauthlib-1.2.2 gspread-6.2.1 oauthlib-3.3.1 pyasn1-0.6.1 pyasn1-modules-0.4.2 requests-oauthlib-2.0.0 rsa-4.9.1
+        pip install gspread google-auth
+
+        touch app/19.08/19.08_16:32_script_Gravar_Ler_info_foto_to_mapa.py
     02:[44, 24,05,]
         
         git add html/ README.md cmd.txt
