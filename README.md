@@ -20,4 +20,7 @@
 
 Clique [aqui](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/19.08/19.08_19:24_script_opencv_foto_mapa_.html) para tirar uma foto com geolocalização.
 
-[Tirar Foto e Ver no Mapa](html/19.08/19.08_19:24_script_opencv_foto_mapa_.html)
+
+[Capturar e Enviar Foto](html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html)
+
+[Ver no Mapa](html/19.08/19.08_19:24_script_opencv_foto_mapa_.html)

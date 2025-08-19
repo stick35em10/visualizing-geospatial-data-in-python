@@ -1,4 +1,12 @@
 19.08.2025
+    06:18
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        
+        git add html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html cmd.txt README.md
+        git commit -m "19.08, 02:44 add html and update the rest"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+        
     05:04
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         
