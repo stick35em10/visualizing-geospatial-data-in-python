@@ -1,11 +1,19 @@
 19.08.2025
-    06:[58, 31, 18]
-
+    11:12
+        git branch 01_03_01_Plotting_points_over_polygons_part_2_02
+        git checkout 01_03_01_Plotting_points_over_polygons_part_2_02
+        git add cmd.txt
+        git commit -m "19.08, 11:14 cmd.txt "
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_02
+    11
+    python app/19.08/19.08_16:32_script_Gravar_Ler_info_foto_to_mapa.py
+    
+    07:02
         git add README.md cmd.txt
         git commit -m "19.08, 07:02 update README.md cmd.txt "
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
-
+    06:[58, 31, 18]        
         git add  .gitignore cmd.txt
         git commit -m "19.08, 06:33 update  .gitignore comente img and photo "
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
