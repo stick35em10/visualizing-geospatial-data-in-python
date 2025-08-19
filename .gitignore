@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment
+venv/
+.env
+
+# Generated images and plots
+img/
+
+# Uploaded photos
+photos/

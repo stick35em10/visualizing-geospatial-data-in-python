@@ -13,9 +13,20 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia todo o código da aplicação para o contêiner
 COPY . .
 
+#Run ls /app #- ConsistentInstructionCasing: Command 'Run' should match the case of the command majority (uppercase) (line 16)
 # Expõe a porta que o Flask vai usar (5000 por padrão)
 EXPOSE 5000
 
 # Comando para iniciar a aplicação
 # Usa Gunicorn ou Waitress para produção. Para este exemplo, o Flask é suficiente.
+#CMD ["flask", "run app/19.08/19.08_04:43_script_foto_mapa_", "--host=0.0.0.0"]
+#CMD ["flask", "--app", "app.app/19.08/19.08_04:43_script_foto_mapa_", "run", "--host=0.0.0.0"]
 CMD ["flask", "run", "--host=0.0.0.0"]
+# docker rmi your-image-name:05 && docker build -t your-image-name:06 .
+# git add 
+# 
+
+#git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01       
+#git add Dockerfile .gitignore .vincent/ app.py 
+#git commit -m "19.08, 02:44 add html and update the rest"
+#git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
