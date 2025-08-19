@@ -1,4 +1,19 @@
+19.08.2025
+    02:05
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+        git add app/19.08/19.08_19:24_script_opencv_foto_mapa_.py  requirements.txt cmd.txt  .github/workflows/01_03_workflows.yml
+        git commit -m "19.08, 02:08 add app/19.08/19.08_19:24_script_opencv_foto_mapa_.py"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+    01:
+        python app/19.08/19.08_19:24_script_opencv_foto_mapa_.py
 18.08.2025
+    16:32
+        . ../visualizing-geospatial-data-in-python/venv_visualizing-geospatial/bin/activate
+        touch app/18.08_16:32_script_foto_mapa_exifread.py
+
+
     13:[53,39]
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         git add mapa_marracuene.py cmd.txt
