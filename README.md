@@ -13,3 +13,11 @@
 **ou** pode usar um link de texto simples:
 
 <a href="https://stick35em10.github.io/visualizing-geospatial-data-in-python/" target="_blank">Abrir o Mapa Interativo</a>
+
+**ou** pode usar um link de texto simples:
+
+<a href="https://stick35em10.github.io/visualizing-geospatial-data-in-python/" target="_blank">Abrir o Mapa Interativo</a>
+
+Clique [aqui](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/19.08/19.08_19:24_script_opencv_foto_mapa_.html) para tirar uma foto com geolocalização.
+
+[Tirar Foto e Ver no Mapa](html/19.08/19.08_19:24_script_opencv_foto_mapa_.html)
