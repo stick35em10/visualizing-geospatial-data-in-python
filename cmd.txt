@@ -1,12 +1,49 @@
 19.08.2025
-    17:[17,11]
+   17:[29,17,11]
+        git add .gitignore README.md app.py html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html html/19.08/camera_upload_complete.html cmd.txt Dockerfile .github/workflows/01_03_workflows.yml
+        git commit -m "19.08, 17:11 add app/app.py"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        
         git add cmd.txt
         git commit -m "19.08, 17:11 add app/app.py"
-        
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+
         git add app/app.py
         git commit -m "19.08, 17:11 add app/app.py"
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
+
+    16:00
+
+    15:38
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+        git add app.py cmd.txt
+        git commit -m "19.08, 16:01 update app.py cmd.txt "
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+
+    06:[58, 31, 18]
+
+        git add README.md cmd.txt
+        git commit -m "19.08, 07:02 update README.md cmd.txt "
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+
+        git add  .gitignore cmd.txt
+        git commit -m "19.08, 06:33 update  .gitignore comente img and photo "
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        
+        git add html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html cmd.txt README.md
+        git commit -m "19.08, 02:44 add html and update the rest"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+        
+>>>>>>> f0ea65107902e28da4b48f2b779d27ceef994751
     05:04
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         

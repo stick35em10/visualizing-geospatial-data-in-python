@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capturar e Enviar Foto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .camera-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        #videoElement {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background-color: #000;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .server-config {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .server-config h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .server-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .server-option {
+            background: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .server-option:hover {
+            background: #dee2e6;
+        }
+        
+        .server-option.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+        
+        #customUrl {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .status-container {
+            margin: 20px 0;
+        }
+        
+        #status {
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .status-waiting {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        
+        .status-ready {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .status-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .status-processing {
+            background: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ffcc02;
+        }
+        
+        .status-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 50px;
+        }
+        
+        .preview-image {
+            max-width: 300px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        .coords-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .retry-controls {
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .info-panel {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Tirar Foto e Enviar para a Nuvem</h1>
+        
+        <div class="server-config">
+            <h3>🌐 Configuração do Servidor</h3>
+            <div class="server-options">
+                <div class="server-option" data-url="https://visualizing-geospatial-data-in-python.onrender.com/upload">
+                    Render (Produção)
+                </div>
+                <div class="server-option active" data-url="http://localhost:5000/upload">
+                    Local (Desenvolvimento)
+                </div>
+                <div class="server-option" data-url="http://localhost:5500/upload">
+                    Local (Alternativo)
+                </div>
+                <div class="server-option" data-url="custom">
+                    URL Personalizada
+                </div>
+            </div>
+            <input type="text" id="customUrl" placeholder="Digite a URL personalizada..." style="display: none;">
+            <p><strong>URL Atual:</strong> <span id="currentUrl">http://localhost:5000/upload</span></p>
+        </div>
+        
+        <div class="camera-container">
+            <video id="videoElement" autoplay playsinline></video>
+        </div>
+        
+        <div class="controls">
+            <button id="captureBtn" disabled>📷 Tirar Foto e Enviar</button>
+            <button id="retryBtn" style="display: none;">🔄 Tentar Novamente</button>
+            <button id="testConnectionBtn">🔗 Testar Conexão</button>
+        </div>
+        
+        <div class="status-container">
+            <div id="status" class="status-waiting">🔄 Aguardando a câmara...</div>
+        </div>
+        
+        <div id="output"></div>
+        
+        <div class="info-panel">
+            <h4>ℹ️ Informações:</h4>
+            <ul>
+                <li><strong>Câmara:</strong> Permite acesso para capturar fotos</li>
+                <li><strong>Localização:</strong> Obtém coordenadas GPS precisas</li>
+                <li><strong>Envio:</strong> Dados são enviados de forma segura para o servidor</li>
+                <li><strong>Formatos:</strong> JPEG para imagens, JSON para dados</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Elementos DOM
+        const video = document.getElementById('videoElement');
+        const captureBtn = document.getElementById('captureBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const testConnectionBtn = document.getElementById('testConnectionBtn');
+        const statusDiv = document.getElementById('status');
+        const outputDiv = document.getElementById('output');
+        const customUrlInput = document.getElementById('customUrl');
+        const currentUrlSpan = document.getElementById('currentUrl');
+        
+        // Variáveis globais
+        let stream = null;
+        let SERVER_URL = 'http://localhost:5000/upload';
+        
+        // Configuração dos servidores
+        const serverOptions = document.querySelectorAll('.server-option');
+        
+        // Event listeners para configuração do servidor
+        serverOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                serverOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                const url = this.dataset.url;
+                if (url === 'custom') {
+                    customUrlInput.style.display = 'block';
+                    customUrlInput.focus();
+                } else {
+                    customUrlInput.style.display = 'none';
+                    SERVER_URL = url;
+                    currentUrlSpan.textContent = url;
+                }
+            });
+        });
+        
+        // Event listener para URL personalizada
+        customUrlInput.addEventListener('input', function() {
+            SERVER_URL = this.value;
+            currentUrlSpan.textContent = this.value || 'URL personalizada não definida';
+        });
+        
+        // Função para atualizar status
+        function updateStatus(message, type = 'waiting') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status-${type}`;
+        }
+        
+        // Inicia a câmara
+        async function startCamera() {
+            try {
+                updateStatus('🔄 Iniciando câmara...', 'processing');
+                
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('Seu navegador não suporta a API de câmara.');
+                }
+                
+                const constraints = {
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'environment' // Câmara traseira por padrão
+                    }
+                };
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                
+                // Aguarda o vídeo estar pronto
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = resolve;
+                });
+                
+                updateStatus('✅ Câmara pronta! Clique no botão para tirar a foto.', 'ready');
+                captureBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Erro ao aceder à câmara:', error);
+                updateStatus('❌ Erro ao aceder à câmara. Verifique as permissões.', 'error');
+                outputDiv.innerHTML = `
+                    <div class="status-error">
+                        <strong>Erro de Câmara:</strong> ${error.message}
+                        <br><small>Certifique-se de que permitiu o acesso à câmara.</small>
+                    </div>
+                `;
+            }
+        }
+        
+        // Obtém a geolocalização
+        function getGeolocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocalização não suportada neste navegador.'));
+                    return;
+                }
+                
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                };
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const coords = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                            timestamp: new Date().toISOString()
+                        };
+                        console.log('Coordenadas obtidas:', coords);
+                        resolve(coords);
+                    },
+                    (error) => {
+                        console.error('Erro de geolocalização:', error);
+                        reject(new Error(`Erro ao obter a geolocalização: ${error.message}`));
+                    },
+                    options
+                );
+            });
+        }
+        
+        // Testa a conexão com o servidor
+        async function testConnection() {
+            try {
+                updateStatus('🔗 Testando conexão com o servidor...', 'processing');
+                
+                const response = await fetch(SERVER_URL.replace('/upload', '/health'), {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    updateStatus('✅ Conexão com o servidor OK!', 'success');
+                    outputDiv.innerHTML = `
+                        <div class="status-success">
+                            <strong>✅ Servidor Online:</strong> Conexão estabelecida com sucesso!
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`Servidor respondeu com status ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('Erro de conexão:', error);
+                updateStatus('❌ Erro de conexão com o servidor', 'error');
+                outputDiv.innerHTML = `
+                    <div class="status-error">
+                        <strong>❌ Erro de Conexão:</strong> ${error.message}
+                        <br><small>Verifique se o servidor está rodando na URL: ${SERVER_URL}</small>
+                    </div>
+                `;
+            }
+        }
+        
+        // Envia dados para o servidor
+        async function sendDataToServer(photoDataUrl, coords) {
+            try {
+                updateStatus('📤 Enviando dados para o servidor...', 'processing');
+                
+                const payload = {
+                    photo: photoDataUrl,
+                    coords: coords,
+                    metadata: {
+                        timestamp: new Date().toISOString(),
+                        userAgent: navigator.userAgent,
+                        screenSize: `${screen.width}x${screen.height}`
+                    }
+                };
+                
+                const response = await fetch(SERVER_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+                
+                console.log('Status da resposta:', response.status);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    updateStatus('✅ Dados enviados com sucesso!', 'success');
+                    
+                    outputDiv.innerHTML = `
+                        <div class="status-success">
+                            <h3>✅ Sucesso!</h3>
+                            <p><strong>Mensagem do servidor:</strong> ${result.message || 'Dados recebidos'}</p>
+                            ${result.id ? `<p><strong>ID:</strong> ${result.id}</p>` : ''}
+                            ${result.url ? `<p><strong>URL:</strong> <a href="${result.url}" target="_blank">${result.url}</a></p>` : ''}
+                        </div>
+                        <div class="coords-info">
+                            <strong>📍 Localização:</strong><br>
+                            Latitude: ${coords.latitude.toFixed(6)}<br>
+                            Longitude: ${coords.longitude.toFixed(6)}<br>
+                            Precisão: ±${coords.accuracy}m
+                        </div>
+                        <img src="${photoDataUrl}" alt="Foto Capturada" class="preview-image">
+                    `;
+                    
+                    console.log('Resposta do servidor:', result);
+                    
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro desconhecido do servidor' }));
+                    throw new Error(error.message || `Erro HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('Erro ao enviar dados:', error);
+                updateStatus('❌ Erro ao enviar dados', 'error');
+                
+                outputDiv.innerHTML = `
+                    <div class="status-error">
+                        <h3>❌ Erro do Servidor</h3>
+                        <p><strong>Mensagem:</strong> ${error.message}</p>
+                        <p><strong>URL do servidor:</strong> ${SERVER_URL}</p>
+                        <small>Verifique se o servidor está rodando e acessível.</small>
+                    </div>
+                    <div class="retry-controls">
+                        <button onclick="location.reload()">🔄 Recarregar Página</button>
+                    </div>
+                `;
+                
+                retryBtn.style.display = 'inline-block';
+            }
+        }
+        
+        // Event listener para capturar foto
+        captureBtn.addEventListener('click', async function() {
+            try {
+                updateStatus('📷 Capturando foto e obtendo localização...', 'processing');
+                captureBtn.disabled = true;
+                
+                if (!stream) {
+                    throw new Error('A câmara não está ativa.');
+                }
+                
+                // Captura a foto
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                // Obtém coordenadas
+                const coords = await getGeolocation();
+                
+                // Envia para o servidor
+                await sendDataToServer(photoDataUrl, coords);
+                
+            } catch (error) {
+                console.error('Erro no processo:', error);
+                updateStatus(`❌ Erro: ${error.message}`, 'error');
+                outputDiv.innerHTML = `
+                    <div class="status-error">
+                        <strong>❌ Erro:</strong> ${error.message}
+                    </div>
+                `;
+                retryBtn.style.display = 'inline-block';
+            } finally {
+                captureBtn.disabled = false;
+            }
+        });
+        
+        // Event listener para tentar novamente
+        retryBtn.addEventListener('click', function() {
+            outputDiv.innerHTML = '';
+            retryBtn.style.display = 'none';
+            updateStatus('✅ Pronto para nova tentativa', 'ready');
+        });
+        
+        // Event listener para testar conexão
+        testConnectionBtn.addEventListener('click', testConnection);
+        
+        // Inicia quando a página carrega
+        document.addEventListener('DOMContentLoaded', startCamera);
+        
+        // Cleanup quando a página é fechada
+        window.addEventListener('beforeunload', function() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>
