@@ -28,5 +28,5 @@ CMD ["flask", "run", "--host=0.0.0.0"]
 
 #git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01       
 #git add Dockerfile .gitignore .vincent/ app.py 
-#git commit -m "19.08, 02:44 add html and update the rest"
+#git commit -m "git add Dockerfile .gitignore .vincent/ app.py "
 #git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
