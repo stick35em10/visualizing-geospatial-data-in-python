@@ -1,3 +1,12 @@
+20.08.2025
+    07:00
+        cp -r app.py error/20app.py
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+     
+        git add requirements_for_render.txt app.py cmd.txt
+        git commit -m "20.08, 06:59 update app.py requirements_for_render.txt cmd.txt "
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
 19.08.2025
     19:20
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
@@ -5,6 +14,7 @@
         git add README.md cmd.txt
         git commit -m "19.08, 19:22 update README.md cmd.txt "
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
     18:06
         
         git add cmd.txt
