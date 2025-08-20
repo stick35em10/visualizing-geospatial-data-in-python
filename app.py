@@ -1,20 +1,21 @@
 import os
 import json
 import logging
-import base64
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string, send_file, make_response
 from flask_cors import CORS
 import gspread
-from google.oauth2.service_account import Credentials
-from google.auth.exceptions import GoogleAuthError
+from oauth2client.service_account import ServiceAccountCredentials
+import io
+import csv
 
 # Configuração de logging
 logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler()  # Apenas console no Render
+        logging.FileHandler('debug.log'),
+        logging.StreamHandler()
     ]
 )
 logger = logging.getLogger(__name__)
@@ -28,8 +29,7 @@ sheets_status = {
     'credentials_found': False,
     'authentication_ok': False,
     'spreadsheet_accessible': False,
-    'error_messages': [],
-    'last_test_time': None
+    'error_messages': []
 }
 
 def log_step(step, message, success=True):
@@ -48,7 +48,7 @@ def log_step(step, message, success=True):
 
 def check_environment_variables():
     """Verifica se as variáveis de ambiente estão definidas"""
-    log_step("ENV_CHECK", "🔍 Verificando variáveis de ambiente...")
+    log_step("ENV_CHECK", "Iniciando verificação de variáveis de ambiente")
     
     required_vars = [
         'GOOGLE_SHEETS_CREDENTIALS',
@@ -59,85 +59,42 @@ def check_environment_variables():
     found_vars = []
     
     for var in required_vars:
-        value = os.getenv(var)
-        if value:
+        if os.getenv(var):
             found_vars.append(var)
-            # Log apenas os primeiros 50 caracteres por segurança
-            if len(str(value)) > 50:
-                preview = str(value)[:50] + "..."
-            else:
-                preview = str(value)
-            log_step("ENV_CHECK", f"✅ {var} encontrada: {preview}")
+            var_preview = str(os.getenv(var))[:50] + "..." if len(str(os.getenv(var))) > 50 else str(os.getenv(var))
+            log_step("ENV_CHECK", f"✅ {var} encontrada: {var_preview}")
         else:
             missing_vars.append(var)
             log_step("ENV_CHECK", f"❌ {var} NÃO ENCONTRADA", False)
     
-    # Informações do ambiente Render
-    render_info = {
-        'service_name': os.getenv('RENDER_SERVICE_NAME', 'Não definido'),
-        'git_commit': os.getenv('RENDER_GIT_COMMIT', 'Não definido'),
-        'instance_id': os.getenv('RENDER_INSTANCE_ID', 'Não definido'),
-    }
-    
-    log_step("ENV_CHECK", f"Informações do Render: {render_info}")
-    
     return {
         'found_vars': found_vars,
         'missing_vars': missing_vars,
-        'all_found': len(missing_vars) == 0,
-        'render_info': render_info
+        'all_found': len(missing_vars) == 0
     }
 
 def parse_credentials():
     """Tenta fazer parse das credenciais JSON"""
-    log_step("CREDENTIALS_PARSE", "🔐 Fazendo parse das credenciais...")
+    log_step("CREDENTIALS_PARSE", "Iniciando parse das credenciais")
     
     try:
         creds_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
         if not creds_json:
             raise Exception("Variável GOOGLE_SHEETS_CREDENTIALS não encontrada")
         
-        # Remove possíveis espaços ou quebras de linha
-        creds_json = creds_json.strip()
-        
-        # Tenta decodificar se estiver em base64 (algumas vezes é armazenado assim)
-        try:
-            if creds_json.startswith('eyJ'):  # Base64 geralmente começa assim para JSON
-                creds_json = base64.b64decode(creds_json).decode('utf-8')
-                log_step("CREDENTIALS_PARSE", "Credenciais decodificadas de base64")
-        except:
-            pass  # Se não for base64, continua com o valor original
-        
-        # Tenta fazer parse do JSON
         creds_dict = json.loads(creds_json)
         
-        # Verifica campos obrigatórios do Google Service Account
-        required_fields = [
-            'type', 
-            'project_id', 
-            'private_key_id', 
-            'private_key', 
-            'client_email',
-            'client_id',
-            'auth_uri',
-            'token_uri'
-        ]
-        
+        required_fields = ['type', 'project_id', 'private_key_id', 'private_key', 'client_email']
         missing_fields = []
+        
         for field in required_fields:
             if field not in creds_dict:
                 missing_fields.append(field)
         
         if missing_fields:
-            raise Exception(f"Campos obrigatórios ausentes no JSON: {missing_fields}")
+            raise Exception(f"Campos obrigatórios ausentes: {missing_fields}")
         
-        # Verifica se é realmente um service account
-        if creds_dict.get('type') != 'service_account':
-            raise Exception(f"Tipo de credencial inválido: {creds_dict.get('type')}. Esperado: service_account")
-        
-        log_step("CREDENTIALS_PARSE", f"✅ Credenciais válidas! Projeto: {creds_dict.get('project_id')}")
-        log_step("CREDENTIALS_PARSE", f"✅ Email do service account: {creds_dict.get('client_email')}")
-        
+        log_step("CREDENTIALS_PARSE", f"✅ Credenciais válidas. Projeto: {creds_dict.get('project_id')}")
         sheets_status['credentials_found'] = True
         
         return {
@@ -148,443 +105,715 @@ def parse_credentials():
         }
         
     except json.JSONDecodeError as e:
-        error_msg = f"❌ Erro ao fazer parse do JSON: {str(e)}"
+        error_msg = f"Erro ao fazer parse do JSON: {str(e)}"
         log_step("CREDENTIALS_PARSE", error_msg, False)
-        return {'success': False, 'error': error_msg, 'type': 'json_parse_error'}
+        return {'success': False, 'error': error_msg}
     
     except Exception as e:
-        error_msg = f"❌ Erro nas credenciais: {str(e)}"
+        error_msg = f"Erro nas credenciais: {str(e)}"
         log_step("CREDENTIALS_PARSE", error_msg, False)
-        return {'success': False, 'error': error_msg, 'type': 'credentials_error'}
+        return {'success': False, 'error': error_msg}
+
+def get_sheets_client():
+    """Retorna cliente autenticado do Google Sheets"""
+    try:
+        creds_result = parse_credentials()
+        if not creds_result['success']:
+            return None, creds_result['error']
+        
+        scope = [
+            'https://spreadsheets.google.com/feeds',
+            'https://www.googleapis.com/auth/drive'
+        ]
+        
+        credentials = ServiceAccountCredentials.from_json_keyfile_dict(
+            creds_result['credentials'], 
+            scope
+        )
+        
+        client = gspread.authorize(credentials)
+        return client, None
+        
+    except Exception as e:
+        return None, str(e)
 
 def test_google_sheets_connection():
-    """Testa a conexão completa com o Google Sheets"""
-    log_step("SHEETS_CONNECTION", "📊 Testando conexão com Google Sheets...")
+    """Testa a conexão com o Google Sheets"""
+    log_step("SHEETS_CONNECTION", "Iniciando teste de conexão com Google Sheets")
     
     try:
-        # Parse das credenciais
         creds_result = parse_credentials()
         if not creds_result['success']:
             return creds_result
         
-        # Configuração do escopo (atualizado para Google Sheets API v4)
-        scopes = [
-            'https://www.googleapis.com/auth/spreadsheets',
-            'https://www.googleapis.com/auth/drive.readonly'
+        scope = [
+            'https://spreadsheets.google.com/feeds',
+            'https://www.googleapis.com/auth/drive'
         ]
         
-        log_step("SHEETS_CONNECTION", f"🔑 Escopo configurado: {scopes}")
+        log_step("SHEETS_CONNECTION", f"Escopo configurado: {scope}")
         
-        # Criar credenciais usando google-auth (biblioteca atual)
-        credentials = Credentials.from_service_account_info(
+        credentials = ServiceAccountCredentials.from_json_keyfile_dict(
             creds_result['credentials'], 
-            scopes=scopes
+            scope
         )
         
-        log_step("SHEETS_CONNECTION", "✅ Credenciais Google criadas com sucesso")
+        log_step("SHEETS_CONNECTION", "✅ Credenciais de serviço criadas")
         
-        # Autorizar cliente gspread
         client = gspread.authorize(credentials)
         log_step("SHEETS_CONNECTION", "✅ Cliente gspread autorizado")
         sheets_status['authentication_ok'] = True
         
-        # Testar acesso à planilha
         spreadsheet_id = os.getenv('SPREADSHEET_ID')
         if not spreadsheet_id:
-            raise Exception("❌ Variável SPREADSHEET_ID não encontrada")
+            raise Exception("SPREADSHEET_ID não encontrada")
         
-        log_step("SHEETS_CONNECTION", f"📋 Tentando acessar planilha: {spreadsheet_id}")
+        log_step("SHEETS_CONNECTION", f"Tentando acessar planilha: {spreadsheet_id}")
         
-        # Abrir a planilha
-        try:
-            spreadsheet = client.open_by_key(spreadsheet_id)
-            log_step("SHEETS_CONNECTION", f"✅ Planilha acessada: '{spreadsheet.title}'")
-        except gspread.exceptions.SpreadsheetNotFound:
-            raise Exception(f"❌ Planilha não encontrada. Verifique se o ID está correto e se foi compartilhada com: {creds_result['client_email']}")
-        except gspread.exceptions.APIError as api_error:
-            raise Exception(f"❌ Erro da API Google: {api_error}")
+        spreadsheet = client.open_by_key(spreadsheet_id)
+        log_step("SHEETS_CONNECTION", f"✅ Planilha acessada: {spreadsheet.title}")
         
-        # Listar abas da planilha
-        try:
-            worksheets = spreadsheet.worksheets()
-            worksheet_names = [ws.title for ws in worksheets]
-            log_step("SHEETS_CONNECTION", f"📄 Abas encontradas: {worksheet_names}")
-            
-            # Testar leitura da primeira aba
-            if worksheets:
-                first_sheet = worksheets[0]
-                try:
-                    # Lê apenas as primeiras 5 linhas para teste
-                    sample_data = first_sheet.get('A1:E5')
-                    log_step("SHEETS_CONNECTION", f"✅ Teste de leitura OK. Dados encontrados: {len(sample_data)} linhas")
-                except Exception as read_error:
-                    log_step("SHEETS_CONNECTION", f"⚠️ Aviso: Erro ao ler dados de teste: {read_error}")
-            
-        except Exception as ws_error:
-            log_step("SHEETS_CONNECTION", f"⚠️ Aviso: Erro ao listar abas: {ws_error}")
-            worksheet_names = ["Erro ao listar abas"]
+        worksheets = spreadsheet.worksheets()
+        worksheet_names = [ws.title for ws in worksheets]
+        log_step("SHEETS_CONNECTION", f"Abas encontradas: {worksheet_names}")
         
         sheets_status['spreadsheet_accessible'] = True
         sheets_status['initialized'] = True
-        sheets_status['last_test_time'] = datetime.now().isoformat()
         
         return {
             'success': True,
-            'spreadsheet_id': spreadsheet_id,
             'spreadsheet_title': spreadsheet.title,
             'worksheet_names': worksheet_names,
             'client_email': creds_result['client_email'],
-            'project_id': creds_result['project_id'],
-            'scopes': scopes,
-            'test_time': sheets_status['last_test_time']
+            'project_id': creds_result['project_id']
         }
         
-    except GoogleAuthError as auth_error:
-        error_msg = f"❌ Erro de autenticação Google: {str(auth_error)}"
+    except gspread.exceptions.APIError as e:
+        error_msg = f"Erro da API do Google: {str(e)}"
         log_step("SHEETS_CONNECTION", error_msg, False)
-        return {'success': False, 'error': error_msg, 'type': 'google_auth_error'}
-    
-    except gspread.exceptions.APIError as api_error:
-        error_msg = f"❌ Erro da API do Google Sheets: {str(api_error)}"
-        log_step("SHEETS_CONNECTION", error_msg, False)
-        return {'success': False, 'error': error_msg, 'type': 'api_error'}
+        return {'success': False, 'error': error_msg}
     
     except Exception as e:
-        error_msg = f"❌ Erro geral de conexão: {str(e)}"
+        error_msg = f"Erro de conexão: {str(e)}"
         log_step("SHEETS_CONNECTION", error_msg, False)
-        return {'success': False, 'error': error_msg, 'type': 'connection_error'}
+        return {'success': False, 'error': error_msg}
 
 # ================================
-# ROTAS DE DEBUG
+# ROTAS PARA DEBUG DASHBOARD
 # ================================
 
-@app.route('/debug/environment', methods=['GET'])
-def debug_environment():
-    """🔧 Endpoint para verificar variáveis de ambiente"""
-    log_step("DEBUG_ENV", "Requisição de debug de ambiente recebida")
+@app.route('/debug', methods=['GET'])
+@app.route('/debug/', methods=['GET'])
+def debug_dashboard():
+    """Serve o dashboard de debug integrado"""
     
-    env_check = check_environment_variables()
-    
-    # Informações adicionais do sistema
-    system_info = {
-        'python_version': os.sys.version,
-        'current_time': datetime.now().isoformat(),
-        'working_directory': os.getcwd(),
-        'environment_variables': env_check,
-    }
-    
-    return jsonify(system_info)
-
-@app.route('/debug/credentials', methods=['GET'])
-def debug_credentials():
-    """🔐 Endpoint para testar parse das credenciais"""
-    log_step("DEBUG_CREDS", "Requisição de debug de credenciais recebida")
-    
-    creds_result = parse_credentials()
-    
-    # Remove informações sensíveis da resposta
-    if creds_result['success']:
-        safe_result = {
-            'success': True,
-            'project_id': creds_result.get('project_id'),
-            'client_email': creds_result.get('client_email'),
-            'message': 'Credenciais parseadas com sucesso'
-        }
-    else:
-        safe_result = {
-            'success': False,
-            'error': creds_result['error'],
-            'type': creds_result.get('type', 'unknown_error'),
-            'suggestions': []
+    debug_html = """
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Google Sheets Debug Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
-        # Adiciona sugestões baseadas no tipo de erro
-        if creds_result.get('type') == 'json_parse_error':
-            safe_result['suggestions'] = [
-                'Verifique se o JSON está bem formatado',
-                'Certifique-se de que não há quebras de linha extras',
-                'Tente recriar a variável de ambiente no Render'
-            ]
-    
-    return jsonify(safe_result)
-
-@app.route('/debug/sheets', methods=['GET'])
-def debug_sheets():
-    """📊 Endpoint para testar conexão completa com Google Sheets"""
-    log_step("DEBUG_SHEETS", "Requisição de debug do Google Sheets recebida")
-    
-    result = test_google_sheets_connection()
-    return jsonify(result)
-
-@app.route('/debug/full', methods=['GET'])
-def debug_full():
-    """🔍 Endpoint para verificação completa passo a passo"""
-    log_step("DEBUG_FULL", "🚀 Iniciando verificação completa...")
-    
-    # Reset do status
-    global sheets_status
-    sheets_status = {
-        'initialized': False,
-        'credentials_found': False,
-        'authentication_ok': False,
-        'spreadsheet_accessible': False,
-        'error_messages': [],
-        'last_test_time': None
-    }
-    
-    start_time = datetime.now()
-    
-    # Passo 1: Variáveis de ambiente
-    log_step("DEBUG_FULL", "📋 Passo 1: Verificando ambiente...")
-    env_result = check_environment_variables()
-    
-    # Passo 2: Parse das credenciais
-    log_step("DEBUG_FULL", "🔐 Passo 2: Validando credenciais...")
-    creds_result = parse_credentials()
-    
-    # Passo 3: Conexão com Google Sheets
-    log_step("DEBUG_FULL", "📊 Passo 3: Testando Google Sheets...")
-    sheets_result = test_google_sheets_connection()
-    
-    end_time = datetime.now()
-    duration = (end_time - start_time).total_seconds()
-    
-    # Determina o status geral
-    overall_success = (
-        env_result['all_found'] and 
-        creds_result['success'] and 
-        sheets_result.get('success', False)
-    )
-    
-    # Resultado completo
-    full_result = {
-        'timestamp': end_time.isoformat(),
-        'duration_seconds': duration,
-        'steps': {
-            '1_environment': env_result,
-            '2_credentials': creds_result,
-            '3_sheets_connection': sheets_result
-        },
-        'overall_status': sheets_status,
-        'success': overall_success,
-        'summary': {
-            'environment_ok': env_result['all_found'],
-            'credentials_ok': creds_result['success'],
-            'sheets_ok': sheets_result.get('success', False),
-            'ready_for_uploads': overall_success
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
         }
-    }
-    
-    # Log do resultado final
-    if overall_success:
-        log_step("DEBUG_FULL", f"🎉 Verificação completa SUCESSO em {duration:.2f}s")
-    else:
-        log_step("DEBUG_FULL", f"❌ Verificação completa FALHOU em {duration:.2f}s", False)
-    
-    return jsonify(full_result)
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .nav-links {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .nav-link {
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .nav-link:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
+        
+        .server-config {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .current-url {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+            font-family: 'Monaco', 'Consolas', monospace;
+            word-break: break-all;
+        }
+        
+        .main-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,123,255,0.4);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(135deg, #ffc107, #ffb300);
+            color: #212529;
+            box-shadow: 0 4px 15px rgba(255,193,7,0.3);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            box-shadow: 0 4px 15px rgba(220,53,69,0.3);
+        }
+        
+        .debug-section {
+            margin: 25px 0;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .debug-section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+        }
+        
+        .debug-header {
+            background: linear-gradient(135deg, #495057, #343a40);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .debug-header.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+        
+        .debug-header.error {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        
+        .debug-header.warning {
+            background: linear-gradient(135deg, #ffc107, #ffb300);
+            color: #212529;
+        }
+        
+        .debug-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        
+        .debug-content {
+            padding: 25px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        
+        .result-box {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid #007bff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .result-success {
+            border-left-color: #28a745;
+            background: linear-gradient(135deg, #f8fff9, #f0fff4);
+        }
+        
+        .result-error {
+            border-left-color: #dc3545;
+            background: linear-gradient(135deg, #fff8f8, #fff5f5);
+        }
+        
+        .json-viewer {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .loading-text {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .main-controls {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .nav-links {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Google Sheets Debug Dashboard</h1>
+            <p>Diagnóstico completo e teste de funcionalidades</p>
+        </div>
+        
+        <div class="content">
+            <!-- Navigation Links -->
+            <div class="nav-links">
+                <a href="/viewer" class="nav-link">📊 Data Viewer</a>
+                <a href="/health" class="nav-link">💖 Health Check</a>
+                <a href="/debug/logs" class="nav-link">📋 Logs</a>
+                <a href="/" class="nav-link">🏠 Home</a>
+            </div>
+            
+            <!-- Server Configuration -->
+            <div class="server-config">
+                <h3>🌐 Configuração do Servidor</h3>
+                <div class="current-url">
+                    <strong>🌐 URL Atual:</strong> <span id="currentUrl">{{ request.url_root }}</span>
+                </div>
+                <div class="current-url" style="margin-top: 10px;">
+                    <strong>⏰ Última atualização:</strong> <span id="lastUpdate">{{ timestamp }}</span>
+                </div>
+            </div>
+            
+            <!-- Main Controls -->
+            <div class="main-controls">
+                <button class="btn" id="quickTestBtn">⚡ Teste Rápido</button>
+                <button class="btn success" id="fullDebugBtn">🔍 Debug Completo</button>
+                <button class="btn warning" id="testWriteBtn">✏️ Teste de Escrita</button>
+                <button class="btn danger" id="clearResultsBtn">🗑️ Limpar Tudo</button>
+            </div>
+            
+            <!-- Debug Sections -->
+            <div class="debug-section">
+                <div class="debug-header" id="healthHeader">
+                    <h3>💖 Teste de Saúde do Servidor</h3>
+                    <button class="btn" id="healthTestBtn">🔍 Testar</button>
+                </div>
+                <div class="debug-content" id="healthResult">
+                    <p style="text-align: center; color: #6c757d; font-style: italic;">
+                        Clique em "Testar" para verificar se o servidor está online e funcionando.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="debug-section">
+                <div class="debug-header" id="envHeader">
+                    <h3>🔧 Variáveis de Ambiente</h3>
+                    <button class="btn" id="envTestBtn">🔍 Verificar</button>
+                </div>
+                <div class="debug-content" id="envResult">
+                    <p style="text-align: center; color: #6c757d; font-style: italic;">
+                        Verifica se as variáveis GOOGLE_SHEETS_CREDENTIALS e SPREADSHEET_ID estão configuradas corretamente.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="debug-section">
+                <div class="debug-header" id="credsHeader">
+                    <h3>🔐 Validação de Credenciais</h3>
+                    <button class="btn" id="credsTestBtn">🔍 Validar</button>
+                </div>
+                <div class="debug-content" id="credsResult">
+                    <p style="text-align: center; color: #6c757d; font-style: italic;">
+                        Verifica se o JSON das credenciais do Google está no formato correto e contém todos os campos necessários.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="debug-section">
+                <div class="debug-header" id="sheetsHeader">
+                    <h3>📊 Conexão Google Sheets</h3>
+                    <button class="btn" id="sheetsTestBtn">🔍 Testar</button>
+                </div>
+                <div class="debug-content" id="sheetsResult">
+                    <p style="text-align: center; color: #6c757d; font-style: italic;">
+                        Testa a autenticação completa com o Google Sheets API e verifica o acesso à planilha.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="debug-section">
+                <div class="debug-header" id="writeHeader">
+                    <h3>✏️ Teste de Escrita</h3>
+                    <button class="btn" id="writeTestBtn">✏️ Escrever Teste</button>
+                </div>
+                <div class="debug-content" id="writeResult">
+                    <p style="text-align: center; color: #6c757d; font-style: italic;">
+                        Escreve dados de teste na planilha para verificar se as permissões de escrita estão funcionando.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-@app.route('/debug/test-write', methods=['GET'])
-def debug_test_write():
-    """✍️ Testa escrita na planilha (apenas uma célula)"""
-    log_step("DEBUG_WRITE", "Testando escrita na planilha...")
+    <script>
+        const SERVER_URL = window.location.origin;
+        
+        function showLoading(containerId, message = 'Carregando...') {
+            const container = document.getElementById(containerId);
+            container.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${message}</div>
+                </div>
+            `;
+        }
+        
+        function showResult(containerId, result, type = 'info') {
+            const container = document.getElementById(containerId);
+            const header = document.getElementById(containerId.replace('Result', 'Header'));
+            
+            header.className = `debug-header ${type}`;
+            
+            let content = '';
+            if (typeof result === 'object') {
+                content = `
+                    <div class="result-box result-${type}">
+                        <div class="json-viewer">${JSON.stringify(result, null, 2)}</div>
+                    </div>
+                `;
+            } else {
+                content = `
+                    <div class="result-box result-${type}">
+                        <p>${result}</p>
+                    </div>
+                `;
+            }
+            container.innerHTML = content;
+        }
+        
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            try {
+                const config = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (data) {
+                    config.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(`${SERVER_URL}${endpoint}`, config);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                throw new Error(`Erro de conexão: ${error.message}`);
+            }
+        }
+        
+        // Event Listeners
+        document.getElementById('healthTestBtn').addEventListener('click', async () => {
+            showLoading('healthResult', 'Verificando saúde do servidor...');
+            try {
+                const result = await makeRequest('/health');
+                showResult('healthResult', result, 'success');
+            } catch (error) {
+                showResult('healthResult', { error: error.message }, 'error');
+            }
+        });
+        
+        document.getElementById('envTestBtn').addEventListener('click', async () => {
+            showLoading('envResult', 'Verificando variáveis de ambiente...');
+            try {
+                const result = await makeRequest('/debug/environment');
+                const type = result.environment_variables.all_found ? 'success' : 'error';
+                showResult('envResult', result, type);
+            } catch (error) {
+                showResult('envResult', { error: error.message }, 'error');
+            }
+        });
+        
+        document.getElementById('credsTestBtn').addEventListener('click', async () => {
+            showLoading('credsResult', 'Validando credenciais...');
+            try {
+                const result = await makeRequest('/debug/credentials');
+                const type = result.success ? 'success' : 'error';
+                showResult('credsResult', result, type);
+            } catch (error) {
+                showResult('credsResult', { error: error.message }, 'error');
+            }
+        });
+        
+        document.getElementById('sheetsTestBtn').addEventListener('click', async () => {
+            showLoading('sheetsResult', 'Testando conexão com Google Sheets...');
+            try {
+                const result = await makeRequest('/debug/sheets');
+                const type = result.success ? 'success' : 'error';
+                showResult('sheetsResult', result, type);
+            } catch (error) {
+                showResult('sheetsResult', { error: error.message }, 'error');
+            }
+        });
+        
+        document.getElementById('writeTestBtn').addEventListener('click', async () => {
+            showLoading('writeResult', 'Testando escrita na planilha...');
+            try {
+                const result = await makeRequest('/debug/test-write');
+                const type = result.success ? 'success' : 'error';
+                showResult('writeResult', result, type);
+            } catch (error) {
+                showResult('writeResult', { error: error.message }, 'error');
+            }
+        });
+        
+        document.getElementById('fullDebugBtn').addEventListener('click', async () => {
+            showLoading('healthResult', 'Executando debug completo...');
+            try {
+                const result = await makeRequest('/debug/full');
+                const type = result.success ? 'success' : 'error';
+                showResult('healthResult', result, type);
+            } catch (error) {
+                showResult('healthResult', { error: error.message }, 'error');
+            }
+        });
+        
+        document.getElementById('clearResultsBtn').addEventListener('click', () => {
+            const containers = ['healthResult', 'envResult', 'credsResult', 'sheetsResult', 'writeResult'];
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                const header = document.getElementById(containerId.replace('Result', 'Header'));
+                
+                container.innerHTML = `
+                    <p style="text-align: center; color: #6c757d; font-style: italic;">
+                        Clique no botão para executar o teste.
+                    </p>
+                `;
+                header.className = 'debug-header';
+            });
+        });
+    </script>
+</body>
+</html>
+    """
     
-    try:
-        # Verifica se está inicializado
-        if not sheets_status['initialized']:
-            sheets_result = test_google_sheets_connection()
-            if not sheets_result.get('success', False):
-                return jsonify(sheets_result)
-        
-        # Conecta novamente
-        creds_result = parse_credentials()
-        if not creds_result['success']:
-            return jsonify(creds_result)
-        
-        credentials = Credentials.from_service_account_info(
-            creds_result['credentials'], 
-            scopes=['https://www.googleapis.com/auth/spreadsheets']
-        )
-        
-        client = gspread.authorize(credentials)
-        spreadsheet = client.open_by_key(os.getenv('SPREADSHEET_ID'))
-        worksheet = spreadsheet.sheet1  # Primeira aba
-        
-        # Escreve dados de teste
-        test_data = [
-            f"Teste de escrita: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
-            "Dados de teste",
-            "Status: OK"
-        ]
-        
-        # Encontra a primeira linha vazia
-        values = worksheet.get_all_values()
-        next_row = len(values) + 1
-        
-        # Escreve na próxima linha vazia
-        worksheet.update(f'A{next_row}:C{next_row}', [test_data])
-        
-        log_step("DEBUG_WRITE", f"✅ Dados escritos na linha {next_row}")
-        
-        return jsonify({
-            'success': True,
-            'message': f'Dados de teste escritos na linha {next_row}',
-            'row': next_row,
-            'data': test_data,
-            'spreadsheet_title': spreadsheet.title
-        })
-        
-    except Exception as e:
-        error_msg = f"❌ Erro ao testar escrita: {str(e)}"
-        log_step("DEBUG_WRITE", error_msg, False)
-        return jsonify({
-            'success': False,
-            'error': error_msg
-        })
+    return render_template_string(debug_html, 
+                                timestamp=datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                                request=request)
 
 # ================================
-# ROTAS PRINCIPAIS
+# ROTAS PARA DATA VIEWER
 # ================================
 
-@app.route('/health', methods=['GET'])
-def health_check():
-    """💓 Endpoint de saúde do servidor"""
-    return jsonify({
-        'status': 'healthy',
-        'timestamp': datetime.now().isoformat(),
-        'sheets_initialized': sheets_status['initialized'],
-        'service': 'Google Sheets Debug Server',
-        'version': '2.0'
-    })
-
-@app.route('/upload', methods=['POST', 'OPTIONS'])
-def upload_data():
-    """📤 Endpoint principal para upload de dados"""
+@app.route('/viewer', methods=['GET'])
+@app.route('/viewer/', methods=['GET'])
+def data_viewer():
+    """Serve o dashboard de visualização de dados"""
     
-    # Handle CORS preflight
-    if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'})
-    
-    log_step("UPLOAD", "📨 Requisição de upload recebida")
-    
-    try:
-        # Verifica se o Google Sheets está inicializado
-        if not sheets_status['initialized']:
-            log_step("UPLOAD", "Google Sheets não inicializado, testando conexão...")
-            sheets_result = test_google_sheets_connection()
-            
-            if not sheets_result.get('success', False):
-                return jsonify({
-                    'success': False,
-                    'message': 'Erro de autenticação com o Google Sheets',
-                    'error': sheets_result.get('error', 'Erro desconhecido')
-                }), 500
+    viewer_html = """
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Google Sheets Data Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         
-        # Processa os dados recebidos
-        data = request.get_json()
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
         
-        if not data:
-            return jsonify({
-                'success': False,
-                'message': 'Nenhum dado recebido'
-            }), 400
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
         
-        # Log dos dados recebidos (sem a foto completa)
-        coords = data.get('coords', {})
-        metadata = data.get('metadata', {})
-        photo_size = len(data.get('photo', '')) if data.get('photo') else 0
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
         
-        log_step("UPLOAD", f"Dados: coords={coords}, metadata={metadata}, photo_size={photo_size} bytes")
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
         
-        # Tenta salvar no Google Sheets
-        try:
-            # Reconecta para garantir
-            creds_result = parse_credentials()
-            credentials = Credentials.from_service_account_info(
-                creds_result['credentials'], 
-                scopes=['https://www.googleapis.com/auth/spreadsheets']
-            )
-            
-            client = gspread.authorize(credentials)
-            spreadsheet = client.open_by_key(os.getenv('SPREADSHEET_ID'))
-            worksheet = spreadsheet.sheet1
-            
-            # Prepara dados para inserir
-            upload_id = f"upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            row_data = [
-                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),  # Timestamp
-                upload_id,                                      # ID do upload
-                coords.get('latitude', ''),                     # Latitude
-                coords.get('longitude', ''),                    # Longitude
-                coords.get('accuracy', ''),                     # Precisão GPS
-                metadata.get('userAgent', ''),                  # User Agent
-                'Foto recebida' if photo_size > 0 else 'Sem foto',  # Status da foto
-                photo_size                                      # Tamanho da foto
-            ]
-            
-            # Adiciona na próxima linha vazia
-            worksheet.append_row(row_data)
-            
-            log_step("UPLOAD", f"✅ Dados salvos na planilha com ID: {upload_id}")
-            
-            return jsonify({
-                'success': True,
-                'message': 'Dados salvos com sucesso na planilha!',
-                'id': upload_id,
-                'spreadsheet_title': spreadsheet.title
-            })
-            
-        except Exception as save_error:
-            log_step("UPLOAD", f"❌ Erro ao salvar na planilha: {save_error}", False)
-            return jsonify({
-                'success': False,
-                'message': 'Erro ao salvar na planilha',
-                'error': str(save_error)
-            }), 500
+        .content {
+            padding: 30px;
+        }
         
-    except Exception as e:
-        error_msg = f"❌ Erro interno no upload: {str(e)}"
-        log_step("UPLOAD", error_msg, False)
+        .nav-links {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
         
-        return jsonify({
-            'success': False,
-            'message': 'Erro interno do servidor',
-            'error': error_msg
-        }), 500
-
-@app.route('/', methods=['GET'])
-def index():
-    """🏠 Página inicial com informações do serviço"""
-    return jsonify({
-        'service': 'Google Sheets Debug API',
-        'version': '2.0',
-        'status': 'running',
-        'endpoints': {
-            'health': '/health',
-            'debug_full': '/debug/full',
-            'debug_environment': '/debug/environment', 
-            'debug_credentials': '/debug/credentials',
-            'debug_sheets': '/debug/sheets',
-            'debug_test_write': '/debug/test-write',
-            'upload': '/upload'
-        },
-        'sheets_status': sheets_status
-    })
-
-if __name__ == '__main__':
-    log_step("STARTUP", "🚀 Iniciando servidor Flask...")
-    
-    # Teste inicial do Google Sheets
-    log_step("STARTUP", "🔍 Executando teste inicial...")
-    initial_test = test_google_sheets_connection()
-    
-    if initial_test.get('success', False):
-        log_step("STARTUP", "✅ Google Sheets inicializado com sucesso!")
-    else:
-        log_step("STARTUP", f"⚠️ Aviso: Falha na inicialização - {initial_test.get('error', 'Erro desconhecido')}", False)
-        log_step("STARTUP", "ℹ️ Servidor iniciará mesmo assim. Use /debug/full para diagnosticar.")
-    
-    # Inicia o servidor
-    port = int(os.environ.get('PORT', 5000))
-    log_step("STARTUP", f"🌐 Servidor rodando na porta {port}")
-    
-    app.run(debug=False, host='0.0.0.0', port=port)
+        .nav-link {
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .nav-link:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(
