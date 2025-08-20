@@ -1,5 +1,12 @@
-19.08.2025
-
+20.08.2025
+    stick35em10@cloudshell
+        07:09
+            git add  cmd.txt
+            git commit -m "20.08, 07:10 update cmd.txt because files would be overwritten by merge" 
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+                
+            git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+19.08.2025        
    20:17
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         git add .
