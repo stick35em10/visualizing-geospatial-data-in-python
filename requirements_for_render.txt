@@ -6,6 +6,12 @@
 #google-auth
 #Flask-Cors
 
+#gspread
+oauth2client
+
+#Flask
+#Flask-Cors
+
 Flask==2.3.3
 Flask-CORS==4.0.0
 gspread==5.12.0
@@ -15,6 +21,7 @@ google-auth-httplib2==0.1.1
 
 requests==2.31.0
 Werkzeug==2.3.7
+
 
 #requests==2.31.0
 #>>>>>>> 341e5b179ad01dad181b3d6606cdd7ce57b02fc7

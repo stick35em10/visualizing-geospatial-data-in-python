@@ -1,6 +1,11 @@
 stick35em10@cloudshell
 20.08.2025
     jonel@DAS-IT:~/visualizing-geospatial-data$
+        20:56
+            ModuleNotFoundError: No module named 'oauth2client'
+                git add requirements_for_render.txt cmd.txt
+                git commit -m "20.08, 20:56 update  requirements_for_render.txt cmd.txt"
+                git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01    
         20:34
             git add app.py cmd.txt
             git commit -m "20.08, 20:36 update  app.py cmd.txt"
