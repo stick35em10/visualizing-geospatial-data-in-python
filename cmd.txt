@@ -8,6 +8,14 @@
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
 19.08.2025
+
+   20:17
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        git add .
+        git commit -m "19.08, 20:21 update  requirements_for_render.txt Dockerfile cmd.txt " 
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+
     19:20
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
@@ -26,6 +34,7 @@
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
 
+>>>>>>> 9bf5bc4bb7aa10af013dbb386341342c62cc0581
    17:[29,17,11]
         git add .gitignore README.md app.py html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html html/19.08/camera_upload_complete.html cmd.txt Dockerfile .github/workflows/01_03_workflows.yml
         git commit -m "19.08, 17:11 add app/app.py"
@@ -68,12 +77,15 @@
         git commit -m "19.08, 02:44 add html and update the rest"
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
+<<<<<<< HEAD
+=======
         
 
+>>>>>>> 9bf5bc4bb7aa10af013dbb386341342c62cc0581
     05:04
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         
-        git add Dockerfile  app/19.08/19.08_04:43_script_foto_mapa_.py  requirements_for_render.txt  html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html cmd.txt
+        git add file  app/19.08/19.08_04:43_script_foto_mapa_.py  requirements_for_render.txt  html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html cmd.txt
         git commit -m "19.08, 02:44 add html and update the rest"
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 

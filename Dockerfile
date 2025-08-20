@@ -30,3 +30,4 @@ CMD ["flask", "run", "--host=0.0.0.0"]
 #git add Dockerfile .gitignore .vincent/ app.py 
 #git commit -m "git add Dockerfile .gitignore .vincent/ app.py "
 #git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+# docker rmi your-image-name && docker build -t your-image-name . && docker run -p 5000:5000 your-image-name
