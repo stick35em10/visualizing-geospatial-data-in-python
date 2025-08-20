@@ -1,18 +1,38 @@
+stick35em10@cloudshell
 20.08.2025
     stick35em10@cloudshell
-        07:09
+        16:12
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+            
+            git add cmd.txt cmd.txt
+            git commit -m "20.08, 16:12 update cmd.txt because files would be overwritten by merge" 
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        
+        07:[16, 09]
+            git add  cmd.txt
+            git commit -m "20.08, 07:10 update cmd.txt because files would be overwritten by merge" 
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+        
+        07:[16, 09]
             git add  cmd.txt
             git commit -m "20.08, 07:10 update cmd.txt because files would be overwritten by merge" 
             git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
                 
             git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 19.08.2025        
+    07:00
+        cp -r app.py error/20app.py
+        git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+     
+        git add requirements_for_render.txt app.py cmd.txt
+        git commit -m "20.08, 06:59 update app.py requirements_for_render.txt cmd.txt "
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
    20:17
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         git add .
         git commit -m "19.08, 20:21 update  requirements_for_render.txt Dockerfile cmd.txt " 
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
-
 
     19:20
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
@@ -20,18 +40,17 @@
         git add README.md cmd.txt
         git commit -m "19.08, 19:22 update README.md cmd.txt "
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
-    18:06
-        
+
+    18:06        
         git add cmd.txt
         git commit -m "19.08, 18:01 update cmd.txt "
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
     17:53
         git add app.py html/19.08/debug_dashboard.html
         git commit -m "19.08, 16:01 update app.py cmd.txt "
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
-
->>>>>>> 9bf5bc4bb7aa10af013dbb386341342c62cc0581
    17:[29,17,11]
         git add .gitignore README.md app.py html/19.08/19.08_04:34_touch_enviar_dados_para_servidor.html html/19.08/camera_upload_complete.html cmd.txt Dockerfile .github/workflows/01_03_workflows.yml
         git commit -m "19.08, 17:11 add app/app.py"
@@ -74,11 +93,6 @@
         git commit -m "19.08, 02:44 add html and update the rest"
         git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
-<<<<<<< HEAD
-=======
-        
-
->>>>>>> 9bf5bc4bb7aa10af013dbb386341342c62cc0581
     05:04
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
         
@@ -120,7 +134,6 @@
     16:32
         . ../visualizing-geospatial-data-in-python/venv_visualizing-geospatial/bin/activate
         touch app/18.08_16:32_script_foto_mapa_exifread.py
-
 
     13:[53,39]
         git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
