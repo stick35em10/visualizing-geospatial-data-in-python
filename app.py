@@ -816,4 +816,313 @@ def data_viewer():
         
         .controls {
             display: grid;
-            grid-template-columns: repeat(
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .select-group, .action-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .select-group label, .action-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        select {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            font-size: 16px;
+            background-color: #f8f9fa;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+            margin-top: 25px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        th {
+            background-color: #e9ecef;
+            color: #495057;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        tr:nth-child(even) {
+            background-color: #f6f6f6;
+        }
+        
+        .alert-message {
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: none;
+        }
+        
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .loading-container {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #6c757d;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            .content {
+                padding: 20px;
+            }
+            .controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Google Sheets Data Viewer</h1>
+            <p>Selecione uma aba para visualizar o conteúdo</p>
+        </div>
+        
+        <div class="content">
+            <div class="nav-links">
+                <a href="/debug" class="nav-link">🔍 Debug Dashboard</a>
+                <a href="/health" class="nav-link">💖 Health Check</a>
+                <a href="/debug/logs" class="nav-link">📋 Logs</a>
+                <a href="/" class="nav-link">🏠 Home</a>
+            </div>
+
+            <div class="controls">
+                <div class="select-group">
+                    <label for="sheetSelect">Selecione a Aba:</label>
+                    <select id="sheetSelect">
+                        <option value="">Carregando...</option>
+                    </select>
+                </div>
+                <div class="action-group">
+                    <button class="btn" id="loadDataBtn">Carregar Dados</button>
+                    <button class="btn" id="downloadCsvBtn">Baixar CSV</button>
+                </div>
+            </div>
+
+            <div id="alertMessage" class="alert-message"></div>
+
+            <div id="tableContainer" class="table-container">
+                <div class="loading-container" id="initialLoad">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Carregando abas da planilha...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_URL = window.location.origin;
+        const sheetSelect = document.getElementById('sheetSelect');
+        const loadDataBtn = document.getElementById('loadDataBtn');
+        const downloadCsvBtn = document.getElementById('downloadCsvBtn');
+        const tableContainer = document.getElementById('tableContainer');
+        const alertMessage = document.getElementById('alertMessage');
+        const initialLoad = document.getElementById('initialLoad');
+
+        async function showAlert(message, type = 'danger') {
+            alertMessage.textContent = message;
+            alertMessage.className = `alert-message alert-${type}`;
+            alertMessage.style.display = 'block';
+            setTimeout(() => {
+                alertMessage.style.display = 'none';
+            }, 5000);
+        }
+
+        async function fetchWorksheets() {
+            try {
+                const response = await fetch(`${SERVER_URL}/api/worksheets`);
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar as abas da planilha.');
+                }
+                const data = await response.json();
+                
+                sheetSelect.innerHTML = '';
+                if (data.worksheets && data.worksheets.length > 0) {
+                    data.worksheets.forEach(sheetName => {
+                        const option = document.createElement('option');
+                        option.value = sheetName;
+                        option.textContent = sheetName;
+                        sheetSelect.appendChild(option);
+                    });
+                    loadDataBtn.disabled = false;
+                    downloadCsvBtn.disabled = false;
+                    initialLoad.style.display = 'none';
+                } else {
+                    sheetSelect.innerHTML = '<option value="">Nenhuma aba encontrada</option>';
+                    loadDataBtn.disabled = true;
+                    downloadCsvBtn.disabled = true;
+                    showAlert('Nenhuma aba encontrada na planilha. Verifique a configuração.', 'warning');
+                }
+            } catch (error) {
+                showAlert(error.message || 'Erro de conexão com a API.', 'danger');
+                sheetSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+                loadDataBtn.disabled = true;
+                downloadCsvBtn.disabled = true;
+            }
+        }
+
+        async function loadSheetData() {
+            const sheetName = sheetSelect.value;
+            if (!sheetName) {
+                showAlert('Por favor, selecione uma aba para carregar.', 'warning');
+                return;
+            }
+
+            tableContainer.innerHTML = `<div class="loading-container"><div class="loading-spinner"></div><div class="loading-text">Carregando dados de "${sheetName}"...</div></div>`;
+
+            try {
+                const response = await fetch(`${SERVER_URL}/api/data?sheet_name=${encodeURIComponent(sheetName)}`);
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar os dados da aba.');
+                }
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.data && data.data.length > 0) {
+                    renderTable(data.data);
+                    showAlert(`Dados de "${sheetName}" carregados com sucesso!`, 'success');
+                } else {
+                    tableContainer.innerHTML = '<p style="text-align: center; color: #6c757d; font-style: italic;">Nenhum dado encontrado nesta aba.</p>';
+                    showAlert(`A aba "${sheetName}" está vazia.`, 'warning');
+                }
+
+            } catch (error) {
+                tableContainer.innerHTML = `<p style="text-align: center; color: #dc3545;">Erro: ${error.message}</p>`;
+                showAlert(error.message, 'danger');
+            }
+        }
+
+        function renderTable(data) {
+            if (!data || data.length === 0) {
+                tableContainer.innerHTML = '<p style="text-align: center; color: #6c757d; font-style: italic;">Nenhum dado para exibir.</p>';
+                return;
+            }
+
+            let tableHtml = '<table><thead><tr>';
+            const headers = data[0];
+            headers.forEach(header => {
+                tableHtml += `<th>${header}</th>`;
+            });
+            tableHtml += '</tr></thead><tbody>';
+
+            data.slice(1).forEach(row => {
+                tableHtml += '<tr>';
+                row.forEach(cell => {
+                    tableHtml += `<td>${cell}</td>`;
+                });
+                tableHtml += '</tr>';
+            });
+            
+            tableHtml += '</tbody></table>';
+            tableContainer.innerHTML = tableHtml;
+        }
+
+        // Event Listeners
+        loadDataBtn.addEventListener('click', loadSheetData);
+        downloadCsvBtn.addEventListener('click', () => {
+            const sheetName = sheetSelect.value;
+            if (sheetName) {
+                window.location.href = `${SERVER_URL}/api/download-csv?sheet_name=${encodeURIComponent(sheetName)}`;
+            } else {
+                showAlert('Por favor, selecione uma aba para baixar.', 'warning');
+            }
+        });
+
+        // Initial load
+        document.addEventListener('DOMContentLoaded', fetchWorksheets);
+
+    </script>
+</body>
+</html>
+    """
+    
+    return render_template_string(viewer_html)
