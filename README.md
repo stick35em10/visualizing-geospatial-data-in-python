@@ -1,4 +1,6 @@
 
+[compatible_html_client](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/compatible_html_client.html)
+
 [diagnostic_sheets_viewer](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/diagnostic_sheets_viewer.html)
 
 
