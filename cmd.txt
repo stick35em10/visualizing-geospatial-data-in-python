@@ -1,6 +1,25 @@
 stick35em10@cloudshell
 21.08.2025
-    18:10
+    18:[34,10]
+        37
+            git pull origin 01_03_01_Plotting_view_2_01
+
+            git add cmd.txt
+            git commit -m "21.08, 18:34 update cmd.txt"
+            git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+
+        
+
+        34
+        
+        git add requirements_for_render.txt
+        git commit -m "21.08, 18:34 update requirements_for_render.txt and cmd.txt and add app/20.08/app.py"
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+
+        git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
+        
+
         git add cmd.txt requirements_for_render.txt
         git commit -m "20.08, 18:10 update cmd.txt requirements_for_render.txt"
         git push --set-upstream origin 01_03_01_Plotting_view_2_01
