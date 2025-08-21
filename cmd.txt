@@ -1,5 +1,10 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
     21.08.2025, see inforção gravada na base de dados
+        11:01
+            git add app.py cmd.txt
+            git commit -m " 21.08, 11:02 update app.py cmd.txt "
+            git push --set-upstream origin 01_03_01_Plotting_view_2_01
+        
         10:02
             não é possível visualizar o cliente
                 Você está certo, o HTML foi cortado. Vou criar o cliente HTML completo e compatível:

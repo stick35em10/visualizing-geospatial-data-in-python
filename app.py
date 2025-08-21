@@ -20,7 +20,18 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)
+
+CORS(appresources={
+    r"/*": {
+        "origins": [
+            "https://stick35em10.github.io",
+            "http://localhost:*",
+            "http://127.0.0.1:*"
+        ],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"]
+    }
+})
 
 # Variáveis globais para status e cache
 sheets_status = {
