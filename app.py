@@ -20,7 +20,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
-CORS(app)
+# CORS(app)
+# CORREÇÃO CRÍTICA: CORS deve permitir origens do GitHub Pages
+CORS(app, origins=[
+    "https://stick35em10.github.io",
+    "http://localhost:*",
+    "http://127.0.0.1:*"
+], 
+methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+headers=["Content-Type", "Authorization"],
+supports_credentials=True)
 
 # Variáveis globais para status
 sheets_status = {
@@ -1018,6 +1027,289 @@ def export_sheets_data():
             'error': error_msg
         }), 500
 
+# Adicione estes novos endpoints ao seu app.py:
+
+@app.route('/api/sheets/worksheets', methods=['GET', 'OPTIONS'])
+def get_worksheets():
+    """📄 Endpoint para listar todas as abas da planilha"""
+    
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'})
+    
+    log_step("API_WORKSHEETS", "📄 Requisição de lista de abas recebida")
+    
+    try:
+        # Verifica inicialização
+        if not sheets_status['initialized']:
+            sheets_result = test_google_sheets_connection()
+            if not sheets_result.get('success', False):
+                return jsonify({
+                    'success': False,
+                    'error': 'Google Sheets não inicializado'
+                }), 500
+        
+        # Conecta ao Google Sheets
+        creds_result = parse_credentials()
+        if not creds_result['success']:
+            return jsonify(creds_result), 500
+            
+        credentials = Credentials.from_service_account_info(
+            creds_result['credentials'], 
+            scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
+        )
+        
+        client = gspread.authorize(credentials)
+        spreadsheet = client.open_by_key(os.getenv('SPREADSHEET_ID'))
+        
+        # Lista todas as worksheets
+        worksheets = spreadsheet.worksheets()
+        
+        worksheets_data = []
+        for ws in worksheets:
+            try:
+                # Informações básicas da aba
+                worksheets_data.append({
+                    'name': ws.title,
+                    'id': ws.id,
+                    'index': ws.index,
+                    'row_count': ws.row_count,
+                    'col_count': ws.col_count
+                })
+                
+            except Exception as ws_error:
+                log_step("API_WORKSHEETS", f"⚠️ Erro ao ler aba {ws.title}: {ws_error}")
+                worksheets_data.append({
+                    'name': ws.title,
+                    'id': ws.id,
+                    'index': ws.index,
+                    'error': str(ws_error)
+                })
+        
+        log_step("API_WORKSHEETS", f"✅ {len(worksheets_data)} abas listadas")
+        
+        return jsonify({
+            'success': True,
+            'worksheets': worksheets_data,
+            'total': len(worksheets_data),
+            'spreadsheet': {
+                'title': spreadsheet.title,
+                'id': spreadsheet.id
+            }
+        })
+        
+    except Exception as e:
+        error_msg = f"❌ Erro ao listar worksheets: {str(e)}"
+        log_step("API_WORKSHEETS", error_msg, False)
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
+
+@app.route('/api/sheets/data', methods=['GET', 'OPTIONS'])
+def get_sheets_data():
+    """📊 Endpoint para recuperar dados da planilha"""
+    
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'})
+    
+    log_step("API_SHEETS_DATA", "📊 Requisição de dados da planilha recebida")
+    
+    try:
+        # Verifica se está inicializado
+        if not sheets_status['initialized']:
+            sheets_result = test_google_sheets_connection()
+            if not sheets_result.get('success', False):
+                return jsonify({
+                    'success': False,
+                    'message': 'Google Sheets não inicializado',
+                    'error': sheets_result.get('error', 'Erro desconhecido')
+                }), 500
+        
+        # Parâmetros da requisição
+        worksheet_name = request.args.get('worksheet', '')
+        limit = request.args.get('limit', type=int)
+        offset = request.args.get('offset', 0, type=int)
+        
+        # Conecta ao Google Sheets
+        creds_result = parse_credentials()
+        if not creds_result['success']:
+            return jsonify(creds_result), 500
+            
+        credentials = Credentials.from_service_account_info(
+            creds_result['credentials'], 
+            scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
+        )
+        
+        client = gspread.authorize(credentials)
+        spreadsheet = client.open_by_key(os.getenv('SPREADSHEET_ID'))
+        
+        # Seleciona a worksheet
+        if worksheet_name:
+            try:
+                worksheet = spreadsheet.worksheet(worksheet_name)
+            except gspread.exceptions.WorksheetNotFound:
+                return jsonify({
+                    'success': False,
+                    'error': f'Aba "{worksheet_name}" não encontrada'
+                }), 404
+        else:
+            worksheet = spreadsheet.sheet1
+        
+        log_step("API_SHEETS_DATA", f"📋 Acessando aba: {worksheet.title}")
+        
+        # Recupera todos os dados
+        try:
+            all_records = worksheet.get_all_records()
+            
+            # Aplica paginação se necessário
+            if limit:
+                total_records = len(all_records)
+                records = all_records[offset:offset + limit]
+            else:
+                records = all_records
+                total_records = len(records)
+            
+            log_step("API_SHEETS_DATA", f"✅ {len(records)} registros recuperados")
+            
+            return jsonify({
+                'success': True,
+                'data': records,
+                'total': total_records,
+                'worksheet': worksheet.title,
+                'spreadsheet': spreadsheet.title,
+                'has_more': limit and (offset + limit) < total_records if limit else False,
+                'pagination': {
+                    'offset': offset,
+                    'limit': limit,
+                    'total': total_records
+                } if limit else None
+            })
+            
+        except Exception as read_error:
+            log_step("API_SHEETS_DATA", f"❌ Erro ao ler dados: {read_error}", False)
+            return jsonify({
+                'success': False,
+                'error': f'Erro ao ler dados da planilha: {str(read_error)}'
+            }), 500
+        
+    except gspread.exceptions.SpreadsheetNotFound:
+        return jsonify({
+            'success': False,
+            'error': 'Planilha não encontrada. Verifique o SPREADSHEET_ID.'
+        }), 404
+        
+    except gspread.exceptions.APIError as api_error:
+        return jsonify({
+            'success': False,
+            'error': f'Erro da API Google: {str(api_error)}'
+        }), 500
+        
+    except Exception as e:
+        error_msg = f"❌ Erro interno: {str(e)}"
+        log_step("API_SHEETS_DATA", error_msg, False)
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
+
+@app.route('/api/test', methods=['GET', 'OPTIONS'])
+def api_test():
+    """🧪 Endpoint de teste simples para verificar conectividade"""
+    
+    # Handle CORS preflight
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'})
+    
+    return jsonify({
+        'success': True,
+        'message': 'API funcionando!',
+        'timestamp': datetime.now().isoformat(),
+        'server': 'Flask Google Sheets API',
+        'version': '3.0',
+        'cors_headers': {
+            'access_control_allow_origin': request.headers.get('Origin', 'não fornecido'),
+            'method': request.method
+        }
+    })
+
+# Atualiza a rota principal
+@app.route('/', methods=['GET'])
+def index():
+    """🏠 Página inicial com informações do serviço"""
+    return jsonify({
+        'service': 'Google Sheets API Completa',
+        'version': '3.0',
+        'status': 'running',
+        'cors_enabled': True,
+        'allowed_origins': [
+            'https://stick35em10.github.io',
+            'http://localhost:*',
+            'http://127.0.0.1:*'
+        ],
+        'endpoints': {
+            # Endpoints básicos
+            'health': '/health',
+            'api_test': '/api/test',
+            
+            # Endpoints de debug
+            'debug_full': '/debug/full',
+            'debug_environment': '/debug/environment', 
+            'debug_credentials': '/debug/credentials',
+            'debug_sheets': '/debug/sheets',
+            'debug_test_write': '/debug/test-write',
+            
+            # Endpoints de API
+            'sheets_data': '/api/sheets/data',
+            'worksheets': '/api/sheets/worksheets',
+            
+            # Endpoint principal
+            'upload': '/upload'
+        },
+        'sheets_status': sheets_status,
+        'api_usage': {
+            'sheets_data': 'GET /api/sheets/data?worksheet=nome&limit=100&offset=0',
+            'worksheets': 'GET /api/sheets/worksheets'
+        }
+    })
+
+# IMPORTANTE: Adicione um handler para todas as rotas com OPTIONS
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = make_response()
+        response.headers.add("Access-Control-Allow-Origin", "*")
+        response.headers.add('Access-Control-Allow-Headers', "*")
+        response.headers.add('Access-Control-Allow-Methods', "*")
+        return response
+
+# Handler para adicionar headers CORS em todas as respostas
+@app.after_request
+def after_request(response):
+    origin = request.headers.get('Origin')
+    
+    # Lista de origens permitidas
+    allowed_origins = [
+        'https://stick35em10.github.io',
+        'http://localhost:3000',
+        'http://localhost:5000',
+        'http://localhost:5500',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:5000',
+        'http://127.0.0.1:5500'
+    ]
+    
+    if origin in allowed_origins:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+    else:
+        response.headers.add('Access-Control-Allow-Origin', '*')
+    
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    
+    return response
 
 @app.route('/', methods=['GET'])
 def index():

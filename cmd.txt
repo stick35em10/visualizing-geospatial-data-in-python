@@ -1,5 +1,10 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
     21.08.2025, see inforção gravada na base de dados
+        08:31
+            git add html/21.08/diagnostic_sheets_viewer.html app.py README.md cmd.txt
+            git commit -m "21.08, 08:31 html/21.08/diagnostic_sheets_viewer.html update app.py README.md cmd.txt"
+            git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
         07:[55/32]
             
             55
