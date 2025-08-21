@@ -788,7 +788,8 @@
                 showError('❌ Erro de Configuração', 'Por favor, selecione um servidor primeiro.');
                 return;
             }
-            
+
+            console.log('🚀 Iniciando teste de conexão com:', SERVER_URL);
             showLoading('Testando conexão com o servidor...');
             testConnectionBtn.disabled = true;
             
@@ -797,11 +798,13 @@
                 const healthCheck = await makeRequest('/health');
                 
                 if (healthCheck.status === 'healthy') {
+                    console.log('✅ Health check OK:', healthCheck);
                     showSuccess('✅ Conexão Estabelecida', `Servidor está online e funcionando. Versão: ${healthCheck.version || 'N/A'}`);
                     
                     // Test Google Sheets connection
                     showLoading('Verificando conexão com Google Sheets...');
-                    
+                    console.log('🧪 Testando endpoint /debug/full...');
+
                     const sheetsTest = await makeRequest('/debug/full');
                     
                     if (sheetsTest.success) {
@@ -820,18 +823,25 @@
                             </div>
                         `;
                     } else {
+                        console.log('❌ Google Sheets falhou:', sheetsTest);
                         throw new Error(sheetsTest.error || 'Falha na conexão com Google Sheets');
                     }
                 } else {
+                    console.log('❌ Health check falhou:', healthCheck);
                     throw new Error('Servidor não está saudável');
                 }
                 
             } catch (error) {
-                console.error('Connection test failed:', error);
+                console.error('💥Connection test failed:', error);
+                let suggestion = 'Verifique se a URL está correta e o servidor está online.';
+                if (error.isCorsError) {
+                    suggestion = 'Use a opção "Proxy CORS (Heroku)" no seletor de servidor para contornar problemas de CORS.';
+                }
+
                 showError(
                     '❌ Falha na Conexão',
                     error.message,
-                    'Verifique se a URL está correta e o servidor está online.'
+                    suggestion
                 );
                 
                 isConnected = false;
