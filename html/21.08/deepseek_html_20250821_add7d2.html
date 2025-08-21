@@ -944,13 +944,16 @@
             loadWorksheetsBtn.disabled = true;
             
             try {
+                console.log('📋 Solicitando lista de worksheets...');
                 const result = await makeRequest('/api/sheets/worksheets');
                 
                 if (result.success && result.worksheets) {
+                    console.log(`✅ ${result.worksheets.length} worksheet(s) encontrada(s)`);
                     worksheets = result.worksheets;
                     worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
                     
                     worksheets.forEach(ws => {
+                        console.log(`📄 Worksheet: ${ws.title} (${ws.row_count} linhas, ${ws.col_count} colunas)`);
                         const option = document.createElement('option');
                         option.value = ws.title;
                         option.textContent = `${ws.title} (${ws.row_count} linhas)`;
@@ -969,19 +972,30 @@
                         <div class="success-container">
                             <h3>📄 Abas Disponíveis</h3>
                             <p>Selecione uma aba acima e clique em "Carregar Dados".</p>
+                            <p><strong>Dica:</strong> Abas com "(0 linhas)" podem estar vazias.</p>
                         </div>
                     `;
                     
                 } else {
+                    console.error('❌ Nenhuma worksheet encontrada:', result.error);
                     throw new Error(result.error || 'Nenhuma aba encontrada');
                 }
                 
             } catch (error) {
                 console.error('Failed to load worksheets:', error);
+
+                let errorMessage = error.message;
+                let suggestion = 'Verifique as permissões da planilha.';
+
+                if (error.message.includes('500')) {
+                    errorMessage = 'Erro interno do servidor';
+                    suggestion = 'O servidor pode estar com problemas. Tente novamente mais tarde.';
+                }
+
                 showError(
                     '❌ Erro ao Carregar Abas',
-                    error.message,
-                    'Verifique as permissões da planilha.'
+                    errorMessage,
+                    suggestion
                 );
             } finally {
                 loadWorksheetsBtn.disabled = false;
