@@ -1028,4 +1028,14 @@
             console.log('🛠️ Para debug, execute: debugConnection() no console');
             console.log('🛠️ Ou clique em um servidor e depois em "Testar Conexão"');
         });
+
+        // Teste direto do servidor
+        fetch('https://visualizing-geospatial-data-in-python-1.onrender.com/health')
+        .then(r => console.log('Direct:', r.status, r.statusText))
+        .catch(e => console.error('Direct error:', e));
+
+        // Teste com proxy
+        fetch('https://cors-anywhere.herokuapp.com/https://visualizing-geospatial-data-in-python-1.onrender.com/health')
+        .then(r => console.log('Proxy:', r.status, r.statusText))
+        .catch(e => console.error('Proxy error:', e));
     </script>
