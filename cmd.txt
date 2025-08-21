@@ -1,12 +1,19 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
     21.08.2025, see inforção gravada na base de dados
+        10:02
+            não é possível visualizar o cliente
+                Você está certo, o HTML foi cortado. Vou criar o cliente HTML completo e compatível:
+                
+                    git add html/21.08/compatible_html_client_1_.html README.md cmd.txt
+                    git commit -m " 21.08, 10:02 add git add html/21.08/compatible_html_client_1_.html update README.md cmd.txt "
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01
         09:38
             https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/updated_sheets_viewer.html não está sendo funcional com o servidor https://visualizing-geospatial-data-in-python-1.onrender.com/ usando a app e o html
             https://claude.ai/chat/1d4c999c-1582-4d5d-b0b3-9ebda32acff9
 
                 mkdir app/21.08
                 cp -r app/21.08/fixed_flask_server.py app.py
-
+                html/21.08/compatible_html_client_1_.html
                 git add app.py html/21.08/compatible_html_client.html README.md cmd.txt
                 git commit -m " 21.08, 09:38 cmd.txt README.md html/21.08/compatible_html_client.html"
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01
