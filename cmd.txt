@@ -8,6 +8,32 @@ stick35em10@cloudshell
         git push --set-upstream origin 01_03_01_Plotting_view_2_01 
 
 20.08.2025
+    jonel@DAS-IT:~/visualizing-geospatial-data$
+        22:02
+            mv app.py app/20.08/21:51
+            cp -r app/20.08/app.py .
+
+                git add app.py cmd.txt
+                git commit -m "20.08, 22:01 update app.py cmd.txt"
+                git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+
+        20:56
+            ModuleNotFoundError: No module named 'oauth2client'
+                git add requirements_for_render.txt cmd.txt
+                git commit -m "20.08, 20:56 update  requirements_for_render.txt cmd.txt"
+                git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01    
+        20:34
+            git add app.py cmd.txt
+            git commit -m "20.08, 20:36 update  app.py cmd.txt"
+            git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+        19:44
+            git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
+            git add app.py app/20.08/ cmd.txt
+            git commit -m "20.08, 19:46 add  app.py app/20.08/ cmd.txt"
+            git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
     stick35em10@cloudshell
         18:30
             git add cmd.txt
