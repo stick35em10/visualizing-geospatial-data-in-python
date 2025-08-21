@@ -1406,6 +1406,47 @@
             searchColumn.innerHTML = '<option value="">Todas as colunas</option>';
         }
         
+        // Teste completo de diagnóstico
+        window.fullDiagnostic = async function() {
+            console.clear();
+            console.log('🩺 INICIANDO DIAGNÓSTICO COMPLETO');
+            console.log('================================');
+            
+            // 1. Testar saúde básica do servidor
+            console.log('1. 🏥 Testando saúde do servidor...');
+            await testServerHealth();
+            
+            console.log('================================');
+            
+            // 2. Listar worksheets
+            console.log('2. 📋 Listando worksheets...');
+            const worksheets = await debugWorksheets();
+            
+            console.log('================================');
+            
+            // 3. Testar cada worksheet individualmente
+            console.log('3. 🧪 Testando cada worksheet...');
+            if (worksheets && worksheets.length > 0) {
+                for (const ws of worksheets) {
+                    console.log(`📄 Testando: ${ws.title}`);
+                    try {
+                        await testWorksheet(ws.title);
+                        console.log(`✅ ${ws.title} - OK`);
+                    } catch (error) {
+                        console.error(`❌ ${ws.title} - Erro:`, error.message);
+                    }
+                    console.log('---');
+                }
+            }
+            
+            console.log('================================');
+            console.log('🎯 DIAGNÓSTICO COMPLETO');
+            console.log('💡 Dica: Se todas as worksheets falharem, o problema é no servidor');
+            console.log('💡 Dica: Se apenas uma worksheet falhar, o problema é específico dela');
+        };
+
+        // Execute no console:
+        fullDiagnostic();
         // Adicione esta função para debug
         window.debugWorksheets = async function() {
     console.clear();
