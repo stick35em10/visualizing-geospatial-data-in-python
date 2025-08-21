@@ -1,11 +1,18 @@
 stick35em10@cloudshell
+21.08.2025
+    18:10
+        git add cmd.txt requirements_for_render.txt
+        git commit -m "20.08, 18:10 update cmd.txt requirements_for_render.txt"
+        git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
+        git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
+
 20.08.2025
     stick35em10@cloudshell
         17:46
             git add cmd.txt README.md  html/20.08/sheets_viewer_dashboard.html
             git commit -m "20.08, 18:02, 17:4 add  html/20.08/sheets_viewer_dashboard.html update cmd.txt README.md "
             git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
-
 
         16:[35, 20, 12]
             git add cmd.txt
@@ -15,6 +22,7 @@ stick35em10@cloudshell
 
             git add html/20.08/
             git commit -m "20.08, 16:12 add cmd.txt because files would be overwritten by merge" 
+
             git push --set-upstream origin 01_03_01_Plotting_points_over_polygons_part_2_01
 
             git pull origin 01_03_01_Plotting_points_over_polygons_part_2_01
