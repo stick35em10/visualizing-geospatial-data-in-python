@@ -551,23 +551,507 @@ def upload_data():
             'error': error_msg
         }), 500
 
+# Adicione estas rotas ao seu app.py existente
+
+@app.route('/api/sheets/data', methods=['GET'])
+def get_sheets_data():
+    """📊 Endpoint para recuperar dados da planilha"""
+    log_step("API_SHEETS_DATA", "📊 Requisição de dados da planilha recebida")
+    
+    try:
+        # Verifica se está inicializado
+        if not sheets_status['initialized']:
+            sheets_result = test_google_sheets_connection()
+            if not sheets_result.get('success', False):
+                return jsonify({
+                    'success': False,
+                    'message': 'Google Sheets não inicializado',
+                    'error': sheets_result.get('error', 'Erro desconhecido')
+                }), 500
+        
+        # Parâmetros da requisição
+        worksheet_name = request.args.get('worksheet', '')
+        limit = request.args.get('limit', type=int)
+        offset = request.args.get('offset', 0, type=int)
+        
+        # Conecta ao Google Sheets
+        creds_result = parse_credentials()
+        if not creds_result['success']:
+            return jsonify(creds_result), 500
+            
+        credentials = Credentials.from_service_account_info(
+            creds_result['credentials'], 
+            scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
+        )
+        
+        client = gspread.authorize(credentials)
+        spreadsheet = client.open_by_key(os.getenv('SPREADSHEET_ID'))
+        
+        # Seleciona a worksheet
+        if worksheet_name:
+            try:
+                worksheet = spreadsheet.worksheet(worksheet_name)
+            except gspread.exceptions.WorksheetNotFound:
+                return jsonify({
+                    'success': False,
+                    'error': f'Aba "{worksheet_name}" não encontrada'
+                }), 404
+        else:
+            worksheet = spreadsheet.sheet1
+        
+        log_step("API_SHEETS_DATA", f"📋 Acessando aba: {worksheet.title}")
+        
+        # Recupera todos os dados
+        try:
+            all_records = worksheet.get_all_records()
+            
+            # Aplica paginação se necessário
+            if limit:
+                total_records = len(all_records)
+                records = all_records[offset:offset + limit]
+            else:
+                records = all_records
+                total_records = len(records)
+            
+            log_step("API_SHEETS_DATA", f"✅ {len(records)} registros recuperados")
+            
+            return jsonify({
+                'success': True,
+                'data': records,
+                'total': total_records,
+                'worksheet': worksheet.title,
+                'spreadsheet': spreadsheet.title,
+                'has_more': limit and (offset + limit) < total_records if limit else False,
+                'pagination': {
+                    'offset': offset,
+                    'limit': limit,
+                    'total': total_records
+                } if limit else None
+            })
+            
+        except Exception as read_error:
+            log_step("API_SHEETS_DATA", f"❌ Erro ao ler dados: {read_error}", False)
+            return jsonify({
+                'success': False,
+                'error': f'Erro ao ler dados da planilha: {str(read_error)}'
+            }), 500
+        
+    except gspread.exceptions.SpreadsheetNotFound:
+        return jsonify({
+            'success': False,
+            'error': 'Planilha não encontrada. Verifique o SPREADSHEET_ID.'
+        }), 404
+        
+    except gspread.exceptions.APIError as api_error:
+        return jsonify({
+            'success': False,
+            'error': f'Erro da API Google: {str(api_error)}'
+        }), 500
+        
+    except Exception as e:
+        error_msg = f"❌ Erro interno: {str(e)}"
+        log_step("API_SHEETS_DATA", error_msg, False)
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
+
+@app.route('/api/sheets/worksheets', methods=['GET'])
+def get_worksheets():
+    """📄 Endpoint para listar todas as abas da planilha"""
+    log_step("API_WORKSHEETS", "📄 Requisição de lista de abas recebida")
+    
+    try:
+        # Verifica inicialização
+        if not sheets_status['initialized']:
+            sheets_result = test_google_sheets_connection()
+            if not sheets_result.get('success', False):
+                return jsonify({
+                    'success': False,
+                    'error': 'Google Sheets não inicializado'
+                }), 500
+        
+        # Conecta ao Google Sheets
+        creds_result = parse_credentials()
+        credentials = Credentials.from_service_account_info(
+            creds_result['credentials'], 
+            scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
+        )
+        
+        client = gspread.authorize(credentials)
+        spreadsheet = client.open_by_key(os.getenv('SPREADSHEET_ID'))
+        
+        # Lista todas as worksheets
+        worksheets = spreadsheet.worksheets()
+        
+        worksheets_data = []
+        for ws in worksheets:
+            # Pega informações básicas de cada aba
+            try:
+                row_count = ws.row_count
+                col_count = ws.col_count
+                
+                # Tenta contar registros com dados (exclui cabeçalho)
+                all_values = ws.get_all_values()
+                data_rows = len([row for row in all_values if any(cell.strip() for cell in row)]) - 1
+                data_rows = max(0, data_rows)  # Não pode ser negativo
+                
+                worksheets_data.append({
+                    'name': ws.title,
+                    'id': ws.id,
+                    'index': ws.index,
+                    'row_count': row_count,
+                    'col_count': col_count,
+                    'data_rows': data_rows,
+                    'url': ws.url
+                })
+                
+            except Exception as ws_error:
+                log_step("API_WORKSHEETS", f"⚠️ Erro ao ler aba {ws.title}: {ws_error}")
+                worksheets_data.append({
+                    'name': ws.title,
+                    'id': ws.id,
+                    'index': ws.index,
+                    'error': str(ws_error)
+                })
+        
+        log_step("API_WORKSHEETS", f"✅ {len(worksheets_data)} abas listadas")
+        
+        return jsonify({
+            'success': True,
+            'worksheets': worksheets_data,
+            'total': len(worksheets_data),
+            'spreadsheet': {
+                'title': spreadsheet.title,
+                'id': spreadsheet.id,
+                'url': spreadsheet.url
+            }
+        })
+        
+    except Exception as e:
+        error_msg = f"❌ Erro ao listar worksheets: {str(e)}"
+        log_step("API_WORKSHEETS", error_msg, False)
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
+
+@app.route('/api/sheets/stats', methods=['GET'])
+def get_sheets_stats():
+    """📈 Endpoint para estatísticas gerais da planilha"""
+    log_step("API_STATS", "📈 Requisição de estatísticas recebida")
+    
+    try:
+        worksheet_name = request.args.get('worksheet', '')
+        
+        # Conecta ao Google Sheets
+        creds_result = parse_credentials()
+        credentials = Credentials.from_service_account_info(
+            creds_result['credentials'], 
+            scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
+        )
+        
+        client = gspread.authorize(credentials)
+        spreadsheet = client.open_by_key(os.getenv('SPREADSHEET_ID'))
+        
+        if worksheet_name:
+            worksheet = spreadsheet.worksheet(worksheet_name)
+        else:
+            worksheet = spreadsheet.sheet1
+        
+        # Coleta estatísticas
+        all_values = worksheet.get_all_values()
+        headers = all_values[0] if all_values else []
+        data_rows = all_values[1:] if len(all_values) > 1 else []
+        
+        # Estatísticas básicas
+        stats = {
+            'worksheet_name': worksheet.title,
+            'total_rows': len(data_rows),
+            'total_columns': len(headers),
+            'headers': headers,
+            'last_updated': datetime.now().isoformat(),
+        }
+        
+        # Estatísticas por coluna
+        column_stats = {}
+        if data_rows and headers:
+            for i, header in enumerate(headers):
+                column_data = [row[i] if i < len(row) else '' for row in data_rows]
+                non_empty = [cell for cell in column_data if cell.strip()]
+                
+                column_stats[header] = {
+                    'total_values': len(non_empty),
+                    'empty_values': len(column_data) - len(non_empty),
+                    'unique_values': len(set(non_empty)) if non_empty else 0,
+                    'sample_values': non_empty[:5] if non_empty else []
+                }
+        
+        stats['column_stats'] = column_stats
+        
+        # Estatísticas de uploads (se for uma planilha de uploads)
+        if any('timestamp' in header.lower() or 'data' in header.lower() for header in headers):
+            upload_stats = analyze_upload_patterns(data_rows, headers)
+            stats['upload_patterns'] = upload_stats
+        
+        log_step("API_STATS", f"✅ Estatísticas geradas para {stats['total_rows']} registros")
+        
+        return jsonify({
+            'success': True,
+            'stats': stats
+        })
+        
+    except Exception as e:
+        error_msg = f"❌ Erro ao gerar estatísticas: {str(e)}"
+        log_step("API_STATS", error_msg, False)
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
+
+def analyze_upload_patterns(data_rows, headers):
+    """Analisa padrões de upload nos dados"""
+    try:
+        # Encontra colunas de timestamp
+        timestamp_cols = []
+        for i, header in enumerate(headers):
+            if any(word in header.lower() for word in ['timestamp', 'data', 'hora', 'time']):
+                timestamp_cols.append(i)
+        
+        if not timestamp_cols or not data_rows:
+            return {'message': 'Nenhum padrão de timestamp encontrado'}
+        
+        # Analisa uploads por dia/hora
+        uploads_by_day = {}
+        uploads_by_hour = {}
+        
+        for row in data_rows:
+            if len(row) > timestamp_cols[0]:
+                timestamp_str = row[timestamp_cols[0]]
+                try:
+                    # Tenta diferentes formatos de data
+                    for fmt in ['%Y-%m-%d %H:%M:%S', '%d/%m/%Y %H:%M:%S', '%Y-%m-%d']:
+                        try:
+                            dt = datetime.strptime(timestamp_str, fmt)
+                            break
+                        except ValueError:
+                            continue
+                    else:
+                        continue  # Não conseguiu fazer parse
+                    
+                    # Conta por dia
+                    day_key = dt.strftime('%Y-%m-%d')
+                    uploads_by_day[day_key] = uploads_by_day.get(day_key, 0) + 1
+                    
+                    # Conta por hora
+                    hour_key = dt.hour
+                    uploads_by_hour[hour_key] = uploads_by_hour.get(hour_key, 0) + 1
+                    
+                except Exception:
+                    continue
+        
+        # Encontra dias/horas com mais uploads
+        peak_day = max(uploads_by_day.items(), key=lambda x: x[1]) if uploads_by_day else None
+        peak_hour = max(uploads_by_hour.items(), key=lambda x: x[1]) if uploads_by_hour else None
+        
+        return {
+            'total_days_with_uploads': len(uploads_by_day),
+            'uploads_by_day': dict(sorted(uploads_by_day.items())[-7:]),  # Últimos 7 dias
+            'uploads_by_hour': uploads_by_hour,
+            'peak_day': {'date': peak_day[0], 'uploads': peak_day[1]} if peak_day else None,
+            'peak_hour': {'hour': peak_hour[0], 'uploads': peak_hour[1]} if peak_hour else None,
+            'avg_uploads_per_day': sum(uploads_by_day.values()) / len(uploads_by_day) if uploads_by_day else 0
+        }
+        
+    except Exception as e:
+        return {'error': f'Erro ao analisar padrões: {str(e)}'}
+
+@app.route('/api/sheets/search', methods=['POST'])
+def search_sheets_data():
+    """🔍 Endpoint para buscar dados na planilha"""
+    log_step("API_SEARCH", "🔍 Requisição de busca recebida")
+    
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': 'Dados de busca não fornecidos'
+            }), 400
+        
+        query = data.get('query', '').strip()
+        worksheet_name = data.get('worksheet', '')
+        columns = data.get('columns', [])  # Colunas específicas para buscar
+        limit = data.get('limit', 100)
+        
+        if not query:
+            return jsonify({
+                'success': False,
+                'error': 'Query de busca é obrigatória'
+            }), 400
+        
+        # Conecta ao Google Sheets
+        creds_result = parse_credentials()
+        credentials = Credentials.from_service_account_info(
+            creds_result['credentials'], 
+            scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
+        )
+        
+        client = gspread.authorize(credentials)
+        spreadsheet = client.open_by_key(os.getenv('SPREADSHEET_ID'))
+        
+        if worksheet_name:
+            worksheet = spreadsheet.worksheet(worksheet_name)
+        else:
+            worksheet = spreadsheet.sheet1
+        
+        # Recupera dados
+        all_records = worksheet.get_all_records()
+        
+        # Executa busca
+        results = []
+        query_lower = query.lower()
+        
+        for record in all_records:
+            match_found = False
+            
+            # Se colunas específicas foram especificadas
+            if columns:
+                for col in columns:
+                    if col in record and query_lower in str(record[col]).lower():
+                        match_found = True
+                        break
+            else:
+                # Busca em todas as colunas
+                for value in record.values():
+                    if query_lower in str(value).lower():
+                        match_found = True
+                        break
+            
+            if match_found:
+                results.append(record)
+                
+            # Limite de resultados
+            if len(results) >= limit:
+                break
+        
+        log_step("API_SEARCH", f"✅ Busca por '{query}' retornou {len(results)} resultados")
+        
+        return jsonify({
+            'success': True,
+            'results': results,
+            'total': len(results),
+            'query': query,
+            'worksheet': worksheet.title,
+            'limited': len(results) >= limit
+        })
+        
+    except Exception as e:
+        error_msg = f"❌ Erro na busca: {str(e)}"
+        log_step("API_SEARCH", error_msg, False)
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
+
+@app.route('/api/sheets/export', methods=['GET'])
+def export_sheets_data():
+    """📤 Endpoint para exportar dados da planilha como CSV"""
+    log_step("API_EXPORT", "📤 Requisição de export recebida")
+    
+    try:
+        worksheet_name = request.args.get('worksheet', '')
+        
+        # Conecta ao Google Sheets
+        creds_result = parse_credentials()
+        credentials = Credentials.from_service_account_info(
+            creds_result['credentials'], 
+            scopes=['https://www.googleapis.com/auth/spreadsheets.readonly']
+        )
+        
+        client = gspread.authorize(credentials)
+        spreadsheet = client.open_by_key(os.getenv('SPREADSHEET_ID'))
+        
+        if worksheet_name:
+            worksheet = spreadsheet.worksheet(worksheet_name)
+        else:
+            worksheet = spreadsheet.sheet1
+        
+        # Recupera todos os dados
+        all_values = worksheet.get_all_values()
+        
+        if not all_values:
+            return jsonify({
+                'success': False,
+                'error': 'Nenhum dado encontrado para exportar'
+            }), 404
+        
+        # Converte para CSV
+        import csv
+        import io
+        
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        for row in all_values:
+            writer.writerow(row)
+        
+        csv_content = output.getvalue()
+        output.close()
+        
+        # Prepara resposta
+        from flask import make_response
+        
+        response = make_response(csv_content)
+        response.headers['Content-Type'] = 'text/csv'
+        response.headers['Content-Disposition'] = f'attachment; filename="{worksheet.title}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv"'
+        
+        log_step("API_EXPORT", f"✅ Export de {len(all_values)} linhas gerado")
+        
+        return response
+        
+    except Exception as e:
+        error_msg = f"❌ Erro no export: {str(e)}"
+        log_step("API_EXPORT", error_msg, False)
+        return jsonify({
+            'success': False,
+            'error': error_msg
+        }), 500
+
+
 @app.route('/', methods=['GET'])
 def index():
     """🏠 Página inicial com informações do serviço"""
     return jsonify({
-        'service': 'Google Sheets Debug API',
-        'version': '2.0',
+        'service': 'Google Sheets API Completa',
+        'version': '3.0',
         'status': 'running',
         'endpoints': {
+            # Endpoints de debug (existentes)
             'health': '/health',
             'debug_full': '/debug/full',
             'debug_environment': '/debug/environment', 
             'debug_credentials': '/debug/credentials',
             'debug_sheets': '/debug/sheets',
             'debug_test_write': '/debug/test-write',
+             # Endpoints de API (novos)
+            'sheets_data': '/api/sheets/data',
+            'worksheets': '/api/sheets/worksheets',
+            'sheets_stats': '/api/sheets/stats',
+            'search': '/api/sheets/search (POST)',
+            'export': '/api/sheets/export',
+            
+            # Endpoint principal
             'upload': '/upload'
         },
-        'sheets_status': sheets_status
+        'sheets_status': sheets_status,
+        'api_documentation': {
+            'sheets_data': 'GET /api/sheets/data?worksheet=nome&limit=100&offset=0',
+            'worksheets': 'GET /api/sheets/worksheets',
+            'stats': 'GET /api/sheets/stats?worksheet=nome',
+            'search': 'POST /api/sheets/search {"query": "termo", "worksheet": "nome"}',
+            'export': 'GET /api/sheets/export?worksheet=nome'
+        }
     })
 
 if __name__ == '__main__':
