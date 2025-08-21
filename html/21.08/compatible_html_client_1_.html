@@ -643,6 +643,9 @@
                     throw new Error('Nenhum servidor selecionado');
                 }
                 
+                const fullUrl = `${SERVER_URL}${endpoint}`;
+                console.log('🌐 Fazendo request para:', fullUrl);
+
                 const config = {
                     method: method,
                     headers: {
@@ -654,24 +657,83 @@
                 if (data) {
                     config.body = JSON.stringify(data);
                 }
-                
-                const response = await fetch(`${SERVER_URL}${endpoint}`, config);
+
+                // Timeout de 30 segundos
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Timeout após 30 segundos')), 30000);
+                });
+
+                const fetchPromise = fetch(fullUrl, config);
+
+                //const response = await fetch(`${SERVER_URL}${endpoint}`, config);
+                const response = await Promise.race([fetchPromise, timeoutPromise]);
+
+                console.log('📨 Resposta recebida:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    type: response.type,
+                    url: response.url
+                });
                 
                 // Verifica se é um erro CORS
-                if (response.type === 'opaque' || response.status === 0) {
-                    throw new Error('Erro CORS - O servidor não permite requisições deste domínio');
+                if (response.status === 0 || response.type === 'opaque') {
+                    const error = new Error('Erro CORS - O servidor não permite requisições deste domínio');
+                    error.isCorsError = true;
+                    throw error;
                 }
 
+                
+                // Verifica se é um erro CORS
+                //if (response.type === 'opaque' || response.status === 0) {
+                //    throw new Error('Erro CORS - O servidor não permite requisições deste domínio');
+                //}
+
+
+                //if (!response.ok) {
+                //    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                //}
+
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    let errorText;
+                    try {
+                        errorText = await response.text();
+                    } catch (e) {
+                        errorText = response.statusText;
+                    }
+                    
+                    const error = new Error(`HTTP ${response.status}: ${errorText}`);
+                    error.status = response.status;
+                    throw error;
                 }
                 
-                return await response.json();
+
+                //return await response.json();
+                const responseData = await response.json();
+                console.log('✅ Request bem-sucedido:', responseData);
+                return responseData;
+
             } catch (error) {
-                console.error('Request error:', error);
+                //console.error('Request error:', error);
+                console.error('❌ Erro na requisição:', error);
+
                 // Verifica específicamente erros de CORS
-                if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
-                    throw new Error(`Problema de CORS: O servidor em ${SERVER_URL} não está configurado para aceitar requisições do GitHub Pages.`);
+                //if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                //    throw new Error(`Problema de CORS: O servidor em ${SERVER_URL} não está configurado para aceitar requisições do GitHub Pages.`);
+                //}
+
+                // Detecção específica de erros CORS
+                if (error.message.includes('Failed to fetch') || 
+                    error.message.includes('CORS') || 
+                    error.message.includes('NetworkError') ||
+                    error.isCorsError) {
+                    
+                    const corsError = new Error(`Problema de CORS: O servidor em ${SERVER_URL} não está configurado para aceitar requisições do GitHub Pages. Tente usar a opção de proxy.`);
+                    corsError.isCorsError = true;
+                    throw corsError;
+                }
+
+                if (error.message.includes('Timeout')) {
+                    throw new Error('O servidor não respondeu dentro do tempo limite (30 segundos). Pode estar offline ou sobrecarregado.');
                 }
                 
                 throw error;
@@ -904,4 +966,56 @@
             // Calculate pagination
             totalPages = Math.ceil(allData.length / rowsPerPage);
             const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = Math.min(startIndex + rowsPer
+            const endIndex = Math.min(startIndex + rowsPerPage, allData.length);
+            const pageData = allData.slice(startIndex, endIndex);
+
+
+
+        }
+        // Função de debug manual (execute no console do navegador)
+        window.debugConnection = async function() {
+            console.clear();
+            console.log('🔧 Iniciando debug manual...');
+            
+            const testUrl = 'https://visualizing-geospatial-data-in-python-1.onrender.com/health';
+            console.log('🧪 Testando URL:', testUrl);
+            
+            try {
+                // Teste direto com fetch
+                const response = await fetch(testUrl, {
+                    method: 'GET',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                console.log('📊 Status da resposta:', response.status, response.statusText);
+                console.log('🔗 Tipo de resposta:', response.type);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Dados da resposta:', data);
+                } else {
+                    console.log('❌ Erro HTTP:', response.status);
+                    const text = await response.text();
+                    console.log('📝 Corpo do erro:', text);
+                }
+                
+            } catch (error) {
+                console.error('💥 Erro completo:', error);
+                console.log('🔍 Tipo do erro:', error.name);
+                console.log('📋 Mensagem:', error.message);
+                
+                if (error.message.includes('CORS') || error.message.includes('Failed to fetch')) {
+                    console.log('🎯 SOLUÇÃO: Use a opção "Proxy CORS (Heroku)" no seletor de servidor');
+                }
+            }
+        };
+
+        // Execute automaticamente quando a página carregar para debug
+        window.addEventListener('load', function() {
+            console.log('🛠️ Para debug, execute: debugConnection() no console');
+            console.log('🛠️ Ou clique em um servidor e depois em "Testar Conexão"');
+        });
+    </script>
