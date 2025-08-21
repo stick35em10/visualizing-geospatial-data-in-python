@@ -1,4 +1,6 @@
 
+[google_sheets_viewer](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/google_sheets_viewer.html)
+
 [update html/21.08/compatible_html_client_1_.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/compatible_html_client_1_.html)
 
 [compatible_html_client](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/compatible_html_client.html)
