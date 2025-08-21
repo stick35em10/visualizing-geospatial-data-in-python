@@ -1130,41 +1130,8 @@ def after_request(response):
     
     return response
 
-@app.route('/', methods=['GET'])
-def index():
-    """🏠 Página inicial com informações do serviço"""
-    return jsonify({
-        'service': 'Google Sheets API Completa',
-        'version': '3.0',
-        'status': 'running',
-        'endpoints': {
-            # Endpoints de debug (existentes)
-            'health': '/health',
-            'debug_full': '/debug/full',
-            'debug_environment': '/debug/environment', 
-            'debug_credentials': '/debug/credentials',
-            'debug_sheets': '/debug/sheets',
-            'debug_test_write': '/debug/test-write',
-             # Endpoints de API (novos)
-            'sheets_data': '/api/sheets/data',
-            'worksheets': '/api/sheets/worksheets',
-            'sheets_stats': '/api/sheets/stats',
-            'search': '/api/sheets/search (POST)',
-            'export': '/api/sheets/export',
-            
-            # Endpoint principal
-            'upload': '/upload'
-        },
-        'sheets_status': sheets_status,
-        'api_documentation': {
-            'sheets_data': 'GET /api/sheets/data?worksheet=nome&limit=100&offset=0',
-            'worksheets': 'GET /api/sheets/worksheets',
-            'stats': 'GET /api/sheets/stats?worksheet=nome',
-            'search': 'POST /api/sheets/search {"query": "termo", "worksheet": "nome"}',
-            'export': 'GET /api/sheets/export?worksheet=nome'
-        }
-    })
-
+#@app.route('/', methods=['GET'])
+#
 if __name__ == '__main__':
     log_step("STARTUP", "🚀 Iniciando servidor Flask...")
     

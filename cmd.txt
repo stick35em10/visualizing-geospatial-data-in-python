@@ -1,6 +1,10 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
     21.08.2025, see inforção gravada na base de dados
-        08:[51, 43,31]
+        08:[56, 51, 43,31]
+            56: AssertionError: View function mapping is overwriting an existing endpoint function: index
+                git add app.py cmd.txt
+                git commit -m " 21.08, 08:51 remove duplicate overwriting an existing endpoint function: index  update app.py cmd.txt"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01
 
             51: AssertionError: View function mapping is overwriting an existing endpoint function: get_sheets_data
                 git add app.py cmd.txt
