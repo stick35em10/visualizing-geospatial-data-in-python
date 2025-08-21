@@ -999,15 +999,19 @@
             loadDataBtn.disabled = true;
             
             try {
+                console.log(`📥 Carregando dados da worksheet: ${selectedWorksheet}`);
+                
                 const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(selectedWorksheet)}`);
                 
                 if (result.success && result.data) {
+                    console.log(`✅ Dados carregados: ${result.data.length} registros`);
                     allData = result.data;
                     currentWorksheet = selectedWorksheet;
                     currentPage = 1;
                     
                     // Extract headers from first data row
                     if (allData.length > 0) {
+                        console.log(`📊 Colunas detectadas:`, currentHeaders);
                         currentHeaders = Object.keys(allData[0]);
                         
                         // Update search column dropdown
@@ -1034,12 +1038,45 @@
                 }
                 
             } catch (error) {
-                console.error('Failed to load data:', error);
-                showError(
+                console.error(' ❌ Failed to load data:', error);
+                /*showError(
                     '❌ Erro ao Carregar Dados',
                     error.message,
                     'Verifique se a aba possui dados válidos.'
+                );*/
+                let errorMessage = error.message;
+                let suggestion = 'Verifique se a aba possui dados válidos.';
+
+                // Tratamento específico para erro 500
+                if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
+                    errorMessage = 'Erro interno do servidor ao acessar a planilha';
+                    suggestion = 'A worksheet pode não existir ou estar com problemas. Verifique as worksheets disponíveis.';
+                }
+                
+                showError(
+                    '❌ Erro ao Carregar Dados',
+                    errorMessage,
+                    suggestion
                 );
+
+             // Mostrar worksheets disponíveis para ajudar no debug
+        try {
+            const worksheetsResult = await makeRequest('/api/sheets/worksheets');
+            if (worksheetsResult.success && worksheetsResult.worksheets) {
+                console.log('📋 Worksheets disponíveis:', worksheetsResult.worksheets.map(ws => ws.title));
+                
+                // Adicionar sugestão com worksheets disponíveis
+                const availableSheets = worksheetsResult.worksheets.map(ws => ws.title).join(', ');
+                showError(
+                    '❌ Erro ao Carregar Dados',
+                    errorMessage,
+                    `Worksheets disponíveis: ${availableSheets}`
+                );
+            }
+        } catch (e) {
+            console.error('Erro ao carregar worksheets:', e);
+        }
+
             } finally {
                 loadDataBtn.disabled = false;
             }
@@ -1355,6 +1392,72 @@
             searchColumn.innerHTML = '<option value="">Todas as colunas</option>';
         }
         
+        // Adicione esta função para debug
+        window.debugWorksheets = async function() {
+    console.clear();
+    console.log('🔍 Debug de Worksheets iniciado...');
+    
+    try {
+        const result = await makeRequest('/api/sheets/worksheets');
+        
+        if (result.success && result.worksheets) {
+            console.log('✅ Conexão bem-sucedida');
+            console.log('📋 Worksheets disponíveis:');
+            
+            result.worksheets.forEach((ws, index) => {
+                console.log(`${index + 1}. ${ws.title} (${ws.row_count} linhas, ${ws.col_count} colunas)`);
+            });
+            
+            console.log('📊 Total de worksheets:', result.worksheets.length);
+            console.log('📝 Nome da planilha:', result.spreadsheet_title);
+            
+            // Atualizar o dropdown no UI
+            worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+            result.worksheets.forEach(ws => {
+                const option = document.createElement('option');
+                option.value = ws.title;
+                option.textContent = `${ws.title} (${ws.row_count} linhas)`;
+                worksheetSelect.appendChild(option);
+            });
+            
+            return result.worksheets;
+            
+        } else {
+            console.error('❌ Erro no servidor:', result.error);
+            return null;
+        }
+        
+    } catch (error) {
+        console.error('💥 Erro ao carregar worksheets:', error);
+        return null;
+    }
+};
+
+// Adicione também esta função para testar worksheets específicas
+        window.testWorksheet = async function(worksheetName) {
+    console.log(`🧪 Testando worksheet: ${worksheetName}`);
+    
+    try {
+        const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(worksheetName)}`);
+        
+        if (result.success) {
+            console.log('✅ Worksheet acessível:', {
+                totalRows: result.data.length,
+                totalColumns: result.data.length > 0 ? Object.keys(result.data[0]).length : 0,
+                columns: result.data.length > 0 ? Object.keys(result.data[0]) : []
+            });
+            return result;
+        } else {
+            console.error('❌ Erro na worksheet:', result.error);
+            return result;
+        }
+        
+    } catch (error) {
+        console.error('💥 Erro ao testar worksheet:', error);
+        throw error;
+    }
+};
+
         // Event Listeners
         testConnectionBtn.addEventListener('click', testConnection);
         loadWorksheetsBtn.addEventListener('click', loadWorksheets);
