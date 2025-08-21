@@ -643,7 +643,8 @@
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                    }
+                    },
+                    mode: 'cors' // Força modo CORS
                 };
                 
                 if (data) {
@@ -652,6 +653,11 @@
                 
                 const response = await fetch(`${SERVER_URL}${endpoint}`, config);
                 
+                // Verifica se é um erro CORS
+                if (response.type === 'opaque' || response.status === 0) {
+                    throw new Error('Erro CORS - O servidor não permite requisições deste domínio');
+                }
+
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
@@ -659,6 +665,11 @@
                 return await response.json();
             } catch (error) {
                 console.error('Request error:', error);
+                // Verifica específicamente erros de CORS
+                if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                    throw new Error(`Problema de CORS: O servidor em ${SERVER_URL} não está configurado para aceitar requisições do GitHub Pages.`);
+                }
+                
                 throw error;
             }
         }
