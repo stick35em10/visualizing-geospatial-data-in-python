@@ -790,6 +790,7 @@
         });
         
         // API Functions
+        /*
         async function makeRequest(endpoint, method = 'GET', data = null) {
             try {
                 if (!SERVER_URL) {
@@ -831,7 +832,77 @@
                 throw error;
             }
         }
-        
+        */
+       async function makeRequest(endpoint, method = 'GET', data = null) {
+            try {
+                if (!SERVER_URL) {
+                    throw new Error('Nenhum servidor selecionado');
+                }
+                
+                const config = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                };
+                
+                if (data) {
+                    config.body = JSON.stringify(data);
+                }
+                
+                console.log('🌐 Fazendo request para:', `${SERVER_URL}${endpoint}`);
+                
+                const response = await fetch(`${SERVER_URL}${endpoint}`, config);
+                
+                // Verificar se é um erro CORS
+                if (response.status === 0 || response.type === 'opaque') {
+                    throw new Error('Erro CORS - O servidor não permite requisições deste domínio');
+                }
+                
+                // Obter o texto da resposta para ver detalhes do erro
+                const responseText = await response.text();
+                
+                if (!response.ok) {
+                    console.error('❌ Detalhes do erro:', responseText);
+                    
+                    // Tentar parsear como JSON para obter mais detalhes
+                    let errorDetails = responseText;
+                    try {
+                        const errorJson = JSON.parse(responseText);
+                        errorDetails = JSON.stringify(errorJson, null, 2);
+                    } catch (e) {
+                        // Manter como texto se não for JSON
+                    }
+                    
+                    throw new Error(`HTTP ${response.status}: ${errorDetails}`);
+                }
+                
+                // Parsear a resposta como JSON
+                try {
+                    return JSON.parse(responseText);
+                } catch (e) {
+                    console.error('❌ Erro ao parsear JSON:', e, 'Resposta:', responseText);
+                    throw new Error('Resposta inválida do servidor: não é JSON válido');
+                }
+                
+            } catch (error) {
+                console.error('❌ Request error:', error);
+                
+                // Detecção específica de erros CORS
+                if (error.message.includes('Failed to fetch') || 
+                    error.message.includes('CORS') || 
+                    error.message.includes('NetworkError') ||
+                    error.message.includes('Access-Control')) {
+                    
+                    const corsError = new Error(`Problema de CORS: O servidor não está configurado para aceitar requisições do GitHub Pages. Tente usar uma opção de proxy.`);
+                    corsError.isCorsError = true;
+                    throw corsError;
+                }
+                
+                throw error;
+            }
+        }
         // UI State Functions
         function showLoading(message = 'Carregando...') {
             dataContainer.innerHTML = `
@@ -1445,9 +1516,107 @@
             console.log('💡 Dica: Se apenas uma worksheet falhar, o problema é específico dela');
         };
 
+
         // Execute no console:
         fullDiagnostic();
         // Adicione esta função para debug
+        
+        // Função para debug detalhado do servidor
+        window.debugServer = async function() {
+            console.clear();
+            console.log('🩺 DIAGNÓSTICO DO SERVIDOR');
+            console.log('==========================');
+            
+            const testEndpoints = [
+                '/health',
+                '/debug/environment',
+                '/debug/credentials', 
+                '/debug/sheets',
+                '/api/sheets/worksheets'
+            ];
+            
+            for (const endpoint of testEndpoints) {
+                try {
+                    console.log(`🔗 Testando: ${endpoint}`);
+                    const result = await makeRequest(endpoint);
+                    console.log(`✅ ${endpoint}:`, result);
+                } catch (error) {
+                    console.error(`❌ ${endpoint}:`, error.message);
+                }
+                console.log('---');
+            }
+        };
+
+        // Função para testar a worksheet com diferentes abordagens
+        window.testWorksheetDetailed = async function(worksheetName) {
+            console.log(`🔍 Teste detalhado da worksheet: ${worksheetName}`);
+            
+            // Tentar diferentes abordagens
+            const approaches = [
+                { name: 'API Padrão', url: `/api/sheets/data?worksheet=${encodeURIComponent(worksheetName)}` },
+                { name: 'API com timeout', url: `/api/sheets/data?worksheet=${encodeURIComponent(worksheetName)}&max_rows=10` },
+                { name: 'API Info', url: `/api/sheets/info` }
+            ];
+            
+            for (const approach of approaches) {
+                try {
+                    console.log(`🧪 Tentativa: ${approach.name}`);
+                    const result = await makeRequest(approach.url);
+                    console.log(`✅ ${approach.name}:`, result);
+                    return result;
+                } catch (error) {
+                    console.error(`❌ ${approach.name}:`, error.message);
+                }
+                console.log('---');
+            }
+            
+            throw new Error('Todas as abordagens falharam');
+        };
+
+        // Função para verificar se a worksheet existe e é acessível
+        window.checkWorksheetAccess = async function(worksheetName) {
+            console.log(`🔐 Verificando acesso à worksheet: ${worksheetName}`);
+            
+            try {
+                // Primeiro, listar todas as worksheets
+                const worksheetsResult = await makeRequest('/api/sheets/worksheets');
+                
+                if (worksheetsResult.success) {
+                    const worksheet = worksheetsResult.worksheets.find(ws => ws.title === worksheetName);
+                    
+                    if (worksheet) {
+                        console.log('✅ Worksheet encontrada:', worksheet);
+                        
+                        // Verificar se tem dados
+                        if (worksheet.row_count > 0) {
+                            console.log(`📊 Worksheet contém ${worksheet.row_count} linhas`);
+                            
+                            // Tentar acessar os dados
+                            try {
+                                const dataResult = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(worksheetName)}&max_rows=5`);
+                                console.log('✅ Dados acessíveis:', dataResult);
+                                return { exists: true, accessible: true, data: dataResult };
+                            } catch (dataError) {
+                                console.error('❌ Erro ao acessar dados:', dataError.message);
+                                return { exists: true, accessible: false, error: dataError.message };
+                            }
+                            
+                        } else {
+                            console.log('ℹ️ Worksheet está vazia');
+                            return { exists: true, accessible: true, empty: true };
+                        }
+                        
+                    } else {
+                        console.error('❌ Worksheet não encontrada');
+                        return { exists: false, accessible: false };
+                    }
+                }
+                
+            } catch (error) {
+                console.error('💥 Erro ao verificar worksheet:', error);
+                return { exists: null, accessible: false, error: error.message };
+            }
+        };
         window.debugWorksheets = async function() {
     console.clear();
     console.log('🔍 Debug de Worksheets iniciado...');
