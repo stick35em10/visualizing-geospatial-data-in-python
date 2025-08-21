@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Google Sheets Data Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        /* Server Configuration */
+        .server-config {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .server-config h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .server-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .server-option {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .server-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+        
+        .server-option.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+        }
+        
+        #customUrl {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        #customUrl:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+        }
+        
+        .current-url {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+            font-family: 'Monaco', 'Consolas', monospace;
+            word-break: break-all;
+        }
+        
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,123,255,0.4);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(135deg, #ffc107, #ffb300);
+            color: #212529;
+            box-shadow: 0 4px 15px rgba(255,193,7,0.3);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            box-shadow: 0 4px 15px rgba(220,53,69,0.3);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+        }
+        
+        .tab:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+        }
+        
+        /* Worksheet selector */
+        .worksheet-selector {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .worksheet-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .worksheet-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .worksheet-selector select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Data Table */
+        .data-container {
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, #495057, #343a40);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .table-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        
+        .table-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .table-controls input, .table-controls select {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+        
+        .table-wrapper {
+            max-height: 600px;
+            overflow: auto;
+            background: white;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background: #fafafa;
+        }
+        
+        .data-table tr:nth-child(even):hover {
+            background: #f0f0f0;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            font-size: 12px;
+        }
+        
+        .edit-btn {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        /* Loading */
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            color: #6c757d;
+        }
+        
+        /* Error states */
+        .error-container {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .error-container h3 {
+            color: #721c24;
+            margin-bottom: 15px;
+        }
+        
+        .error-container p {
+            color: #721c24;
+            margin-bottom: 10px;
+        }
+        
+        /* Success state */
+        .success-container {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .success-container h3 {
+            color: #155724;
+            margin-bottom: 15px;
+        }
+        
+        .success-container p {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state h3 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Pagination */
+        .pagination-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: #f8f9fa;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .server-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .data-table {
+                font-size: 0.9rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 8px 6px;
+            }
+            
+            .table-wrapper {
+                overflow-x: auto;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            
+            .table-controls {
+                justify-content: center;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Google Sheets Data Manager</h1>
+            <p>Visualize, consulte e atualize dados da sua planilha do Google Sheets</p>
+        </div>
+        
+        <div class="content">
+            <!-- Server Configuration -->
+            <div class="server-config">
+                <h3>🌐 Configuração do Servidor</h3>
+                <div class="server-options">
+                    <div class="server-option" data-url="https://visualizing-geospatial-data-in-python-1.onrender.com">
+                        🚀 Render v1 (Servidor Novo)
+                    </div>
+                    <div class="server-option" data-url="https://cors-anywhere.herokuapp.com/https://visualizing-geospatial-data-in-python-1.onrender.com">
+                        🔄 Proxy CORS (Heroku)
+                    </div>
+                    <div class="server-option" data-url="http://localhost:5000">
+                        💻 Local (5000)
+                    </div>
+                    <div class="server-option" data-url="custom">
+                        ⚙️ URL Personalizada
+                    </div>
+                </div>
+                <input type="text" id="customUrl" placeholder="Digite a URL personalizada (ex: https://meuservidor.com)" style="display: none;">
+                <div class="current-url">
+                    <strong>🌐 URL Atual:</strong> <span id="currentUrl">Nenhuma selecionada</span>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn success" id="testConnectionBtn">🔗 Testar Conexão</button>
+                <button class="btn" id="loadWorksheetsBtn" disabled>📄 Carregar Abas</button>
+                <button class="btn" id="loadDataBtn" disabled>📥 Carregar Dados</button>
+                <button class="btn danger" id="clearBtn">🧹 Limpar</button>
+            </div>
+            
+            <!-- Connection Status -->
+            <div id="connectionStatus" style="display: none;"></div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" data-tab="view">👀 Visualizar Dados</div>
+                <div class="tab" data-tab="add">➕ Adicionar Dados</div>
+                <div class="tab" data-tab="search">🔍 Pesquisar Dados</div>
+            </div>
+            
+            <!-- View Data Tab -->
+            <div class="tab-content active" id="viewTab">
+                <!-- Worksheet Selector -->
+                <div class="worksheet-selector" id="worksheetSelector" style="display: none;">
+                    <label for="worksheetSelect">📋 Selecionar Aba da Planilha:</label>
+                    <select id="worksheetSelect">
+                        <option value="">Selecione uma aba...</option>
+                    </select>
+                </div>
+                
+                <!-- Stats -->
+                <div class="stats-container" id="statsContainer" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalRows">0</div>
+                        <div class="stat-label">Total de Linhas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalColumns">0</div>
+                        <div class="stat-label">Total de Colunas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="lastUpdate">---</div>
+                        <div class="stat-label">Última Atualização</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="worksheetName">---</div>
+                        <div class="stat-label">Aba Atual</div>
+                    </div>
+                </div>
+                
+                <!-- Data Container -->
+                <div class="data-container" id="dataContainer">
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Selecione um servidor e clique em "Testar Conexão" para começar</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="controls" id="paginationContainer" style="display: none;">
+                    <button class="btn" id="prevPageBtn" disabled>◀ Anterior</button>
+                    <div class="pagination-info">
+                        <span id="pageInfo">Página 1 de 1</span>
+                    </div>
+                    <button class="btn" id="nextPageBtn" disabled>Próxima ▶</button>
+                </div>
+            </div>
+            
+            <!-- Add Data Tab -->
+            <div class="tab-content" id="addTab">
+                <h3>➕ Adicionar Novo Registro</h3>
+                <div id="addFormContainer">
+                    <div class="empty-state">
+                        <h3>📝</h3>
+                        <p>Carregue os dados primeiro para ver a estrutura do formulário</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Data Tab -->
+            <div class="tab-content" id="searchTab">
+                <h3>🔍 Pesquisar Dados</h3>
+                <div class="form-group">
+                    <label for="searchTerm">Termo de Pesquisa:</label>
+                    <input type="text" id="searchTerm" placeholder="Digite o termo para pesquisar...">
+                </div>
+                <div class="form-group">
+                    <label for="searchColumn">Coluna para Pesquisar (opcional):</label>
+                    <select id="searchColumn">
+                        <option value="">Todas as colunas</option>
+                    </select>
+                </div>
+                <button class="btn success" id="searchBtn">🔍 Pesquisar</button>
+                
+                <div id="searchResults" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let SERVER_URL = '';
+        let allData = [];
+        let currentPage = 1;
+        let rowsPerPage = 25;
+        let totalPages = 1;
+        let worksheets = [];
+        let currentWorksheet = '';
+        let isConnected = false;
+        let currentHeaders = [];
+        
+        // DOM Elements
+        const serverOptions = document.querySelectorAll('.server-option');
+        const customUrlInput = document.getElementById('customUrl');
+        const currentUrlSpan = document.getElementById('currentUrl');
+        const testConnectionBtn = document.getElementById('testConnectionBtn');
+        const loadWorksheetsBtn = document.getElementById('loadWorksheetsBtn');
+        const loadDataBtn = document.getElementById('loadDataBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const worksheetSelector = document.getElementById('worksheetSelector');
+        const worksheetSelect = document.getElementById('worksheetSelect');
+        const statsContainer = document.getElementById('statsContainer');
+        const dataContainer = document.getElementById('dataContainer');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const addFormContainer = document.getElementById('addFormContainer');
+        const searchTerm = document.getElementById('searchTerm');
+        const searchColumn = document.getElementById('searchColumn');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchResults = document.getElementById('searchResults');
+        
+        // Utility Functions
+        function formatBytes(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('pt-BR');
+        }
+        
+        // Server Configuration
+        serverOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                serverOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                const url = this.dataset.url;
+                if (url === 'custom') {
+                    customUrlInput.style.display = 'block';
+                    customUrlInput.focus();
+                    SERVER_URL = customUrlInput.value.trim();
+                } else {
+                    customUrlInput.style.display = 'none';
+                    SERVER_URL = url;
+                }
+                
+                currentUrlSpan.textContent = SERVER_URL || 'URL personalizada não definida';
+                
+                // Reset connection status
+                isConnected = false;
+                loadWorksheetsBtn.disabled = true;
+                loadDataBtn.disabled = true;
+                hideElements();
+            });
+        });
+        
+        customUrlInput.addEventListener('input', function() {
+            SERVER_URL = this.value.trim();
+            currentUrlSpan.textContent = SERVER_URL || 'URL personalizada não definida';
+            
+            // Reset connection status
+            isConnected = false;
+            loadWorksheetsBtn.disabled = true;
+            loadDataBtn.disabled = true;
+            hideElements();
+        });
+        
+        // Tab Navigation
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show active tab content
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabId}Tab`).classList.add('active');
+            });
+        });
+        
+        // API Functions
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            try {
+                if (!SERVER_URL) {
+                    throw new Error('Nenhum servidor selecionado');
+                }
+                
+                const config = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors'
+                };
+                
+                if (data) {
+                    config.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(`${SERVER_URL}${endpoint}`, config);
+                
+                // Verifica se é um erro CORS
+                if (response.type === 'opaque' || response.status === 0) {
+                    throw new Error('Erro CORS - O servidor não permite requisições deste domínio');
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('Request error:', error);
+                
+                // Verifica específicamente erros de CORS
+                if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+                    throw new Error(`Problema de CORS: O servidor em ${SERVER_URL} não está configurado para aceitar requisições do GitHub Pages.`);
+                }
+                
+                throw error;
+            }
+        }
+        
+        // UI State Functions
+        function showLoading(message = 'Carregando...') {
+            dataContainer.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${message}</div>
+                </div>
+            `;
+        }
+        
+        function showError(title, message, suggestion = '') {
+            dataContainer.innerHTML = `
+                <div class="error-container">
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    ${suggestion ? `<p><strong>Sugestão:</strong> ${suggestion}</p>` : ''}
+                </div>
+            `;
+        }
+        
+        function showSuccess(title, message) {
+            connectionStatus.innerHTML = `
+                <div class="success-container">
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            connectionStatus.style.display = 'block';
+        }
+        
+        function showConnectionStatus(status) {
+            connectionStatus.innerHTML = status;
+            connectionStatus.style.display = 'block';
+        }
+        
+        function hideElements() {
+            connectionStatus.style.display = 'none';
+            worksheetSelector.style.display = 'none';
+            statsContainer.style.display = 'none';
+            paginationContainer.style.display = 'none';
+        }
+        
+        // Main Functions
+        async function testConnection() {
+            if (!SERVER_URL) {
+                showError('❌ Erro de Configuração', 'Por favor, selecione um servidor primeiro.');
+                return;
+            }
+            
+            showLoading('Testando conexão com o servidor...');
+            testConnectionBtn.disabled = true;
+            
+            try {
+                // Test basic connection
+                const healthCheck = await makeRequest('/health');
+                
+                if (healthCheck.status === 'healthy') {
+                    showSuccess('✅ Conexão Estabelecida', `Servidor está online e funcionando. Versão: ${healthCheck.version || 'N/A'}`);
+                    
+                    // Test Google Sheets connection
+                    showLoading('Verificando conexão com Google Sheets...');
+                    
+                    const sheetsTest = await makeRequest('/debug/full');
+                    
+                    if (sheetsTest.success) {
+                        showSuccess(
+                            '✅ Google Sheets Conectado', 
+                            `Planilha acessível! Teste completo realizado em ${sheetsTest.duration_seconds?.toFixed(2) || 'N/A'}s`
+                        );
+                        
+                        isConnected = true;
+                        loadWorksheetsBtn.disabled = false;
+                        
+                        dataContainer.innerHTML = `
+                            <div class="success-container">
+                                <h3>🎉 Tudo Pronto!</h3>
+                                <p>Conexão estabelecida com sucesso. Agora você pode carregar as abas da planilha.</p>
+                            </div>
+                        `;
+                    } else {
+                        throw new Error(sheetsTest.error || 'Falha na conexão com Google Sheets');
+                    }
+                } else {
+                    throw new Error('Servidor não está saudável');
+                }
+                
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                showError(
+                    '❌ Falha na Conexão',
+                    error.message,
+                    'Verifique se a URL está correta e o servidor está online.'
+                );
+                
+                isConnected = false;
+                loadWorksheetsBtn.disabled = true;
+                loadDataBtn.disabled = true;
+            } finally {
+                testConnectionBtn.disabled = false;
+            }
+        }
+        
+        async function loadWorksheets() {
+            if (!isConnected) {
+                showError('❌ Erro', 'Teste a conexão primeiro.');
+                return;
+            }
+            
+            showLoading('Carregando abas da planilha...');
+            loadWorksheetsBtn.disabled = true;
+            
+            try {
+                const result = await makeRequest('/api/sheets/worksheets');
+                
+                if (result.success && result.worksheets) {
+                    worksheets = result.worksheets;
+                    worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                    
+                    worksheets.forEach(ws => {
+                        const option = document.createElement('option');
+                        option.value = ws.title;
+                        option.textContent = `${ws.title} (${ws.row_count} linhas)`;
+                        worksheetSelect.appendChild(option);
+                    });
+                    
+                    worksheetSelector.style.display = 'block';
+                    loadDataBtn.disabled = false;
+                    
+                    showSuccess(
+                        '✅ Abas Carregadas',
+                        `${worksheets.length} aba(s) encontrada(s) na planilha "${result.spreadsheet_title}"`
+                    );
+                    
+                    dataContainer.innerHTML = `
+                        <div class="success-container">
+                            <h3>📄 Abas Disponíveis</h3>
+                            <p>Selecione uma aba acima e clique em "Carregar Dados".</p>
+                        </div>
+                    `;
+                    
+                } else {
+                    throw new Error(result.error || 'Nenhuma aba encontrada');
+                }
+                
+            } catch (error) {
+                console.error('Failed to load worksheets:', error);
+                showError(
+                    '❌ Erro ao Carregar Abas',
+                    error.message,
+                    'Verifique as permissões da planilha.'
+                );
+            } finally {
+                loadWorksheetsBtn.disabled = false;
+            }
+        }
+        
+        async function loadData() {
+            const selectedWorksheet = worksheetSelect.value;
+            if (!selectedWorksheet) {
+                showError('❌ Erro', 'Selecione uma aba da planilha primeiro.');
+                return;
+            }
+            
+            showLoading(`Carregando dados da aba "${selectedWorksheet}"...`);
+            loadDataBtn.disabled = true;
+            
+            try {
+                const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(selectedWorksheet)}`);
+                
+                if (result.success && result.data) {
+                    allData = result.data;
+                    currentWorksheet = selectedWorksheet;
+                    currentPage = 1;
+                    
+                    // Extract headers from first data row
+                    if (allData.length > 0) {
+                        currentHeaders = Object.keys(allData[0]);
+                        
+                        // Update search column dropdown
+                        updateSearchColumns();
+                        
+                        // Create add form
+                        createAddForm();
+                    }
+                    
+                    updateStats(result.metadata);
+                    renderTable();
+                    
+                    statsContainer.style.display = 'grid';
+                    
+                    if (allData.length > rowsPerPage) {
+                        setupPagination();
+                        paginationContainer.style.display = 'grid';
+                    }
+                    
+                    showSuccess('✅ Dados Carregados', `${allData.length} registros carregados com sucesso!`);
+                    
+                } else {
+                    throw new Error(result.error || 'Nenhum dado encontrado');
+                }
+                
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                showError(
+                    '❌ Erro ao Carregar Dados',
+                    error.message,
+                    'Verifique se a aba possui dados válidos.'
+                );
+            } finally {
+                loadDataBtn.disabled = false;
+            }
+        }
+        
+        function updateSearchColumns() {
+            searchColumn.innerHTML = '<option value="">Todas as colunas</option>';
+            
+            currentHeaders.forEach(header => {
+                const option = document.createElement('option');
+                option.value = header;
+                option.textContent = header;
+                searchColumn.appendChild(option);
+            });
+        }
+        
+        function createAddForm() {
+            if (currentHeaders.length === 0) {
+                addFormContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝</h3>
+                        <p>Nenhum dado carregado para criar formulário</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let formHTML = `
+                <form id="addDataForm">
+                    <div class="form-group">
+                        <label for="worksheetName">Aba da Planilha:</label>
+                        <input type="text" id="worksheetName" value="${currentWorksheet}" readonly>
+                    </div>
+            `;
+            
+            currentHeaders.forEach(header => {
+                formHTML += `
+                    <div class="form-group">
+                        <label for="${header}">${header}:</label>
+                        <input type="text" id="${header}" name="${header}" placeholder="Digite o valor para ${header}">
+                    </div>
+                `;
+            });
+            
+            formHTML += `
+                <button type="submit" class="btn success">💾 Salvar Dados</button>
+                </form>
+            `;
+            
+            addFormContainer.innerHTML = formHTML;
+            
+            // Add form submit handler
+            document.getElementById('addDataForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                await addNewData();
+            });
+        }
+        
+        async function addNewData() {
+            const formData = {};
+            currentHeaders.forEach(header => {
+                formData[header] = document.getElementById(header).value;
+            });
+            
+            try {
+                showLoading('Salvando dados...');
+                
+                // Using the upload endpoint to add new data
+                const result = await makeRequest('/upload', 'POST', {
+                    coords: {
+                        latitude: formData.latitude || '',
+                        longitude: formData.longitude || '',
+                        accuracy: formData.accuracy || ''
+                    },
+                    metadata: {
+                        userAgent: navigator.userAgent
+                    },
+                    // You can add more fields as needed based on your spreadsheet structure
+                });
+                
+                if (result.success) {
+                    showSuccess('✅ Dados Salvos', `Dados salvos com sucesso! ID: ${result.id}`);
+                    
+                    // Clear form
+                    currentHeaders.forEach(header => {
+                        document.getElementById(header).value = '';
+                    });
+                    
+                    // Reload data to show the new entry
+                    await loadData();
+                } else {
+                    throw new Error(result.error || 'Erro ao salvar dados');
+                }
+            } catch (error) {
+                console.error('Failed to add data:', error);
+                showError(
+                    '❌ Erro ao Salvar Dados',
+                    error.message,
+                    'Verifique os dados e tente novamente.'
+                );
+            }
+        }
+        
+        async function searchData() {
+            const term = searchTerm.value.trim();
+            if (!term) {
+                searchResults.innerHTML = `
+                    <div class="error-container">
+                        <h3>❌ Erro</h3>
+                        <p>Digite um termo para pesquisar</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const column = searchColumn.value;
+            
+            try {
+                showLoading('Pesquisando...');
+                
+                // Filter data based on search term
+                const filteredData = allData.filter(item => {
+                    if (column) {
+                        // Search in specific column
+                        return String(item[column] || '').toLowerCase().includes(term.toLowerCase());
+                    } else {
+                        // Search in all columns
+                        return Object.values(item).some(value => 
+                            String(value || '').toLowerCase().includes(term.toLowerCase())
+                        );
+                    }
+                });
+                
+                if (filteredData.length === 0) {
+                    searchResults.innerHTML = `
+                        <div class="empty-state">
+                            <h3>🔍</h3>
+                            <p>Nenhum resultado encontrado para "${term}"${column ? ` na coluna ${column}` : ''}</p>
+                        </div>
+                    `;
+                } else {
+                    let resultsHTML = `
+                        <div class="success-container">
+                            <h3>✅ ${filteredData.length} resultado(s) encontrado(s)</h3>
+                            <p>Para o termo "${term}"${column ? ` na coluna ${column}` : ''}</p>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        ${currentHeaders.map(header => `<th>${header}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    filteredData.forEach(row => {
+                        resultsHTML += `<tr>`;
+                        currentHeaders.forEach(header => {
+                            resultsHTML += `<td>${row[header] || ''}</td>`;
+                        });
+                        resultsHTML += `</tr>`;
+                    });
+                    
+                    resultsHTML += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    searchResults.innerHTML = resultsHTML;
+                }
+            } catch (error) {
+                console.error('Search failed:', error);
+                searchResults.innerHTML = `
+                    <div class="error-container">
+                        <h3>❌ Erro na Pesquisa</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function updateStats(metadata) {
+            if (!metadata) return;
+            
+            document.getElementById('totalRows').textContent = metadata.total_rows?.toLocaleString() || '0';
+            document.getElementById('totalColumns').textContent = metadata.total_columns || '0';
+            document.getElementById('lastUpdate').textContent = metadata.last_update ? 
+                formatDate(metadata.last_update) : '---';
+            document.getElementById('worksheetName').textContent = metadata.worksheet_name || currentWorksheet || '---';
+        }
+        
+        function renderTable() {
+            if (allData.length === 0) {
+                dataContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Nenhum dado encontrado na aba selecionada.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Calculate pagination
+            totalPages = Math.ceil(allData.length / rowsPerPage);
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, allData.length);
+            const currentData = allData.slice(startIndex, endIndex);
+            
+            let tableHTML = `
+                <div class="table-header">
+                    <h3>📊 Dados da Planilha - ${currentWorksheet}</h3>
+                    <div class="table-controls">
+                        <input type="number" id="rowsPerPage" value="${rowsPerPage}" min="5" max="100" style="width: 80px;">
+                        <span>linhas por página</span>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                ${currentHeaders.map(header => `<th>${header}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            currentData.forEach((row, index) => {
+                tableHTML += `<tr>`;
+                currentHeaders.forEach(header => {
+                    tableHTML += `<td>${row[header] || ''}</td>`;
+                });
+                tableHTML += `</tr>`;
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            dataContainer.innerHTML = tableHTML;
+            
+            // Update page info
+            pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+            
+            // Setup pagination controls
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+            
+            // Add event listener for rows per page change
+            document.getElementById('rowsPerPage').addEventListener('change', function() {
+                rowsPerPage = parseInt(this.value);
+                currentPage = 1;
+                renderTable();
+                setupPagination();
+            });
+        }
+        
+        function setupPagination() {
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+            
+            nextPageBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+        }
+        
+        function clearAll() {
+            SERVER_URL = '';
+            allData = [];
+            currentPage = 1;
+            worksheets = [];
+            currentWorksheet = '';
+            isConnected = false;
+            currentHeaders = [];
+            
+            serverOptions.forEach(opt => opt.classList.remove('active'));
+            customUrlInput.style.display = 'none';
+            customUrlInput.value = '';
+            currentUrlSpan.textContent = 'Nenhuma selecionada';
+            
+            loadWorksheetsBtn.disabled = true;
+            loadDataBtn.disabled = true;
+            
+            hideElements();
+            
+            worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+            dataContainer.innerHTML = `
+                <div class="empty-state">
+                    <h3>📊</h3>
+                    <p>Selecione um servidor e clique em "Testar Conexão" para começar</p>
+                </div>
+            `;
+            
+            addFormContainer.innerHTML = `
+                <div class="empty-state">
+                    <h3>📝</h3>
+                    <p>Carregue os dados primeiro para ver a estrutura do formulário</p>
+                </div>
+            `;
+            
+            searchResults.innerHTML = '';
+            searchTerm.value = '';
+            searchColumn.innerHTML = '<option value="">Todas as colunas</option>';
+        }
+        
+        // Event Listeners
+        testConnectionBtn.addEventListener('click', testConnection);
+        loadWorksheetsBtn.addEventListener('click', loadWorksheets);
+        loadDataBtn.addEventListener('click', loadData);
+        clearBtn.addEventListener('click', clearAll);
+        searchBtn.addEventListener('click', searchData);
+        
+        // Initialize
+        console.log('📊 Google Sheets Data Manager inicializado');
+        console.log('🛠️ Para debug, execute: debugConnection() no console');
+    </script>
+</body>
+</html>
