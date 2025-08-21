@@ -1,6 +1,6 @@
+[complete_sheets_viewer.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/updated_sheets_viewer.html)
 
 [sheets_viewer_dashboard.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/20.08/sheets_viewer_dashboard.html)
-
 
 [debug_dashboard_complete](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/20.08/debug_dashboard_complete (1).html)
 

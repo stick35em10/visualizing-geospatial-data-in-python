@@ -1,8 +1,18 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
     21.08.2025, see inforção gravada na base de dados
-        07:32
+        07:[55/32]
             
+            55
+            git add  html/21.08/ README.md cmd.txt
+            git commit -m "21.08, 07:55 update app.py cmd.txt"
+            git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
+            32
             git pull origin 01_03_01_Plotting_view_2_01
+
+            git add app.py cmd.txt
+            git commit -m "21.08, 06:53 update app.py cmd.txt"
+            git push --set-upstream origin 01_03_01_Plotting_view_2_01
 
             git add app.py cmd.txt
             git commit -m "21.08, 06:53 update app.py cmd.txt"
