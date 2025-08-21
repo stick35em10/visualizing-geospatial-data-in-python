@@ -1,5 +1,10 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
     21.08.2025, see inforção gravada na base de dados
+        13:03
+            git add  html/21.08/sheets_viewer_complete.html README.md cmd.txt
+            git commit -m " 21.08, 13:04 html/21.08/sheets_viewer_complete.html update README.md cmd.txt "
+            git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
         12:39
             
             git add html/21.08/google_sheets_viewer.html README.md cmd.txt

@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Google Sheets Data Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .app-header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #fff, #e0e7ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            background: white;
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Server Configuration Section */
+        .config-section {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .server-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .server-card {
+            background: white;
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .server-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .server-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .server-card:hover::before {
+            left: 100%;
+        }
+
+        .server-card.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: #5a67d8;
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .server-card h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .server-card p {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .custom-url-input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .custom-url-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .current-server {
+            background: #f0fdf4;
+            border: 2px solid #22c55e;
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-top: 20px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            word-break: break-all;
+            font-size: 0.9rem;
+        }
+
+        /* Controls Section */
+        .controls-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn.danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
+        /* Status Messages */
+        .status-message {
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .status-message.success {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            border: 2px solid #22c55e;
+            color: #065f46;
+        }
+
+        .status-message.error {
+            background: linear-gradient(135deg, #fef2f2, #fecaca);
+            border: 2px solid #ef4444;
+            color: #991b1b;
+        }
+
+        .status-message.loading {
+            background: linear-gradient(135deg, #eff6ff, #dbeafe);
+            border: 2px solid #3b82f6;
+            color: #1e40af;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Worksheet Selector */
+        .worksheet-section {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 30px 0;
+            display: none;
+        }
+
+        .worksheet-section.visible {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .worksheet-select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .worksheet-select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Stats Section */
+        .stats-section {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stats-section.visible {
+            display: grid;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* Data Table */
+        .table-container {
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: none;
+        }
+
+        .table-container.visible {
+            display: block;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, #1f2937, #111827);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .table-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .table-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .table-controls input,
+        .table-controls select {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 14px;
+        }
+
+        .table-wrapper {
+            max-height: 500px;
+            overflow: auto;
+            background: white;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 2px solid #e5e7eb;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f1f5f9;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .data-table tbody tr:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        /* Pagination */
+        .pagination-section {
+            display: none;
+            grid-template-columns: auto 1fr auto;
+            gap: 20px;
+            align-items: center;
+            margin: 30px 0;
+        }
+
+        .pagination-section.visible {
+            display: grid;
+        }
+
+        .pagination-info {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 10px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            color: #374151;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .app-container {
+                padding: 10px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .app-header h1 {
+                font-size: 2rem;
+            }
+
+            .server-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-section {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-section {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .table-header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .pagination-section {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <h1>📊 Google Sheets Viewer</h1>
+            <p>Visualize e explore dados do Google Sheets de forma moderna e interativa</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Server Configuration -->
+            <section class="config-section">
+                <h2 class="section-title">
+                    🌐 Configuração do Servidor
+                </h2>
+                
+                <div class="server-grid">
+                    <div class="server-card" data-url="https://visualizing-geospatial-data-in-python-1.onrender.com">
+                        <h3>🚀 Servidor Principal</h3>
+                        <p>Render v1 (Recomendado)</p>
+                    </div>
+                    
+                    <div class="server-card" data-url="https://visualizing-geospatial-data-in-python.onrender.com">
+                        <h3>🔄 Servidor Alternativo</h3>
+                        <p>Render Original</p>
+                    </div>
+                    
+                    <div class="server-card" data-url="http://localhost:5000">
+                        <h3>💻 Servidor Local</h3>
+                        <p>Desenvolvimento (5000)</p>
+                    </div>
+                    
+                    <div class="server-card" data-url="custom">
+                        <h3>⚙️ Personalizado</h3>
+                        <p>URL Customizada</p>
+                    </div>
+                </div>
+
+                <input type="text" 
+                       class="custom-url-input" 
+                       id="customUrlInput" 
+                       placeholder="Digite a URL personalizada (ex: https://meuservidor.com)"
+                       style="display: none;">
+
+                <div class="current-server">
+                    <strong>🌐 Servidor Atual:</strong> 
+                    <span id="currentServerUrl">Nenhum servidor selecionado</span>
+                </div>
+            </section>
+
+            <!-- Status Messages -->
+            <div id="statusContainer"></div>
+
+            <!-- Controls -->
+            <section class="controls-section">
+                <button class="btn success" id="testConnectionBtn">
+                    🔗 Testar Conexão
+                </button>
+                <button class="btn" id="loadWorksheetsBtn" disabled>
+                    📄 Carregar Abas
+                </button>
+                <button class="btn" id="loadDataBtn" disabled>
+                    📥 Carregar Dados
+                </button>
+                <button class="btn danger" id="clearAllBtn">
+                    🗑️ Limpar Tudo
+                </button>
+            </section>
+
+            <!-- Worksheet Selector -->
+            <section class="worksheet-section" id="worksheetSection">
+                <h3 class="section-title">📋 Selecionar Aba da Planilha</h3>
+                <select class="worksheet-select" id="worksheetSelect">
+                    <option value="">Escolha uma aba...</option>
+                </select>
+            </section>
+
+            <!-- Statistics -->
+            <section class="stats-section" id="statsSection">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRowsCount">0</div>
+                    <div class="stat-label">Total de Linhas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalColumnsCount">0</div>
+                    <div class="stat-label">Total de Colunas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="lastUpdateTime">---</div>
+                    <div class="stat-label">Última Atualização</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="currentWorksheetName">---</div>
+                    <div class="stat-label">Aba Atual</div>
+                </div>
+            </section>
+
+            <!-- Data Table -->
+            <section class="table-container" id="tableContainer">
+                <div class="table-header">
+                    <h3 class="table-title" id="tableTitle">📊 Dados da Planilha</h3>
+                    <div class="table-controls">
+                        <input type="text" 
+                               id="searchInput" 
+                               placeholder="Buscar..." 
+                               style="display: none;">
+                        <select id="rowsPerPageSelect" style="display: none;">
+                            <option value="25">25 por página</option>
+                            <option value="50">50 por página</option>
+                            <option value="100">100 por página</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-wrapper" id="tableWrapper">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📊</div>
+                        <h3>Pronto para começar</h3>
+                        <p>Selecione um servidor e teste a conexão para visualizar os dados</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Pagination -->
+            <section class="pagination-section" id="paginationSection">
+                <button class="btn" id="prevPageBtn" disabled>← Anterior</button>
+                <div class="pagination-info" id="paginationInfo">
+                    Página 1 de 1 (0 registros)
+                </div>
+                <button class="btn" id="nextPageBtn" disabled>Próxima →</button>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Estado da aplicação
+        const appState = {
+            serverUrl: '',
+            isConnected: false,
+            worksheets: [],
+            currentWorksheet: '',
+            allData: [],
+            filteredData: [],
+            currentPage: 1,
+            rowsPerPage: 25,
+            totalPages: 1
+        };
+
+        // Elementos DOM
+        const elements = {
+            serverCards: document.querySelectorAll('.server-card'),
+            customUrlInput: document.getElementById('customUrlInput'),
+            currentServerUrl: document.getElementById('currentServerUrl'),
+            statusContainer: document.getElementById('statusContainer'),
+            testConnectionBtn: document.getElementById('testConnectionBtn'),
+            loadWorksheetsBtn: document.getElementById('loadWorksheetsBtn'),
+            loadDataBtn: document.getElementById('loadDataBtn'),
+            clearAllBtn: document.getElementById('clearAllBtn'),
+            worksheetSection: document.getElementById('worksheetSection'),
+            worksheetSelect: document.getElementById('worksheetSelect'),
+            statsSection: document.getElementById('statsSection'),
+            tableContainer: document.getElementById('tableContainer'),
+            tableWrapper: document.getElementById('tableWrapper'),
+            paginationSection: document.getElementById('paginationSection'),
+            searchInput: document.getElementById('searchInput'),
+            rowsPerPageSelect: document.getElementById('rowsPerPageSelect'),
+            prevPageBtn: document.getElementById('prevPageBtn'),
+            nextPageBtn: document.getElementById('nextPageBtn'),
+            paginationInfo: document.getElementById('paginationInfo')
+        };
+
+        // Inicialização
+        function init() {
+            setupEventListeners();
+            console.log('Google Sheets Viewer inicializado');
+        }
+
+        // Event Listeners
+        function setupEventListeners() {
+            // Seleção de servidor
+            elements.serverCards.forEach(card => {
+                card.addEventListener('click', () => selectServer(card));
+            });
+
+            // URL personalizada
+            elements.customUrlInput.addEventListener('input', (e) => {
+                appState.serverUrl = e.target.value.trim();
+                elements.currentServerUrl.textContent = appState.serverUrl || 'URL personalizada não definida';
+                resetConnectionState();
+            });
+
+            // Botões de controle
+            elements.testConnectionBtn.addEventListener('click', testConnection);
+            elements.loadWorksheetsBtn.addEventListener('click', loadWorksheets);
+            elements.loadDataBtn.addEventListener('click', loadData);
+            elements.clearAllBtn.addEventListener('click', clearAll);
+
+            // Seleção de worksheet
+            elements.worksheetSelect.addEventListener('change', (e) => {
+                appState.currentWorksheet = e.target.value;
+                elements.loadDataBtn.disabled = !appState.currentWorksheet;
+            });
+
+            // Controles de tabela
+            elements.searchInput.addEventListener('input', handleSearch);
+            elements.rowsPerPageSelect.addEventListener('change', handleRowsPerPageChange);
+            elements.prevPageBtn.addEventListener('click', () => changePage(appState.currentPage - 1));
+            elements.nextPageBtn.addEventListener('click', () => changePage(appState.currentPage + 1));
+        }
+
+        // Seleção de servidor
+        function selectServer(selectedCard) {
+            elements.serverCards.forEach(card => card.classList.remove('active'));
+            selectedCard.classList.add('active');
+
+            const url = selectedCard.dataset.url;
+            
+            if (url === 'custom') {
+                elements.customUrlInput.style.display = 'block';
+                elements.customUrlInput.focus();
+                appState.serverUrl = elements.customUrlInput.value.trim();
+            } else {
+                elements.customUrlInput.style.display = 'none';
+                appState.serverUrl = url;
+            }
+
+            elements.currentServerUrl.textContent = appState.serverUrl || 'URL personalizada não definida';
+            resetConnectionState();
+        }
+
+        // Reset do estado de conexão
+        function resetConnectionState() {
+            appState.isConnected = false;
+            elements.loadWorksheetsBtn.disabled = true;
+            elements.loadDataBtn.disabled = true;
+            hideSection(elements.worksheetSection);
+            hideSection(elements.statsSection);
+            hideSection(elements.paginationSection);
+            elements.tableContainer.classList.remove('visible');
+            clearStatus();
+        }
+
+        // Funções de API
+        async function makeApiRequest(endpoint, options = {}) {
+            if (!appState.serverUrl) {
+                throw new Error('Nenhum servidor configurado');
+            }
+
+            const url = `${appState.serverUrl}${endpoint}`;
+            console.log(`Fazendo requisição para: ${url}`);
+
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    mode: 'cors',
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                console.log('Resposta recebida:', data);
+                return data;
+
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    throw new Error(`Erro de conexão: Não foi possível conectar ao servidor ${appState.serverUrl}`);
+                }
+                
+                throw error;
+            }
+        }
+
+        // Teste de conexão
+        async function testConnection() {
+            if (!appState.serverUrl) {
+                showStatus('error', 'Erro de Configuração', 'Por favor, selecione um servidor primeiro.');
+                return;
+            }
+
+            showStatus('loading', 'Testando conexão...', 'Verificando se o servidor está online');
+            elements.testConnectionBtn.disabled = true;
+
+            try {
+                // Teste básico de saúde
+                const healthCheck = await makeApiRequest('/health');
+                
+                if (healthCheck.status === 'healthy') {
+                    showStatus('loading', 'Servidor Online', 'Verificando conexão com Google Sheets...');
+                    
+                    // Teste do Google Sheets
+                    const sheetsTest = await makeApiRequest('/debug/full');
+                    
+                    if (sheetsTest.success) {
+                        appState.isConnected = true;
+                        elements.loadWorksheetsBtn.disabled = false;
+                        
+                        showStatus('success', 'Conexão Estabelecida', 
+                            `Servidor funcionando corretamente! Google Sheets acessível em ${sheetsTest.duration_seconds?.toFixed(2) || 'N/A'}s`);
+                        
+                        showEmptyState('🎉 Tudo Pronto!', 'Conexão estabelecida com sucesso. Clique em "Carregar Abas" para continuar.');
+                    } else {
+                        throw new Error(sheetsTest.steps?.['3_sheets_connection']?.error || 'Falha na conexão com Google Sheets');
+                    }
+                } else {
+                    throw new Error('Servidor não está funcionando corretamente');
+                }
+
+            } catch (error) {
+                console.error('Falha no teste de conexão:', error);
+                appState.isConnected = false;
+                elements.loadWorksheetsBtn.disabled = true;
+                elements.loadDataBtn.disabled = true;
+                
+                showStatus('error', 'Falha na Conexão', error.message);
+                showEmptyState('❌ Falha na Conexão', 'Verifique a configuração do servidor e tente novamente.');
+                
+            } finally {
+                elements.testConnectionBtn.disabled = false;
+            }
+        }
+
+        // Carregar worksheets
+        async function loadWorksheets() {
+            if (!appState.isConnected) {
+                showStatus('error', 'Erro', 'Teste a conexão primeiro.');
+                return;
+            }
+
+            showStatus('loading', 'Carregando abas...', 'Buscando worksheets da planilha');
+            elements.loadWorksheetsBtn.disabled = true;
+
+            try {
+                const result = await makeApiRequest('/api/sheets/worksheets');
+
+                if (result.success && result.worksheets) {
+                    appState.worksheets = result.worksheets;
+                    
+                    // Atualizar select de worksheets
+                    elements.worksheetSelect.innerHTML = '<option value="">Escolha uma aba...</option>';
+                    result.worksheets.forEach(worksheet => {
+                        const option = document.createElement('option');
+                        option.value = worksheet.title;
+                        option.textContent = `${worksheet.title} (${worksheet.row_count} linhas, ${worksheet.col_count} colunas)`;
+                        elements.worksheetSelect.appendChild(option);
+                    });
+
+                    showSection(elements.worksheetSection);
+                    
+                    showStatus('success', 'Abas Carregadas', 
+                        `${result
