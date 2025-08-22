@@ -5,6 +5,16 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
          
         22.08.2025
             como selecionar e visualizar as imagens gravadas
+                13:25
+                    git add README.md cmd.txt
+                    git commit -m " 22.08, 13:25 try selecionar e visualizar as imagens gravadas"
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
+                12:59
+                    git add html/21.08/ cmd.txt README.md cmd.txt
+                    git commit -m " 22.08, 11:31 try selecionar e visualizar as imagens gravadas"
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
                 11:[31, 21, 16]
                     git add html/21.08/ cmd.txt README.md cmd.txt
                     git commit -m " 22.08, 11:31 try selecionar e visualizar as imagens gravadas"
