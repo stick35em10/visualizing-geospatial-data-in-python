@@ -1,6 +1,21 @@
 
-[sheets_viewer_dashboard.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/20.08/sheets_viewer_dashboard.html)
 
+[deepseek_html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/deepseek_html_20250821_add7d2.html)
+
+[sheets_viewer_complete](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/sheets_viewer_complete.html)
+
+[google_sheets_viewer](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/google_sheets_viewer.html)
+
+[update html/21.08/compatible_html_client_1_.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/compatible_html_client_1_.html)
+
+[compatible_html_client](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/compatible_html_client.html)
+
+[diagnostic_sheets_viewer](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/diagnostic_sheets_viewer.html)
+
+
+[complete_sheets_viewer.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/updated_sheets_viewer.html)
+
+[sheets_viewer_dashboard.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/20.08/sheets_viewer_dashboard.html)
 
 [debug_dashboard_complete](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/20.08/debug_dashboard_complete (1).html)
 
