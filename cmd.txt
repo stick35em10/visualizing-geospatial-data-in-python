@@ -1,6 +1,21 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
+    see foto saved
+        see inforção gravada na base de dados 
+        22.08.2025
+            05:19
+                git add html/21.08/deepseek_html_20250821_add7d2.html cmd.txt
+                git commit -m " 22.08, 05:19 Substitua a função makeRequest html/21.08/deepseek_html_20250821_add7d2.html cmd.txt"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
+                git pull origin 01_03_01_Plotting_view_2_01
+            
+
     21.08.2025, see inforção gravada na base de dados
-        21:19
+
+        21:[26, 19]
+
+            3. Atualize a função loadData para melhor tratamento de erro:
+            
             
             git add html/21.08/deepseek_html_20250821_add7d2.html cmd.txt
             git commit -m " 21.08, 21:19 Substitua a função makeRequest html/21.08/deepseek_html_20250821_add7d2.html cmd.txt"
