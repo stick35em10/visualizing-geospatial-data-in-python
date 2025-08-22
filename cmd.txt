@@ -8,6 +8,14 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
                 06:02
 
             see inforção gravada na base de dados
+            08:13
+                deepseek_html_20250821_add7d2.html:1355 ❌ Failed to load data: ReferenceError: selectedWorksheet is not defined
+    at processWorksheetData (deepseek_html_20250821_add7d2.html:1387:17)
+    at HTMLButtonElement.loadData (deepseek_html_20250821_add7d2.html:1347:21)
+
+                    git add html/21.08/deepseek_html_20250821_add7d2.html cmd.txt
+                    git commit -m " 22.08, 08:13 try solve ❌ Failed to load data: ReferenceError: selectedWorksheet is not defined"
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01    
             08:05
             ❌ Failed to load data: ReferenceError: selectedWorksheet is not defined
                 
