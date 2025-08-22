@@ -5,10 +5,14 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
          
         22.08.2025
             como selecionar e visualizar as imagens gravadas
+                10:24
+                    git add html/22.08/deepseek_html_20250822_bd4661.html cmd.txt
+                    git commit -m " 22.08, 10:24 try selecionar e visualizar as imagens gravadas"
+                    git push --set-upstream origin 01_03_01_View_img_saved_01_01
                 09:05
                     git branch 01_03_01_View_img_saved_01_01
                     git checkout 01_03_01_View_img_saved_01_01
-                    
+
                     git add html/21.08/deepseek_html_20250821_add7d2.html cmd.txt
                     git commit -m " 22.08, 09:05 try solve como selecionar e visualizar as imagens gravadas"
                     git push --set-upstream origin 01_03_01_View_img_saved_01_01
