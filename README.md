@@ -1,5 +1,7 @@
 
 
+[visualisar_imagem_html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/22.08/deepseek_html_20250822_bd4661.html)
+
 [deepseek_html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/deepseek_html_20250821_add7d2.html)
 
 [sheets_viewer_complete](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/21.08/sheets_viewer_complete.html)
