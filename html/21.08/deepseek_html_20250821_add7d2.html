@@ -1136,6 +1136,44 @@
         }
 
         // Função auxiliar para processar os dados da worksheet
+        // Função auxiliar para processar os dados da worksheet - CORRIGIDA
+        function processWorksheetData(result, selectedWorksheet) {
+            if (result.success && result.data) {
+                console.log(`✅ Dados carregados: ${result.data.length} registros`);
+                allData = result.data;
+                currentWorksheet = selectedWorksheet;
+                currentPage = 1;
+                
+                // Extract headers from first data row
+                if (allData.length > 0) {
+                    currentHeaders = Object.keys(allData[0]);
+                    console.log(`📊 Colunas detectadas:`, currentHeaders);
+                    
+                    // Update search column dropdown
+                    updateSearchColumns();
+                    
+                    // Create add form
+                    createAddForm();
+                }
+                
+                updateStats(result.metadata);
+                renderTable();
+                
+                statsContainer.style.display = 'grid';
+                
+                if (allData.length > rowsPerPage) {
+                    setupPagination();
+                    paginationContainer.style.display = 'grid';
+                }
+                
+                showSuccess('✅ Dados Carregados', `${allData.length} registros carregados com sucesso!`);
+                
+            } else {
+                throw new Error(result.error || 'Nenhum dado encontrado');
+            }
+        }
+
+        /*
         function processWorksheetData(result) {
             if (result.success && result.data) {
                     console.log(`✅ Dados carregados: ${result.data.length} registros`);
@@ -1171,7 +1209,8 @@
                     throw new Error(result.error || 'Nenhum dado encontrado');
                 }
             }
-        /*
+        */
+            /*
         async function loadData() {
             const selectedWorksheet = worksheetSelect.value;
             if (!selectedWorksheet) {
@@ -1278,6 +1317,68 @@
             }
         }
         */
+       
+        async function loadData() {
+            const selectedWorksheet = worksheetSelect.value;
+            if (!selectedWorksheet) {
+                showError('❌ Erro', 'Selecione uma aba da planilha primeiro.');
+                return;
+            }
+            
+            showLoading(`Carregando dados da aba "${selectedWorksheet}"...`);
+            loadDataBtn.disabled = true;
+            
+            try {
+                console.log(`📥 Carregando dados da worksheet: ${selectedWorksheet}`);
+                
+                // Primeiro, verificar se a worksheet é acessível
+                const accessCheck = await checkWorksheetAccess(selectedWorksheet);
+                
+                if (!accessCheck.exists) {
+                    throw new Error(`A worksheet "${selectedWorksheet}" não foi encontrada`);
+                }
+                
+                if (!accessCheck.accessible) {
+                    throw new Error(`Não foi possível acessar a worksheet "${selectedWorksheet}". Erro: ${accessCheck.error}`);
+                }
+                
+                // Se já temos dados do check, usar eles
+                if (accessCheck.data) {
+                    processWorksheetData(accessCheck.data, selectedWorksheet);
+                } else {
+                    // Se não, fazer request completo
+                    const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(selectedWorksheet)}`);
+                    processWorksheetData(result, selectedWorksheet);
+                }
+                
+            } catch (error) {
+                console.error('❌ Failed to load data:', error);
+                
+                let errorMessage = error.message;
+                let suggestion = 'Verifique se a aba possui dados válidos.';
+                
+                // Tratamento específico para erro 500
+                if (error.message.includes('500') || error.message.includes('Internal Server Error')) {
+                    errorMessage = 'Erro interno do servidor';
+                    suggestion = 'O servidor pode estar com problemas de configuração ou a worksheet pode ter formato inválido.';
+                }
+                
+                // Verificar se é problema de timeout
+                if (error.message.includes('timeout') || error.message.includes('Timeout')) {
+                    errorMessage = 'Tempo limite excedido';
+                    suggestion = 'A worksheet pode ser muito grande. Tente usar a opção de carregamento parcial.';
+                }
+                
+                showError(
+                    '❌ Erro ao Carregar Dados',
+                    errorMessage,
+                    suggestion
+                );
+                
+            } finally {
+                loadDataBtn.disabled = false;
+            }
+        }
        // Função auxiliar para processar os dados da worksheet
         function processWorksheetData(result) {
             if (result.success && result.data) {
