@@ -1786,8 +1786,300 @@
         throw error;
     }
 };
+        // Função para testar a saúde do servidor
+window.testServerHealth = async function() {
+    console.log('🏥 Testando saúde do servidor...');
+    
+    try {
+        const endpoints = [
+            '/health',
+            '/debug/environment',
+            '/debug/credentials',
+            '/debug/sheets',
+            '/api/sheets/worksheets'
+        ];
+        
+        for (const endpoint of endpoints) {
+            try {
+                console.log(`🔗 Testando: ${endpoint}`);
+                const response = await fetch('https://cors-anywhere.herokuapp.com/https://visualizing-geospatial-data-in-python-1.onrender.com' + endpoint);
+                
+                console.log(`📊 ${endpoint}:`, response.status, response.statusText);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log(`✅ ${endpoint} - OK:`, data);
+                } else {
+                    const text = await response.text();
+                    console.error(`❌ ${endpoint} - Erro:`, text);
+                }
+                
+            } catch (error) {
+                console.error(`💥 ${endpoint} - Falha:`, error);
+            }
+            console.log('---');
+        }
+        
+    } catch (error) {
+        console.error('💥 Erro no teste de saúde:', error);
+    }
+};
+
+// Função para debug detalhado do servidor
+window.debugServer = async function() {
+    console.clear();
+    console.log('🩺 DIAGNÓSTICO DO SERVIDOR');
+    console.log('==========================');
+    
+    const testEndpoints = [
+        '/health',
+        '/debug/environment',
+        '/debug/credentials', 
+        '/debug/sheets',
+        '/api/sheets/worksheets'
+    ];
+    
+    for (const endpoint of testEndpoints) {
+        try {
+            console.log(`🔗 Testando: ${endpoint}`);
+            const result = await makeRequest(endpoint);
+            console.log(`✅ ${endpoint}:`, result);
+        } catch (error) {
+            console.error(`❌ ${endpoint}:`, error.message);
+        }
+        console.log('---');
+    }
+};
+
+// Função para verificar se a worksheet existe e é acessível
+window.checkWorksheetAccess = async function(worksheetName) {
+    console.log(`🔐 Verificando acesso à worksheet: ${worksheetName}`);
+    
+    try {
+        // Primeiro, listar todas as worksheets
+        const worksheetsResult = await makeRequest('/api/sheets/worksheets');
+        
+        if (worksheetsResult.success) {
+            const worksheet = worksheetsResult.worksheets.find(ws => ws.title === worksheetName);
+            
+            if (worksheet) {
+                console.log('✅ Worksheet encontrada:', worksheet);
+                
+                // Verificar se tem dados
+                if (worksheet.row_count > 0) {
+                    console.log(`📊 Worksheet contém ${worksheet.row_count} linhas`);
+                    
+                    // Tentar acessar os dados
+                    try {
+                        const dataResult = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(worksheetName)}&max_rows=5`);
+                        console.log('✅ Dados acessíveis:', dataResult);
+                        return { exists: true, accessible: true, data: dataResult };
+                    } catch (dataError) {
+                        console.error('❌ Erro ao acessar dados:', dataError.message);
+                        return { exists: true, accessible: false, error: dataError.message };
+                    }
+                    
+                } else {
+                    console.log('ℹ️ Worksheet está vazia');
+                    return { exists: true, accessible: true, empty: true };
+                }
+                
+            } else {
+                console.error('❌ Worksheet não encontrada');
+                return { exists: false, accessible: false };
+            }
+        }
+        
+    } catch (error) {
+        console.error('💥 Erro ao verificar worksheet:', error);
+        return { exists: null, accessible: false, error: error.message };
+    }
+};
+
+// Função para testar a worksheet com diferentes abordagens
+window.testWorksheetDetailed = async function(worksheetName) {
+    console.log(`🔍 Teste detalhado da worksheet: ${worksheetName}`);
+    
+    // Tentar diferentes abordagens
+    const approaches = [
+        { name: 'API Padrão', url: `/api/sheets/data?worksheet=${encodeURIComponent(worksheetName)}` },
+        { name: 'API com timeout', url: `/api/sheets/data?worksheet=${encodeURIComponent(worksheetName)}&max_rows=10` },
+        { name: 'API Info', url: `/api/sheets/info` }
+    ];
+    
+    for (const approach of approaches) {
+        try {
+            console.log(`🧪 Tentativa: ${approach.name}`);
+            const result = await makeRequest(approach.url);
+            console.log(`✅ ${approach.name}:`, result);
+            return result;
+        } catch (error) {
+            console.error(`❌ ${approach.name}:`, error.message);
+        }
+        console.log('---');
+    }
+    
+    throw new Error('Todas as abordagens falharam');
+};
+
+// Função para carregar dados parcialmente (útil para worksheets grandes)
+window.loadPartialData = async function(worksheetName, maxRows = 50) {
+    console.log(`📋 Carregando dados parciais (${maxRows} linhas) de: ${worksheetName}`);
+    
+    try {
+        const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(worksheetName)}&max_rows=${maxRows}`);
+        
+        if (result.success) {
+            console.log(`✅ Dados parciais carregados: ${result.data.length} registros`);
+            return result;
+        } else {
+            throw new Error(result.error || 'Erro ao carregar dados parciais');
+        }
+        
+    } catch (error) {
+        console.error('❌ Erro ao carregar dados parciais:', error);
+        throw error;
+    }
+};
+
+// Função para tentar diferentes encodings
+window.tryDifferentEncodings = async function(worksheetName) {
+    console.log(`🔠 Testando diferentes encodings para: ${worksheetName}`);
+    
+    const encodings = [
+        encodeURIComponent(worksheetName), // Encoding padrão
+        worksheetName, // Sem encoding
+        encodeURIComponent(worksheetName.replace(/ /g, '+')), // Com +
+        worksheetName.replace(/ /g, '%20') // Com %20
+    ];
+    
+    for (const encoding of encodings) {
+        try {
+            console.log(`🔡 Testando encoding: ${encoding}`);
+            const result = await makeRequest(`/api/sheets/data?worksheet=${encoding}`);
+            
+            if (result.success) {
+                console.log(`✅ Sucesso com encoding: ${encoding}`);
+                return result;
+            }
+        } catch (error) {
+            console.log(`❌ Falha com encoding: ${encoding}`, error.message);
+        }
+    }
+    
+    throw new Error('Todos os encodings falharam');
+};
+
+        // Função para debug de worksheets
+        window.debugWorksheets = async function() {
+            console.clear();
+            console.log('🔍 Debug de Worksheets iniciado...');
+            
+            try {
+                const result = await makeRequest('/api/sheets/worksheets');
+                
+                if (result.success && result.worksheets) {
+                    console.log('✅ Conexão bem-sucedida');
+                    console.log('📋 Worksheets disponíveis:');
+                    
+                    result.worksheets.forEach((ws, index) => {
+                        console.log(`${index + 1}. ${ws.title} (${ws.row_count} linhas, ${ws.col_count} colunas)`);
+                    });
+                    
+                    console.log('📊 Total de worksheets:', result.worksheets.length);
+                    console.log('📝 Nome da planilha:', result.spreadsheet_title);
+                    
+                    // Atualizar o dropdown no UI
+                    worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                    result.worksheets.forEach(ws => {
+                        const option = document.createElement('option');
+                        option.value = ws.title;
+                        option.textContent = `${ws.title} (${ws.row_count} linhas)`;
+                        worksheetSelect.appendChild(option);
+                    });
+                    
+                    return result.worksheets;
+                    
+                } else {
+                    console.error('❌ Erro no servidor:', result.error);
+                    return null;
+                }
+                
+            } catch (error) {
+                console.error('💥 Erro ao carregar worksheets:', error);
+                return null;
+            }
+        };
+
+        // Função para testar worksheets específicas
+        window.testWorksheet = async function(worksheetName) {
+            console.log(`🧪 Testando worksheet: ${worksheetName}`);
+            
+            try {
+                const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(worksheetName)}`);
+                
+                if (result.success) {
+                    console.log('✅ Worksheet acessível:', {
+                        totalRows: result.data.length,
+                        totalColumns: result.data.length > 0 ? Object.keys(result.data[0]).length : 0,
+                        columns: result.data.length > 0 ? Object.keys(result.data[0]) : []
+                    });
+                    return result;
+                } else {
+                    console.error('❌ Erro na worksheet:', result.error);
+                    return result;
+                }
+                
+            } catch (error) {
+                console.error('💥 Erro ao testar worksheet:', error);
+                throw error;
+            }
+        };
 
         // Teste completo de diagnóstico
+        window.fullDiagnostic = async function() {
+            console.clear();
+            console.log('🩺 INICIANDO DIAGNÓSTICO COMPLETO');
+            console.log('================================');
+            
+            // 1. Testar saúde básica do servidor
+            console.log('1. 🏥 Testando saúde do servidor...');
+            await debugServer();
+            
+            console.log('================================');
+            
+            // 2. Listar worksheets
+            console.log('2. 📋 Listando worksheets...');
+            const worksheets = await debugWorksheets();
+            
+            console.log('================================');
+            
+            // 3. Testar cada worksheet individualmente
+            console.log('3. 🧪 Testando cada worksheet...');
+            if (worksheets && worksheets.length > 0) {
+                for (const ws of worksheets) {
+                    console.log(`📄 Testando: ${ws.title}`);
+                    try {
+                        const result = await checkWorksheetAccess(ws.title);
+                        if (result.accessible) {
+                            console.log(`✅ ${ws.title} - ACESSÍVEL`);
+                        } else {
+                            console.log(`❌ ${ws.title} - INACESSÍVEL: ${result.error}`);
+                        }
+                    } catch (error) {
+                        console.error(`💥 ${ws.title} - ERRO:`, error.message);
+                    }
+                    console.log('---');
+                }
+            }
+            
+            console.log('================================');
+            console.log('🎯 DIAGNÓSTICO COMPLETO');
+            console.log('💡 Dica: Se todas as worksheets falharem, o problema é no servidor');
+            console.log('💡 Dica: Se apenas uma worksheet falhar, o problema é específico dela');
+        };
+        // Teste completo de diagnóstico
+        /*
         window.fullDiagnostic = async function() {
             console.clear();
             console.log('🩺 INICIANDO DIAGNÓSTICO COMPLETO');
@@ -1825,7 +2117,7 @@
             console.log('💡 Dica: Se todas as worksheets falharem, o problema é no servidor');
             console.log('💡 Dica: Se apenas uma worksheet falhar, o problema é específico dela');
         };
-
+        */
 
         // Execute no console:
         fullDiagnostic();

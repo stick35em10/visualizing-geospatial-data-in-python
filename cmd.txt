@@ -1,7 +1,18 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
     see foto saved
-        see inforção gravada na base de dados 
+    como selecionar e visualizar as imagens gravadas
+
+         
         22.08.2025
+            como selecionar e visualizar as imagens gravadas
+                06:02
+
+            see inforção gravada na base de dados
+            06:04
+                git add html/21.08/deepseek_html_20250821_add7d2.html cmd.txt
+                git commit -m " 22.08, 06:04 try solve ReferenceError: testServerHealth is not defined"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
             05:19
                 git add html/21.08/deepseek_html_20250821_add7d2.html cmd.txt
                 git commit -m " 22.08, 05:19 Substitua a função makeRequest html/21.08/deepseek_html_20250821_add7d2.html cmd.txt"
