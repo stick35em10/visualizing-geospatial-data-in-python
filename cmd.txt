@@ -2,7 +2,12 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     see foto saved
     como selecionar e visualizar as imagens gravadas
 
-         
+        23.08.2025
+            10:09
+                git add  html/23.08/ html/21.08/deepseek_html_20250821_add7d2.html README.md cmd.txt
+                git commit -m " 23.08, 10:21 add html/23.08/ and update html/21.08/deepseek_html_20250821_add7d2.html README.md cmd.txt try selecionar e visualizar as imagens gravadas"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
         22.08.2025
             como selecionar e visualizar as imagens gravadas
                 13:25

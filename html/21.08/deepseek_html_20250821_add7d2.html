@@ -652,6 +652,87 @@
         .filter-group {
             margin-bottom: 15px;
         }
+
+        /* Novos estilos para upload de fotos */
+        .upload-container {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .upload-area {
+            border: 3px dashed #007bff;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0,123,255,0.05);
+        }
+        
+        .upload-area:hover {
+            background: rgba(0,123,255,0.1);
+            border-color: #0056b3;
+        }
+        
+        .upload-area.dragover {
+            background: rgba(0,123,255,0.2);
+            border-color: #28a745;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #007bff;
+        }
+        
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .image-preview {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+        
+        .location-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .metadata-form {
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
     </style>
 
 </head>
@@ -703,6 +784,7 @@
                 <div class="tab" data-tab="add">➕ Adicionar Dados</div>
                 <div class="tab" data-tab="search">🔍 Pesquisar Dados</div>
                 <div class="tab" data-tab="images">🖼️ Visualizar Imagens</div>
+                <div class="tab" data-tab="upload">📤 Upload de Fotos</div>
             </div>
             
             <!-- View Data Tab -->
@@ -803,14 +885,7 @@
         </div>
     </div>
 
-    <!-- Modal para visualização de imagem em tamanho maior -->
-    <div id="imageModal" class="modal">
-        <span class="close">&times;</span>
-        <img class="modal-content" id="modalImage">
-        <div id="modalCaption" style="color: white; text-align: center; padding: 10px;"></div>
-    </div>
-            
-            <!-- Search Data Tab -->
+        <!-- Search Data Tab -->
             <div class="tab-content" id="searchTab">
                 <h3>🔍 Pesquisar Dados</h3>
                 <div class="form-group">
@@ -827,8 +902,60 @@
                 
                 <div id="searchResults" style="margin-top: 20px;"></div>
             </div>
+            
+            <!-- NOVA ABA: Upload de Fotos -->
+            <div class="tab-content" id="uploadTab">
+                <h3>📤 Upload de Fotos com Geodados</h3>
+                <p>Selecione fotos, capture a localização e faça upload para o Google Drive</p>
+                
+                <div class="upload-container">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📸</div>
+                        <h4>Clique ou arraste fotos aqui</h4>
+                        <p>Formatos suportados: JPG, PNG, GIF</p>
+                        <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <div class="image-preview-container" id="imagePreviews"></div>
+                    
+                    <div class="location-info" id="locationInfo">
+                        <h4>📍 Informações de Localização</h4>
+                        <p id="locationStatus">Clique em "Capturar Localização" para obter coordenadas</p>
+                        <button class="btn" id="captureLocationBtn">🌍 Capturar Localização</button>
+                    </div>
+                    
+                    <div class="metadata-form">
+                        <h4>📝 Informações Adicionais</h4>
+                        <div class="form-group">
+                            <label for="photoTitle">Título da Foto:</label>
+                            <input type="text" id="photoTitle" placeholder="Digite um título para a foto">
+                        </div>
+                        <div class="form-group">
+                            <label for="photoDescription">Descrição:</label>
+                            <textarea id="photoDescription" rows="3" placeholder="Digite uma descrição"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar" id="progressBar" style="display: none;">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    
+                    <button class="btn success" id="uploadBtn" disabled>🚀 Fazer Upload</button>
+                </div>
+                
+                <div id="uploadResults"></div>
+            </div>
+            
         </div>
     </div>
+
+    <!-- Modal para visualização de imagem em tamanho maior -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div id="modalCaption" style="color: white; text-align: center; padding: 10px;"></div>
+    </div>
+    
 
     <script>
         // Global variables
@@ -845,6 +972,26 @@
         // Novas variáveis para gerenciamento de imagens
         let imageWorksheets = [];
         let currentImageData = [];
+
+        // Novas variáveis para upload de fotos
+        let selectedFiles = [];
+        let currentLocation = null;
+        let uploadInProgress = false;
+
+         // Novos elementos DOM para upload
+        const uploadTab = document.getElementById('uploadTab');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreviews = document.getElementById('imagePreviews');
+        const locationInfo = document.getElementById('locationInfo');
+        const locationStatus = document.getElementById('locationStatus');
+        const captureLocationBtn = document.getElementById('captureLocationBtn');
+        const photoTitle = document.getElementById('photoTitle');
+        const photoDescription = document.getElementById('photoDescription');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadResults = document.getElementById('uploadResults');
 
         // Novos elementos DOM para imagens
         const imagesTab = document.getElementById('imagesTab');
@@ -883,6 +1030,255 @@
         const searchBtn = document.getElementById('searchBtn');
         const searchResults = document.getElementById('searchResults');
         
+         // Funções para upload de fotos
+        function setupUploadListeners() {
+            // Clique na área de upload
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Arrastar e soltar
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            // Seleção de arquivos via input
+            fileInput.addEventListener('change', () => {
+                handleFiles(fileInput.files);
+            });
+            
+            // Captura de localização
+            captureLocationBtn.addEventListener('click', captureLocation);
+            
+            // Upload
+            uploadBtn.addEventListener('click', startUpload);
+        }
+        
+        function handleFiles(files) {
+            if (uploadInProgress) return;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Verificar se é uma imagem
+                if (!file.type.startsWith('image/')) {
+                    showUploadError('Apenas arquivos de imagem são permitidos');
+                    continue;
+                }
+                
+                // Adicionar à lista de arquivos selecionados
+                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                    
+                    // Criar preview
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'image-preview';
+                        img.title = file.name;
+                        imagePreviews.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            updateUploadButtonState();
+        }
+        
+        function captureLocation() {
+            locationStatus.textContent = 'Obtendo localização...';
+            
+            if (!navigator.geolocation) {
+                locationStatus.textContent = 'Geolocalização não é suportada pelo seu navegador';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy,
+                        timestamp: new Date(position.timestamp)
+                    };
+                    
+                    locationStatus.innerHTML = `
+                        <strong>📍 Localização capturada com sucesso!</strong><br>
+                        Latitude: ${currentLocation.latitude.toFixed(6)}<br>
+                        Longitude: ${currentLocation.longitude.toFixed(6)}<br>
+                        Precisão: ±${currentLocation.accuracy.toFixed(2)} metros<br>
+                        Horário: ${currentLocation.timestamp.toLocaleString('pt-BR')}
+                    `;
+                    
+                    updateUploadButtonState();
+                },
+                (error) => {
+                    let errorMessage;
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = "Permissão de localização negada pelo usuário";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = "Informações de localização indisponíveis";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = "Tempo limite excedido ao obter localização";
+                            break;
+                        default:
+                            errorMessage = "Erro desconhecido ao obter localização";
+                    }
+                    
+                    locationStatus.textContent = `❌ Erro: ${errorMessage}`;
+                    currentLocation = null;
+                    updateUploadButtonState();
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+        
+        function updateUploadButtonState() {
+            const hasFiles = selectedFiles.length > 0;
+            const hasLocation = currentLocation !== null;
+            
+            uploadBtn.disabled = !(hasFiles && hasLocation);
+        }
+        
+        async function startUpload() {
+            if (uploadInProgress || selectedFiles.length === 0 || !currentLocation) return;
+            
+            uploadInProgress = true;
+            uploadBtn.disabled = true;
+            progressBar.style.display = 'block';
+            uploadResults.innerHTML = '';
+            
+            try {
+                // Preparar dados do formulário
+                const formData = new FormData();
+                
+                // Adicionar arquivos
+                selectedFiles.forEach(file => {
+                    formData.append('photos', file);
+                });
+                
+                // Adicionar metadados
+                formData.append('latitude', currentLocation.latitude);
+                formData.append('longitude', currentLocation.longitude);
+                formData.append('accuracy', currentLocation.accuracy);
+                formData.append('timestamp', currentLocation.timestamp.toISOString());
+                formData.append('title', photoTitle.value || 'Foto sem título');
+                formData.append('description', photoDescription.value || '');
+                
+                // Fazer upload
+                const xhr = new XMLHttpRequest();
+                
+                // Configurar eventos de progresso
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressFill.style.width = percentComplete + '%';
+                    }
+                });
+                
+                // Configurar resposta
+                xhr.addEventListener('load', () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            handleUploadSuccess(response);
+                        } catch (e) {
+                            handleUploadError('Resposta inválida do servidor');
+                        }
+                    } else {
+                        handleUploadError(`Erro ${xhr.status}: ${xhr.statusText}`);
+                    }
+                });
+                
+                xhr.addEventListener('error', () => {
+                    handleUploadError('Erro de conexão');
+                });
+                
+                xhr.addEventListener('abort', () => {
+                    handleUploadError('Upload cancelado');
+                });
+                
+                // Enviar requisição
+                xhr.open('POST', `${SERVER_URL}/api/upload/photos`);
+                xhr.send(formData);
+                
+            } catch (error) {
+                handleUploadError(error.message);
+            }
+        }
+        
+        function handleUploadSuccess(response) {
+            uploadInProgress = false;
+            
+            if (response.success) {
+                uploadResults.innerHTML = `
+                    <div class="success-container">
+                        <h3>✅ Upload Concluído!</h3>
+                        <p>${response.message || 'Fotos enviadas com sucesso'}</p>
+                        <p><strong>Arquivos enviados:</strong> ${response.uploadedFiles || selectedFiles.length}</p>
+                        <p><strong>Planilha atualizada:</strong> ${response.sheetsUpdated ? 'Sim' : 'Não'}</p>
+                    </div>
+                `;
+                
+                // Limpar formulário
+                resetUploadForm();
+                
+            } else {
+                handleUploadError(response.error || 'Erro desconhecido no upload');
+            }
+        }
+        
+        function handleUploadError(message) {
+            uploadInProgress = false;
+            uploadBtn.disabled = false;
+            
+            uploadResults.innerHTML = `
+                <div class="error-container">
+                    <h3>❌ Erro no Upload</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        function showUploadError(message) {
+            uploadResults.innerHTML = `
+                <div class="error-container">
+                    <h3>❌ Erro</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        function resetUploadForm() {
+            selectedFiles = [];
+            currentLocation = null;
+            imagePreviews.innerHTML = '';
+            locationStatus.textContent = 'Clique em "Capturar Localização" para obter coordenadas';
+            photoTitle.value = '';
+            photoDescription.value = '';
+            progressBar.style.display = 'none';
+            progressFill.style.width = '0%';
+            updateUploadButtonState();
+        }
         // Utility Functions
         function formatBytes(bytes) {
             if (bytes === 0) return '0 B';
@@ -2762,6 +3158,14 @@
         };
         */
 
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', () => {
+            // Sua inicialização existente...
+            
+            // Inicializar funcionalidade de upload
+            setupUploadListeners();
+        });
+        
         // Execute no console:
         fullDiagnostic();
         
