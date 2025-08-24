@@ -1891,10 +1891,34 @@
                 }
             );
         }
+        // O erro 404 (Not Found) indica que o endpoint /api/upload/photos não existe no servidor. 
+        // Isso significa que a funcionalidade de upload de fotos não está implementada no backend.
+        //1. Verificar se o endpoint existe no servidor
+
+        // Adicione esta função para testar o endpoint de upload
+        async function testUploadEndpoint() {
+            try {
+                const response = await fetch(`${SERVER_URL}/api/upload/photos`, {
+                    method: 'OPTIONS' // ou HEAD para verificar se existe
+                });
+                console.log('Endpoint status:', response.status);
+                return response.ok;
+            } catch (error) {
+                console.log('Endpoint não existe:', error);
+                return false;
+            }
+        }
         
+        // Modifique a função startUpload para verificar primeiro
         async function startUpload() {
             if (selectedFiles.length === 0 || uploadInProgress) return;
             
+            // Verificar se o endpoint existe
+            const endpointExists = await testUploadEndpoint();
+            if (!endpointExists) {
+                showUploadError('Funcionalidade de upload não está disponível no servidor');
+                return;
+            }
             uploadInProgress = true;
             uploadBtn.disabled = true;
             progressBar.style.display = 'block';
