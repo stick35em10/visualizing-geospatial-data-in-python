@@ -1,6 +1,6 @@
 
 
-[visualizar a imagem gravada_24.08_(4)](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/24.08/deepseek_html_20250824_2967ab.html)
+[visualizar a imagem gravada_24.08_(4)](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/24.08/deepseek_html_20250824_2967ab_2_.html)
 
 [visualizar a imagem gravada_24.08_(2)](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/24.08/deepseek_html_20250824_abaded.html)
 
