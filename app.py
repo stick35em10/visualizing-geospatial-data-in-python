@@ -465,7 +465,7 @@ def get_worksheets():
 """
 @app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
 def upload_photos():
-    """📸 Endpoint para upload de fotos com metadados"""
+    📸 Endpoint para upload de fotos com metadados
     if request.method == 'OPTIONS':
         return jsonify({'status': 'ok'}), 200
     
