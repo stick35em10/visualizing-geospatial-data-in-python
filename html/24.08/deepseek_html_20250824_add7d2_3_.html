@@ -1902,10 +1902,22 @@
                     method: 'OPTIONS' // ou HEAD para verificar se existe
                 });
                 console.log('Endpoint status:', response.status);
-                return response.ok;
+                //return response.ok;
+                return response.status === 200 || response.status === 204;
             } catch (error) {
-                console.log('Endpoint não existe:', error);
-                return false;
+                //console.log('Endpoint não existe:', error);
+                console.log('Endpoint não existe ou erro de CORS:', error);
+                //return false;
+                // Tentativa alternativa: verificar se o endpoint existe com uma requisição HEAD
+                try {
+                    const headResponse = await fetch(`${SERVER_URL}/api/upload/photos`, {
+                        method: 'HEAD'
+                    });
+                    return headResponse.ok;
+                } catch (headError) {
+                    console.log('Endpoint definitivamente não existe:', headError);
+                    return false;
+                }
             }
         }
         

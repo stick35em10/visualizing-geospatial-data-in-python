@@ -3,6 +3,11 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     como selecionar e visualizar as imagens gravadas
         25.08.2025
             00:08
+                O erro OPTIONS net::ERR_FAILED indica que há um problema de CORS (Cross-Origin Resource Sharing) ou 
+                que o endpoint /api/upload/photos não existe no servidor.
+                    git add app.py html/24.08/ README.md cmd.txt
+                    git commit -m " 25.08, 00:08 'Upload error: Error: HTTP 404 ' add html/24.08/ and update README.md cmd.txt try selecionar e visualizar as imagens gravadas"
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01    
         24.08.2025
             23:[52, 35,21]
             16:[18, 07]

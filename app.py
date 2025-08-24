@@ -268,6 +268,99 @@ def get_worksheets():
         log_step("API_WORKSHEETS", error_msg, False)
         return jsonify({'success': False, 'error': error_msg}), 500
 
+@app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
+def upload_photos():
+    """📸 Endpoint para upload de fotos com metadados"""
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
+    
+    log_step("UPLOAD_PHOTOS", "📸 Requisição de upload de fotos recebida")
+    
+    try:
+        if not sheets_status['initialized']:
+            sheets_result = test_google_sheets_connection()
+            if not sheets_result.get('success', False):
+                return jsonify({
+                    'success': False,
+                    'message': 'Erro de autenticação com o Google Sheets'
+                }), 500
+        
+        # Obter dados do formulário
+        title = request.form.get('title', 'Foto sem título')
+        description = request.form.get('description', '')
+        worksheet_name = request.form.get('worksheet', 'Imagens')
+        latitude = request.form.get('latitude')
+        longitude = request.form.get('longitude')
+        accuracy = request.form.get('accuracy')
+        
+        # Processar arquivos
+        uploaded_files = request.files.getlist('photos')
+        file_count = len(uploaded_files)
+        
+        log_step("UPLOAD_PHOTOS", f"Processando {file_count} arquivo(s) para a aba '{worksheet_name}'")
+        
+        client, spreadsheet = get_sheets_client()
+        
+        # Verificar se a worksheet existe, se não, criar
+        try:
+            worksheet = spreadsheet.worksheet(worksheet_name)
+        except gspread.exceptions.WorksheetNotFound:
+            worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="100", cols="10")
+            # Adicionar cabeçalhos
+            headers = ["Data", "Título", "Descrição", "Latitude", "Longitude", "Precisão", "Nome do Arquivo", "Tamanho", "Tipo"]
+            worksheet.append_row(headers)
+            log_step("UPLOAD_PHOTOS", f"✅ Nova worksheet criada: {worksheet_name}")
+        
+        # Processar cada arquivo
+        results = []
+        for i, file in enumerate(uploaded_files):
+            if file and file.filename:
+                filename = file.filename
+                file_size = len(file.read())
+                file.seek(0)  # Reset file pointer
+                
+                # Aqui você pode salvar o arquivo se necessário, ou apenas registrar os metadados
+                # Por enquanto, vamos apenas registrar os metadados na planilha
+                
+                row_data = [
+                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                    title,
+                    description,
+                    latitude or '',
+                    longitude or '',
+                    accuracy or '',
+                    filename,
+                    file_size,
+                    file.content_type
+                ]
+                
+                worksheet.append_row(row_data)
+                results.append({
+                    'filename': filename,
+                    'size': file_size,
+                    'type': file.content_type,
+                    'status': 'success'
+                })
+                
+                log_step("UPLOAD_PHOTOS", f"✅ Arquivo {i+1}/{file_count} processado: {filename}")
+        
+        return jsonify({
+            'success': True,
+            'message': f'{file_count} arquivo(s) processado(s) com sucesso!',
+            'results': results,
+            'worksheet': worksheet_name,
+            'spreadsheet_title': spreadsheet.title
+        })
+        
+    except Exception as e:
+        error_msg = f"❌ Erro no upload de fotos: {str(e)}"
+        log_step("UPLOAD_PHOTOS", error_msg, False)
+        return jsonify({
+            'success': False,
+            'message': 'Erro no processamento do upload',
+            'error': str(e)
+        }), 500
+
 @app.route('/api/sheets/data', methods=['GET'])
 def get_sheet_data():
     """📊 Retorna os dados de uma worksheet específica"""
