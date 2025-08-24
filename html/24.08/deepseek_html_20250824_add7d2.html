@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Google Sheets Data Manager</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        /* Server Configuration */
+        .server-config {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .server-config h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+        }
+        
+        .server-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .server-option {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .server-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+        
+        .server-option.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+        }
+        
+        #customUrl {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        #customUrl:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+        }
+        
+        .current-url {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+            font-family: 'Monaco', 'Consolas', monospace;
+            word-break: break-all;
+        }
+        
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,123,255,0.4);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(135deg, #ffc107, #ffb300);
+            color: #212529;
+            box-shadow: 0 4px 15px rgba(255,193,7,0.3);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            box-shadow: 0 4px 15px rgba(220,53,69,0.3);
+        }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #dee2e6;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            border-bottom-color: #007bff;
+            color: #007bff;
+        }
+        
+        .tab:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Form */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+        }
+        
+        /* Worksheet selector */
+        .worksheet-selector {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .worksheet-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .worksheet-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .worksheet-selector select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Data Table */
+        .data-container {
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, #495057, #343a40);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .table-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        
+        .table-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .table-controls input, .table-controls select {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+        }
+        
+        .table-wrapper {
+            max-height: 600px;
+            overflow: auto;
+            background: white;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background: #fafafa;
+        }
+        
+        .data-table tr:nth-child(even):hover {
+            background: #f0f0f0;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            font-size: 12px;
+        }
+        
+        .edit-btn {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        /* Loading */
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            color: #6c757d;
+        }
+        
+        /* Error states */
+        .error-container {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .error-container h3 {
+            color: #721c24;
+            margin-bottom: 15px;
+        }
+        
+        .error-container p {
+            color: #721c24;
+            margin-bottom: 10px;
+        }
+        
+        /* Success state */
+        .success-container {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 1px solid #c3e6cb;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .success-container h3 {
+            color: #155724;
+            margin-bottom: 15px;
+        }
+        
+        .success-container p {
+            color: #155724;
+            margin-bottom: 10px;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state h3 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Pagination */
+        .pagination-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+            background: #f8f9fa;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .server-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .data-table {
+                font-size: 0.9rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 8px 6px;
+            }
+            
+            .table-wrapper {
+                overflow-x: auto;
+            }
+            
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            
+            .table-controls {
+                justify-content: center;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab {
+                text-align: center;
+            }
+        }
+
+        /* Novos estilos para a galeria de imagens */
+        .gallery-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .image-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .image-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        .image-preview {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .image-info {
+            padding: 15px;
+        }
+        
+        .image-title {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .image-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .image-date {
+            font-size: 12px;
+            color: #999;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            overflow: auto;
+        }
+        
+        .modal-content {
+            display: block;
+            margin: 5% auto;
+            max-width: 90%;
+            max-height: 80%;
+            width: auto;
+            height: auto;
+        }
+        
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: #bbb;
+        }
+        
+        .filter-controls {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        /* Novos estilos para upload de fotos */
+        .upload-container {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .upload-area {
+            border: 3px dashed #007bff;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(0,123,255,0.05);
+        }
+        
+        .upload-area:hover {
+            background: rgba(0,123,255,0.1);
+            border-color: #0056b3;
+        }
+        
+        .upload-area.dragover {
+            background: rgba(0,123,255,0.2);
+            border-color: #28a745;
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #007bff;
+        }
+        
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .image-preview {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #dee2e6;
+        }
+        
+        .location-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .metadata-form {
+            margin-top: 20px;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            border-radius: 10px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Google Sheets Data Manager</h1>
+            <p>Visualize, consulte e atualize dados da sua planilha do Google Sheets</p>
+        </div>
+        
+        <div class="content">
+            <!-- Server Configuration -->
+            <div class="server-config">
+                <h3>🌐 Configuração do Servidor</h3>
+                <div class="server-options">
+                    <div class="server-option" data-url="https://visualizing-geospatial-data-in-python-1.onrender.com">
+                        🚀 Render v1 (Servidor Novo)
+                    </div>
+                    <div class="server-option" data-url="https://cors-anywhere.herokuapp.com/https://visualizing-geospatial-data-in-python-1.onrender.com">
+                        🔄 Proxy CORS (Heroku)
+                    </div>
+                    <div class="server-option" data-url="http://localhost:5000">
+                        💻 Local (5000)
+                    </div>
+                    <div class="server-option" data-url="custom">
+                        ⚙️ URL Personalizada
+                    </div>
+                </div>
+                <input type="text" id="customUrl" placeholder="Digite a URL personalizada (ex: https://meuservidor.com)" style="display: none;">
+                <div class="current-url">
+                    <strong>🌐 URL Atual:</strong> <span id="currentUrl">Nenhuma selecionada</span>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn success" id="testConnectionBtn">🔗 Testar Conexão</button>
+                <button class="btn" id="loadWorksheetsBtn" disabled>📄 Carregar Abas</button>
+                <button class="btn" id="loadDataBtn" disabled>📥 Carregar Dados</button>
+                <button class="btn danger" id="clearBtn">🧹 Limpar</button>
+            </div>
+            
+            <!-- Connection Status -->
+            <div id="connectionStatus" style="display: none;"></div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" data-tab="view">👀 Visualizar Dados</div>
+                <div class="tab" data-tab="add">➕ Adicionar Dados</div>
+                <div class="tab" data-tab="search">🔍 Pesquisar Dados</div>
+                <div class="tab" data-tab="images">🖼️ Visualizar Imagens</div>
+                <div class="tab" data-tab="upload">📤 Upload de Fotos</div>
+            </div>
+            
+            <!-- View Data Tab -->
+            <div class="tab-content active" id="viewTab">
+                <!-- Worksheet Selector -->
+                <div class="worksheet-selector" id="worksheetSelector" style="display: none;">
+                    <label for="worksheetSelect">📋 Selecionar Aba da Planilha:</label>
+                    <select id="worksheetSelect">
+                        <option value="">Selecione uma aba...</option>
+                    </select>
+                </div>
+                
+                <!-- Stats -->
+                <div class="stats-container" id="statsContainer" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalRows">0</div>
+                        <div class="stat-label">Total de Linhas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalColumns">0</div>
+                        <div class="stat-label">Total de Colunas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="lastUpdate">---</div>
+                        <div class="stat-label">Última Atualização</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="worksheetName">---</div>
+                        <div class="stat-label">Aba Atual</div>
+                    </div>
+                </div>
+                
+                <!-- Data Container -->
+                <div class="data-container" id="dataContainer">
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Selecione um servidor e clique em "Testar Conexão" para começar</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="controls" id="paginationContainer" style="display: none;">
+                    <button class="btn" id="prevPageBtn" disabled>◀ Anterior</button>
+                    <div class="pagination-info">
+                        <span id="pageInfo">Página 1 de 1</span>
+                    </div>
+                    <button class="btn" id="nextPageBtn" disabled>Próxima ▶</button>
+                </div>
+            </div>
+            
+            <!-- Add Data Tab -->
+            <div class="tab-content" id="addTab">
+                <h3>➕ Adicionar Novo Registro</h3>
+                <div id="addFormContainer">
+                    <div class="empty-state">
+                        <h3>📝</h3>
+                        <p>Carregue os dados primeiro para ver a estrutura do formulário</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Images Tab - NOVA ABA PARA IMAGENS -->
+            <div class="tab-content" id="imagesTab">
+                <h3>🖼️ Visualizador de Imagens</h3>
+                <p>Selecione uma aba que contenha URLs de imagens para visualizar</p>
+                
+                <div class="worksheet-selector">
+                    <label for="imageWorksheetSelect">📋 Selecionar Aba com Imagens:</label>
+                    <select id="imageWorksheetSelect">
+                        <option value="">Selecione uma aba...</option>
+                    </select>
+                </div>
+                
+                <div class="filter-controls" id="imageFilters" style="display: none;">
+                    <div class="filter-group">
+                        <label for="imageSearch">🔍 Filtrar imagens:</label>
+                        <input type="text" id="imageSearch" placeholder="Digite para filtrar...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="imageSort">📊 Ordenar por:</label>
+                        <select id="imageSort">
+                            <option value="date-desc">Data (mais recente primeiro)</option>
+                            <option value="date-asc">Data (mais antiga primeiro)</option>
+                            <option value="name-asc">Nome (A-Z)</option>
+                            <option value="name-desc">Nome (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="imagesContainer">
+                    <div class="empty-state">
+                        <h3>🖼️</h3>
+                        <p>Selecione uma aba que contenha imagens para visualizar</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Data Tab -->
+            <div class="tab-content" id="searchTab">
+                <h3>🔍 Pesquisar Dados</h3>
+                <div class="form-group">
+                    <label for="searchTerm">Termo de Pesquisa:</label>
+                    <input type="text" id="searchTerm" placeholder="Digite o termo para pesquisar...">
+                </div>
+                <div class="form-group">
+                    <label for="searchColumn">Coluna para Pesquisar (opcional):</label>
+                    <select id="searchColumn">
+                        <option value="">Todas as colunas</option>
+                    </select>
+                </div>
+                <button class="btn success" id="searchBtn">🔍 Pesquisar</button>
+                
+                <div id="searchResults" style="margin-top: 20px;"></div>
+            </div>
+            
+            <!-- NOVA ABA: Upload de Fotos -->
+            <div class="tab-content" id="uploadTab">
+                <h3>📤 Upload de Fotos com Geodados</h3>
+                <p>Selecione fotos, capture a localização e faça upload para o Google Drive</p>
+                
+                <div class="upload-container">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📸</div>
+                        <h4>Clique ou arraste fotos aqui</h4>
+                        <p>Formatos suportados: JPG, PNG, GIF</p>
+                        <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <div class="image-preview-container" id="imagePreviews"></div>
+                    
+                    <div class="location-info" id="locationInfo">
+                        <h4>📍 Informações de Localização</h4>
+                        <p id="locationStatus">Clique em "Capturar Localização" para obter coordenadas</p>
+                        <button class="btn" id="captureLocationBtn">🌍 Capturar Localização</button>
+                    </div>
+                    
+                    <div class="metadata-form">
+                        <h4>📝 Informações Adicionais</h4>
+                        <div class="form-group">
+                            <label for="photoTitle">Título da Foto:</label>
+                            <input type="text" id="photoTitle" placeholder="Digite um título para a foto">
+                        </div>
+                        <div class="form-group">
+                            <label for="photoDescription">Descrição:</label>
+                            <textarea id="photoDescription" rows="3" placeholder="Digite uma descrição"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar" id="progressBar" style="display: none;">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    
+                    <button class="btn success" id="uploadBtn" disabled>🚀 Fazer Upload</button>
+                </div>
+                
+                <div id="uploadResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para visualização de imagem em tamanho maior -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div id="modalCaption" style="color: white; text-align: center; padding: 10px;"></div>
+    </div>
+    
+
+    <script>
+        // Global variables
+        let SERVER_URL = '';
+        let allData = [];
+        let currentPage = 1;
+        let rowsPerPage = 25;
+        let totalPages = 1;
+        let worksheets = [];
+        let currentWorksheet = '';
+        let isConnected = false;
+        let currentHeaders = [];
+        
+        // Novas variáveis para gerenciamento de imagens
+        let imageWorksheets = [];
+        let currentImageData = [];
+
+        // Novas variáveis para upload de fotos
+        let selectedFiles = [];
+        let currentLocation = null;
+        let uploadInProgress = false;
+
+         // Novos elementos DOM para upload
+        const uploadTab = document.getElementById('uploadTab');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreviews = document.getElementById('imagePreviews');
+        const locationInfo = document.getElementById('locationInfo');
+        const locationStatus = document.getElementById('locationStatus');
+        const captureLocationBtn = document.getElementById('captureLocationBtn');
+        const photoTitle = document.getElementById('photoTitle');
+        const photoDescription = document.getElementById('photoDescription');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadResults = document.getElementById('uploadResults');
+
+        // Novos elementos DOM para imagens
+        const imagesTab = document.getElementById('imagesTab');
+        const imageWorksheetSelect = document.getElementById('imageWorksheetSelect');
+        const imageFilters = document.getElementById('imageFilters');
+        const imageSearch = document.getElementById('imageSearch');
+        const imageSort = document.getElementById('imageSort');
+        const imagesContainer = document.getElementById('imagesContainer');
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalCaption = document.getElementById('modalCaption');
+        const closeModal = document.querySelector('.close');
+
+        // DOM Elements
+        const serverOptions = document.querySelectorAll('.server-option');
+        const customUrlInput = document.getElementById('customUrl');
+        const currentUrlSpan = document.getElementById('currentUrl');
+        const testConnectionBtn = document.getElementById('testConnectionBtn');
+        const loadWorksheetsBtn = document.getElementById('loadWorksheetsBtn');
+        const loadDataBtn = document.getElementById('loadDataBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const worksheetSelector = document.getElementById('worksheetSelector');
+        const worksheetSelect = document.getElementById('worksheetSelect');
+        const statsContainer = document.getElementById('statsContainer');
+        const dataContainer = document.getElementById('dataContainer');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const addFormContainer = document.getElementById('addFormContainer');
+        const searchTerm = document.getElementById('searchTerm');
+        const searchColumn = document.getElementById('searchColumn');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchResults = document.getElementById('searchResults');
+        
+         // Funções para upload de fotos
+        function setupUploadListeners() {
+            // Clique na área de upload
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // Arrastar e soltar
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            // Seleção de arquivos via input
+            fileInput.addEventListener('change', () => {
+                handleFiles(fileInput.files);
+            });
+            
+            // Captura de localização
+            captureLocationBtn.addEventListener('click', captureLocation);
+            
+            // Upload
+            uploadBtn.addEventListener('click', startUpload);
+        }
+        
+        function handleFiles(files) {
+            if (uploadInProgress) return;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Verificar se é uma imagem
+                if (!file.type.startsWith('image/')) {
+                    showUploadError('Apenas arquivos de imagem são permitidos');
+                    continue;
+                }
+                
+                // Adicionar à lista de arquivos selecionados
+                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                    
+                    // Criar preview
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'image-preview';
+                        img.title = file.name;
+                        imagePreviews.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            // Ativar botão de upload se temos arquivos
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+        
+        function captureLocation() {
+            locationStatus.textContent = 'Obtendo localização...';
+            
+            if (!navigator.geolocation) {
+                locationStatus.textContent = 'Geolocalização não é suportada pelo seu navegador';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+                    
+                    locationStatus.innerHTML = `
+                        <strong>Localização capturada com sucesso!</strong><br>
+                        Latitude: ${currentLocation.latitude.toFixed(6)}<br>
+                        Longitude: ${currentLocation.longitude.toFixed(6)}<br>
+                        Precisão: ±${currentLocation.accuracy.toFixed(2)} metros
+                    `;
+                },
+                (error) => {
+                    let errorMsg = 'Erro ao obter localização: ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg += 'Permissão negada pelo usuário';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg += 'Localização indisponível';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg += 'Tempo de espera excedido';
+                            break;
+                        default:
+                            errorMsg += 'Erro desconhecido';
+                    }
+                    locationStatus.textContent = errorMsg;
+                    currentLocation = null;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+        
+        function startUpload() {
+            if (selectedFiles.length === 0 || uploadInProgress) return;
+            
+            uploadInProgress = true;
+            uploadBtn.disabled = true;
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            uploadResults.innerHTML = '';
+            
+            // Verificar se temos localização
+            if (!currentLocation) {
+                if (!confirm('Nenhuma localização foi capturada. Deseja continuar sem informações de localização?')) {
+                    uploadInProgress = false;
+                    uploadBtn.disabled = false;
+                    progressBar.style.display = 'none';
+                    return;
+                }
+            }
+            
+            // Preparar dados do formulário
+            const formData = new FormData();
+            formData.append('title', photoTitle.value || 'Sem título');
+            formData.append('description', photoDescription.value || '');
+            
+            if (currentLocation) {
+                formData.append('latitude', currentLocation.latitude);
+                formData.append('longitude', currentLocation.longitude);
+                formData.append('accuracy', currentLocation.accuracy);
+            }
+            
+            // Adicionar arquivos
+            for (let i = 0; i < selectedFiles.length; i++) {
+                formData.append('photos', selectedFiles[i]);
+            }
+            
+            // Fazer upload
+            fetch(`${SERVER_URL}/upload-photos`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro no upload');
+                }
+                return response.json();
+            })
+            .then(data => {
+                progressFill.style.width = '100%';
+                showUploadSuccess('Upload concluído com sucesso!');
+                
+                // Limpar formulário
+                resetUploadForm();
+            })
+            .catch(error => {
+                showUploadError(`Erro no upload: ${error.message}`);
+            })
+            .finally(() => {
+                uploadInProgress = false;
+                uploadBtn.disabled = selectedFiles.length === 0;
+                setTimeout(() => {
+                    progressBar.style.display = 'none';
+                }, 2000);
+            });
+            
+            // Simular progresso (em uma implementação real, usaríamos eventos de progresso)
+            simulateUploadProgress();
+        }
+        
+        function simulateUploadProgress() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 5;
+                progressFill.style.width = `${progress}%`;
+                
+                if (progress >= 90) {
+                    clearInterval(interval);
+                }
+            }, 500);
+        }
+        
+        function resetUploadForm() {
+            selectedFiles = [];
+            imagePreviews.innerHTML = '';
+            photoTitle.value = '';
+            photoDescription.value = '';
+            currentLocation = null;
+            locationStatus.textContent = 'Clique em "Capturar Localização" para obter coordenadas';
+            uploadBtn.disabled = true;
+        }
+        
+        function showUploadSuccess(message) {
+            uploadResults.innerHTML = `
+                <div class="success-container">
+                    <h3>✅ Sucesso!</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        function showUploadError(message) {
+            uploadResults.innerHTML = `
+                <div class="error-container">
+                    <h3>❌ Erro!</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        // Funções para visualização de imagens
+        function setupImageGallery() {
+            // Evento para selecionar worksheet de imagens
+            imageWorksheetSelect.addEventListener('change', () => {
+                const selectedWorksheet = imageWorksheetSelect.value;
+                if (selectedWorksheet) {
+                    loadImageData(selectedWorksheet);
+                } else {
+                    imageFilters.style.display = 'none';
+                    imagesContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>🖼️</h3>
+                            <p>Selecione uma aba que contenha imagens para visualizar</p>
+                        </div>
+                    `;
+                }
+            });
+            
+            // Filtro de busca
+            imageSearch.addEventListener('input', () => {
+                renderImageGallery();
+            });
+            
+            // Ordenação
+            imageSort.addEventListener('change', () => {
+                renderImageGallery();
+            });
+            
+            // Modal de imagem
+            closeModal.addEventListener('click', () => {
+                imageModal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    imageModal.style.display = 'none';
+                }
+            });
+        }
+        
+        function loadImageData(worksheetName) {
+            showLoading(imagesContainer, 'Carregando imagens...');
+            
+            fetch(`${SERVER_URL}/get-worksheet-data/${worksheetName}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar dados da planilha');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        currentImageData = data.data;
+                        imageFilters.style.display = 'block';
+                        renderImageGallery();
+                    } else {
+                        throw new Error(data.message || 'Erro ao processar dados');
+                    }
+                })
+                .catch(error => {
+                    showError(imagesContainer, `Erro ao carregar imagens: ${error.message}`);
+                });
+        }
+        
+        function renderImageGallery() {
+            if (!currentImageData || currentImageData.length === 0) {
+                imagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📸</h3>
+                        <p>Nenhuma imagem encontrada nesta planilha</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Encontrar colunas que podem conter URLs de imagem
+            const headers = Object.keys(currentImageData[0]);
+            const possibleImageColumns = headers.filter(header => 
+                header.toLowerCase().includes('url') || 
+                header.toLowerCase().includes('image') || 
+                header.toLowerCase().includes('img') ||
+                header.toLowerCase().includes('foto') ||
+                header.toLowerCase().includes('photo')
+            );
+            
+            if (possibleImageColumns.length === 0) {
+                imagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🔍</h3>
+                        <p>Nenhuma coluna de imagem encontrada. Procure por colunas com "url", "image" ou "foto" no nome.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Filtrar dados
+            const searchTerm = imageSearch.value.toLowerCase();
+            let filteredData = currentImageData.filter(row => {
+                if (!searchTerm) return true;
+                
+                // Verificar se algum campo contém o termo de busca
+                return Object.values(row).some(value => 
+                    value && value.toString().toLowerCase().includes(searchTerm)
+                );
+            });
+            
+            // Ordenar dados
+            const sortOption = imageSort.value;
+            filteredData.sort((a, b) => {
+                switch(sortOption) {
+                    case 'date-desc':
+                        return (b.date || b.timestamp || b.created) - (a.date || a.timestamp || a.created);
+                    case 'date-asc':
+                        return (a.date || a.timestamp || a.created) - (b.date || b.timestamp || b.created);
+                    case 'name-asc':
+                        return (a.name || a.title || a.filename || '').localeCompare(b.name || b.title || b.filename || '');
+                    case 'name-desc':
+                        return (b.name || b.title || b.filename || '').localeCompare(a.name || a.title || a.filename || '');
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Renderizar galeria
+            if (filteredData.length === 0) {
+                imagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🔍</h3>
+                        <p>Nenhuma imagem encontrada com o filtro aplicado</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `<div class="gallery-container">`;
+            
+            filteredData.forEach(row => {
+                // Encontrar a primeira coluna de imagem que tenha um valor
+                let imageUrl = '';
+                for (const col of possibleImageColumns) {
+                    if (row[col] && isValidUrl(row[col])) {
+                        imageUrl = row[col];
+                        break;
+                    }
+                }
+                
+                if (!imageUrl) return; // Pular se não encontrou imagem
+                
+                const title = row.title || row.name || row.filename || 'Sem título';
+                const description = row.description || row.desc || '';
+                const date = row.date || row.timestamp || row.created || '';
+                
+                html += `
+                    <div class="image-card">
+                        <img src="${imageUrl}" alt="${title}" class="image-preview" onclick="openModal('${imageUrl}', '${title}')">
+                        <div class="image-info">
+                            <div class="image-title">${title}</div>
+                            <div class="image-description">${description}</div>
+                            <div class="image-date">${formatDate(date)}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            imagesContainer.innerHTML = html;
+        }
+        
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+        
+        function formatDate(dateValue) {
+            if (!dateValue) return 'Data não disponível';
+            
+            // Tentar converter de timestamp do Google Sheets
+            if (typeof dateValue === 'number') {
+                // Google Sheets timestamps are days since December 30, 1899
+                const utcDays = Math.floor(dateValue - 25569);
+                const utcValue = utcDays * 86400;
+                const dateInfo = new Date(utcValue * 1000);
+                
+                return dateInfo.toLocaleDateString('pt-BR');
+            }
+            
+            // Se já for uma string de data
+            return new Date(dateValue).toLocaleDateString('pt-BR') || dateValue;
+        }
+        
+        function openModal(imageUrl, title) {
+            modalImage.src = imageUrl;
+            modalCaption.innerHTML = title;
+            imageModal.style.display = 'block';
+        }
+
+        // Event Listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            // Server selection
+            serverOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    serverOptions.forEach(o => o.classList.remove('active'));
+                    option.classList.add('active');
+                    
+                    if (option.dataset.url === 'custom') {
+                        customUrlInput.style.display = 'block';
+                        SERVER_URL = customUrlInput.value.trim();
+                    } else {
+                        customUrlInput.style.display = 'none';
+                        SERVER_URL = option.dataset.url;
+                    }
+                    
+                    currentUrlSpan.textContent = SERVER_URL || 'Nenhuma selecionada';
+                    updateButtonStates();
+                });
+            });
+            
+            // Custom URL input
+            customUrlInput.addEventListener('input', () => {
+                if (document.querySelector('.server-option.active').dataset.url === 'custom') {
+                    SERVER_URL = customUrlInput.value.trim();
+                    currentUrlSpan.textContent = SERVER_URL || 'Nenhuma selecionada';
+                    updateButtonStates();
+                }
+            });
+            
+            // Test connection
+            testConnectionBtn.addEventListener('click', testConnection);
+            
+            // Load worksheets
+            loadWorksheetsBtn.addEventListener('click', loadWorksheets);
+            
+            // Load data
+            loadDataBtn.addEventListener('click', () => {
+                const selectedWorksheet = worksheetSelect.value;
+                if (selectedWorksheet) {
+                    loadWorksheetData(selectedWorksheet);
+                }
+            });
+            
+            // Clear button
+            clearBtn.addEventListener('click', clearAll);
+            
+            // Pagination
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderDataTable();
+                }
+            });
+            
+            nextPageBtn.addEventListener('click', () => {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderDataTable();
+                }
+            });
+            
+            // Tabs
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.dataset.tab;
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Update active content
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === `${tabId}Tab`) {
+                            content.classList.add('active');
+                        }
+                    });
+                    
+                    // Special handling for images tab
+                    if (tabId === 'images' && isConnected) {
+                        populateImageWorksheetSelect();
+                    }
+                });
+            });
+            
+            // Worksheet selection
+            worksheetSelect.addEventListener('change', () => {
+                loadDataBtn.disabled = !worksheetSelect.value;
+            });
+            
+            // Search
+            searchBtn.addEventListener('click', performSearch);
+            
+            // Inicializar listeners para upload de fotos
+            setupUploadListeners();
+            
+            // Inicializar listeners para galeria de imagens
+            setupImageGallery();
+        });
+        
+        function updateButtonStates() {
+            const hasUrl = SERVER_URL !== '';
+            testConnectionBtn.disabled = !hasUrl;
+            loadWorksheetsBtn.disabled = !hasUrl || !isConnected;
+            loadDataBtn.disabled = !hasUrl || !isConnected || !worksheetSelect.value;
+        }
+        
+        function testConnection() {
+            showLoading(connectionStatus, 'Testando conexão com o servidor...');
+            connectionStatus.style.display = 'block';
+            
+            fetch(`${SERVER_URL}/test-connection`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na resposta do servidor');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        showSuccess(connectionStatus, '✅ Conexão bem-sucedida! Servidor está respondendo.');
+                        isConnected = true;
+                        updateButtonStates();
+                    } else {
+                        throw new Error(data.message || 'Erro desconhecido');
+                    }
+                })
+                .catch(error => {
+                    showError(connectionStatus, `❌ Falha na conexão: ${error.message}`);
+                    isConnected = false;
+                    updateButtonStates();
+                });
+        }
+        
+        function loadWorksheets() {
+            showLoading(connectionStatus, 'Carregando abas da planilha...');
+            
+            fetch(`${SERVER_URL}/get-worksheets`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar abas');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.worksheets) {
+                        worksheets = data.worksheets;
+                        populateWorksheetSelect();
+                        showSuccess(connectionStatus, `✅ ${worksheets.length} aba(s) carregada(s) com sucesso!`);
+                        worksheetSelector.style.display = 'block';
+                    } else {
+                        throw new Error(data.message || 'Erro ao processar abas');
+                    }
+                })
+                .catch(error => {
+                    showError(connectionStatus, `❌ Erro ao carregar abas: ${error.message}`);
+                });
+        }
+        
+        function populateWorksheetSelect() {
+            worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+            worksheets.forEach(worksheet => {
+                const option = document.createElement('option');
+                option.value = worksheet;
+                option.textContent = worksheet;
+                worksheetSelect.appendChild(option);
+            });
+            
+            // Também popular o seletor de worksheets de imagens
+            populateImageWorksheetSelect();
+        }
+        
+        function populateImageWorksheetSelect() {
+            imageWorksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+            worksheets.forEach(worksheet => {
+                const option = document.createElement('option');
+                option.value = worksheet;
+                option.textContent = worksheet;
+                imageWorksheetSelect.appendChild(option);
+            });
+        }
+        
+        function loadWorksheetData(worksheetName) {
+            showLoading(dataContainer, 'Carregando dados da planilha...');
+            currentWorksheet = worksheetName;
+            
+            fetch(`${SERVER_URL}/get-worksheet-data/${worksheetName}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro ao carregar dados');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.data) {
+                        allData = data.data;
+                        currentHeaders = data.headers || (allData.length > 0 ? Object.keys(allData[0]) : []);
+                        
+                        updateStats();
+                        renderDataTable();
+                        setupAddForm();
+                        setupSearchForm();
+                    } else {
+                        throw new Error(data.message || 'Erro ao processar dados');
+                    }
+                })
+                .catch(error => {
+                    showError(dataContainer, `❌ Erro ao carregar dados: ${error.message}`);
+                });
+        }
+        
+        function updateStats() {
+            document.getElementById('totalRows').textContent = allData.length;
+            document.getElementById('totalColumns').textContent = currentHeaders.length;
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString('pt-BR');
+            document.getElementById('worksheetName').textContent = currentWorksheet;
+            statsContainer.style.display = 'grid';
+        }
+        
+        function renderDataTable() {
+            if (allData.length === 0) {
+                dataContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Nenhum dado encontrado nesta planilha</p>
+                    </div>
+                `;
+                paginationContainer.style.display = 'none';
+                return;
+            }
+            
+            // Calculate pagination
+            totalPages = Math.ceil(allData.length / rowsPerPage);
+            currentPage = Math.min(currentPage, totalPages);
+            
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, allData.length);
+            const pageData = allData.slice(startIndex, endIndex);
+            
+            // Build table
+            let html = `
+                <div class="table-header">
+                    <h3>Dados da Planilha: ${currentWorksheet}</h3>
+                    <div class="table-controls">
+                        <div>
+                            <label for="rowsPerPage">Linhas por página:</label>
+                            <select id="rowsPerPage">
+                                <option value="10" ${rowsPerPage === 10 ? 'selected' : ''}>10</option>
+                                <option value="25" ${rowsPerPage === 25 ? 'selected' : ''}>25</option>
+                                <option value="50" ${rowsPerPage === 50 ? 'selected' : ''}>50</option>
+                                <option value="100" ${rowsPerPage === 100 ? 'selected' : ''}>100</option>
+                            </select>
+                        </div>
+                        <div>
+                            <input type="text" id="tableSearch" placeholder="Filtrar dados...">
+                        </div>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                ${currentHeaders.map(header => `<th>${header}</th>`).join('')}
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            pageData.forEach((row, index) => {
+                html += `<tr>`;
+                currentHeaders.forEach(header => {
+                    let value = row[header] || '';
+                    // Truncate long values
+                    if (typeof value === 'string' && value.length > 100) {
+                        value = value.substring(0, 100) + '...';
+                    }
+                    html += `<td title="${value}">${value}</td>`;
+                });
+                html += `
+                    <td>
+                        <button class="action-btn edit-btn" data-index="${startIndex + index}">Editar</button>
+                        <button class="action-btn delete-btn" data-index="${startIndex + index}">Excluir</button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            dataContainer.innerHTML = html;
+            paginationContainer.style.display = 'flex';
+            
+            // Update pagination info
+            pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+            prevPageBtn.disabled = currentPage === 1;
+            nextPageBtn.disabled = currentPage === totalPages;
+            
+            // Add event listeners
+            document.getElementById('rowsPerPage').addEventListener('change', (e) => {
+                rowsPerPage = parseInt(e.target.value);
+                currentPage = 1;
+                renderDataTable();
+            });
+            
+            document.getElementById('tableSearch').addEventListener('input', (e) => {
+                const searchTerm = e.target.value.toLowerCase();
+                const rows = dataContainer.querySelectorAll('tbody tr');
+                
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    const matches = Array.from(cells).some(cell => 
+                        cell.textContent.toLowerCase().includes(searchTerm)
+                    );
+                    row.style.display = matches ? '' : 'none';
+                });
+            });
+            
+            // Add edit/delete handlers (simplified for demo)
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.dataset.index);
+                    alert(`Editar funcionalidade seria implementada para linha ${index + 1}`);
+                });
+            });
+            
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const index = parseInt(btn.dataset.index);
+                    if (confirm(`Tem certeza que deseja excluir a linha ${index + 1}?`)) {
+                        alert(`Excluir funcionalidade seria implementada para linha ${index + 1}`);
+                    }
+                });
+            });
+        }
+        
+        function setupAddForm() {
+            if (currentHeaders.length === 0) {
+                addFormContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝</h3>
+                        <p>Nenhum cabeçalho encontrado para criar formulário</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <form id="addDataForm">
+                    ${currentHeaders.map(header => `
+                        <div class="form-group">
+                            <label for="${header}">${header}:</label>
+                            <input type="text" id="${header}" name="${header}" required>
+                        </div>
+                    `).join('')}
+                    <button type="submit" class="btn success">Adicionar Registro</button>
+                </form>
+            `;
+            
+            addFormContainer.innerHTML = html;
+            
+            document.getElementById('addDataForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                alert('Funcionalidade de adicionar registro seria implementada aqui');
+            });
+        }
+        
+        function setupSearchForm() {
+            // Populate search column dropdown
+            searchColumn.innerHTML = '<option value="">Todas as colunas</option>';
+            currentHeaders.forEach(header => {
+                const option = document.createElement('option');
+                option.value = header;
+                option.textContent = header;
+                searchColumn.appendChild(option);
+            });
+        }
+        
+        function performSearch() {
+            const term = searchTerm.value.trim().toLowerCase();
+            if (!term) {
+                searchResults.innerHTML = `
+                    <div class="empty-state">
+                        <p>Digite um termo para pesquisar</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const column = searchColumn.value;
+            const results = allData.filter(row => {
+                if (column) {
+                    return row[column] && row[column].toString().toLowerCase().includes(term);
+                } else {
+                    return Object.values(row).some(value => 
+                        value && value.toString().toLowerCase().includes(term)
+                    );
+                }
+            });
+            
+            if (results.length === 0) {
+                searchResults.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🔍</h3>
+                        <p>Nenhum resultado encontrado para "${term}"</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="data-container">
+                    <div class="table-header">
+                        <h3>${results.length} resultado(s) encontrado(s)</h3>
+                    </div>
+                    <div class="table-wrapper">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    ${currentHeaders.map(header => `<th>${header}</th>`).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            results.forEach(row => {
+                html += `<tr>`;
+                currentHeaders.forEach(header => {
+                    let value = row[header] || '';
+                    // Highlight the search term
+                    if (value.toString().toLowerCase().includes(term)) {
+                        value = value.toString().replace(
+                            new RegExp(term, 'gi'), 
+                            match => `<mark>${match}</mark>`
+                        );
+                    }
+                    html += `<td>${value}</td>`;
+                });
+                html += `</tr>`;
+            });
+            
+            html += `
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            searchResults.innerHTML = html;
+        }
+        
+        function clearAll() {
+            if (confirm('Tem certeza que deseja limpar todos os dados?')) {
+                SERVER_URL = '';
+                allData = [];
+                currentPage = 1;
+                worksheets = [];
+                currentWorksheet = '';
+                isConnected = false;
+                currentHeaders = [];
+                
+                // Reset UI
+                serverOptions.forEach(o => o.classList.remove('active'));
+                customUrlInput.style.display = 'none';
+                customUrlInput.value = '';
+                currentUrlSpan.textContent = 'Nenhuma selecionada';
+                connectionStatus.style.display = 'none';
+                worksheetSelector.style.display = 'none';
+                worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                statsContainer.style.display = 'none';
+                dataContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Selecione um servidor e clique em "Testar Conexão" para começar</p>
+                    </div>
+                `;
+                paginationContainer.style.display = 'none';
+                addFormContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝</h3>
+                        <p>Carregue os dados primeiro para ver a estrutura do formulário</p>
+                    </div>
+                `;
+                searchTerm.value = '';
+                searchColumn.innerHTML = '<option value="">Todas as colunas</option>';
+                searchResults.innerHTML = '';
+                
+                updateButtonStates();
+            }
+        }
+        
+        function showLoading(container, message) {
+            container.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${message}</div>
+                </div>
+            `;
+        }
+        
+        function showSuccess(container, message) {
+            container.innerHTML = `
+                <div class="success-container">
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        function showError(container, message) {
+            container.innerHTML = `
+                <div class="error-container">
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
