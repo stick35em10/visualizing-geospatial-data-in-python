@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Google Sheets Data Manager</title>
+    <style>
+        /* ... (seus estilos CSS existentes) ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ... (seu HTML existente) ... -->
+    </div>
+
+    <script>
+        // Configurações do servidor - ENDPOINTS CORRETOS
+        const API_ENDPOINTS = {
+            HEALTH: '/health',
+            WORKSHEETS: '/api/sheets/worksheets',
+            WORKSHEET_DATA: '/api/sheets/data',
+            UPLOAD: '/upload'  // Endpoint correto para upload
+        };
+
+        // Global variables
+        let SERVER_URL = '';
+        let allData = [];
+        let currentPage = 1;
+        let rowsPerPage = 25;
+        let totalPages = 1;
+        let worksheets = [];
+        let currentWorksheet = '';
+        let isConnected = false;
+        let currentHeaders = [];
+        
+        // Variáveis para gerenciamento de imagens
+        let currentImageData = [];
+        let selectedFiles = [];
+        let currentLocation = null;
+        let uploadInProgress = false;
+
+        // DOM Elements
+        const serverOptions = document.querySelectorAll('.server-option');
+        const customUrlInput = document.getElementById('customUrl');
+        const currentUrlSpan = document.getElementById('currentUrl');
+        const testConnectionBtn = document.getElementById('testConnectionBtn');
+        const loadWorksheetsBtn = document.getElementById('loadWorksheetsBtn');
+        const loadDataBtn = document.getElementById('loadDataBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const worksheetSelector = document.getElementById('worksheetSelector');
+        const worksheetSelect = document.getElementById('worksheetSelect');
+        const statsContainer = document.getElementById('statsContainer');
+        const dataContainer = document.getElementById('dataContainer');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const addFormContainer = document.getElementById('addFormContainer');
+        const searchTerm = document.getElementById('searchTerm');
+        const searchColumn = document.getElementById('searchColumn');
+        const searchBtn = document.getElementById('searchBtn');
+        const searchResults = document.getElementById('searchResults');
+        
+        // Elementos para imagens
+        const imageWorksheetSelect = document.getElementById('imageWorksheetSelect');
+        const imageFilters = document.getElementById('imageFilters');
+        const imageSearch = document.getElementById('imageSearch');
+        const imageSort = document.getElementById('imageSort');
+        const imagesContainer = document.getElementById('imagesContainer');
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalCaption = document.getElementById('modalCaption');
+        const closeModal = document.querySelector('.close');
+        
+        // Elementos para upload
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreviews = document.getElementById('imagePreviews');
+        const locationStatus = document.getElementById('locationStatus');
+        const captureLocationBtn = document.getElementById('captureLocationBtn');
+        const photoTitle = document.getElementById('photoTitle');
+        const photoDescription = document.getElementById('photoDescription');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadResults = document.getElementById('uploadResults');
+
+        // Utility Functions
+        function showLoading(container, message) {
+            container.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${message}</div>
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+        
+        function showSuccess(container, message) {
+            container.innerHTML = `
+                <div class="success-container">
+                    <h3>✅ Sucesso</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+        
+        function showError(container, message, suggestion = '') {
+            container.innerHTML = `
+                <div class="error-container">
+                    <h3>❌ Erro</h3>
+                    <p>${message}</p>
+                    ${suggestion ? `<p><strong>Sugestão:</strong> ${suggestion}</p>` : ''}
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'Data não disponível';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+            } catch (e) {
+                return dateString;
+            }
+        }
+        
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Server Configuration
+        serverOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                serverOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                const url = this.dataset.url;
+                if (url === 'custom') {
+                    customUrlInput.style.display = 'block';
+                    customUrlInput.focus();
+                    SERVER_URL = customUrlInput.value.trim();
+                } else {
+                    customUrlInput.style.display = 'none';
+                    SERVER_URL = url;
+                }
+                
+                currentUrlSpan.textContent = SERVER_URL || 'URL personalizada não definida';
+                
+                // Reset connection status
+                isConnected = false;
+                loadWorksheetsBtn.disabled = true;
+                loadDataBtn.disabled = true;
+                hideElements();
+            });
+        });
+        
+        customUrlInput.addEventListener('input', function() {
+            SERVER_URL = this.value.trim();
+            currentUrlSpan.textContent = SERVER_URL || 'URL personalizada não definida';
+            
+            // Reset connection status
+            isConnected = false;
+            loadWorksheetsBtn.disabled = true;
+            loadDataBtn.disabled = true;
+            hideElements();
+        });
+        
+        function hideElements() {
+            connectionStatus.style.display = 'none';
+            worksheetSelector.style.display = 'none';
+            statsContainer.style.display = 'none';
+            paginationContainer.style.display = 'none';
+            imageFilters.style.display = 'none';
+        }
+        
+        function updateButtonStates() {
+            loadWorksheetsBtn.disabled = !isConnected;
+            loadDataBtn.disabled = !isConnected || !worksheetSelect.value;
+        }
+
+        // API Functions - CORRIGIDAS
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            try {
+                if (!SERVER_URL) {
+                    throw new Error('Nenhum servidor selecionado');
+                }
+                
+                const config = {
+                    method: method,
+                    headers: {}
+                };
+                
+                // Adicionar Content-Type apenas se não for FormData
+                if (data && !(data instanceof FormData)) {
+                    config.headers['Content-Type'] = 'application/json';
+                    config.body = JSON.stringify(data);
+                } else if (data) {
+                    config.body = data;
+                }
+                
+                console.log('🌐 Fazendo request para:', `${SERVER_URL}${endpoint}`);
+                
+                const response = await fetch(`${SERVER_URL}${endpoint}`, config);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Erro detalhado:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('❌ Request error:', error);
+                
+                // Tratamento específico para erros comuns
+                if (error.message.includes('Failed to fetch')) {
+                    throw new Error('Erro de conexão. Verifique se o servidor está online.');
+                }
+                
+                throw error;
+            }
+        }
+
+        // Main Functions
+        async function testConnection() {
+            if (!SERVER_URL) {
+                showError(connectionStatus, 'Por favor, selecione um servidor primeiro.');
+                return;
+            }
+            
+            showLoading(connectionStatus, 'Testando conexão com o servidor...');
+            testConnectionBtn.disabled = true;
+            
+            try {
+                // Test basic connection using health endpoint
+                const result = await makeRequest(API_ENDPOINTS.HEALTH);
+                
+                if (result.status === 'healthy') {
+                    showSuccess(connectionStatus, `✅ Servidor conectado! Versão: ${result.version || 'N/A'}`);
+                    isConnected = true;
+                    updateButtonStates();
+                } else {
+                    throw new Error('Servidor não está saudável');
+                }
+                
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                showError(
+                    connectionStatus,
+                    `Falha na conexão: ${error.message}`,
+                    'Verifique se a URL está correta e o servidor está online.'
+                );
+                isConnected = false;
+                updateButtonStates();
+            } finally {
+                testConnectionBtn.disabled = false;
+            }
+        }
+        
+        async function loadWorksheets() {
+            if (!isConnected) {
+                showError(connectionStatus, 'Teste a conexão primeiro.');
+                return;
+            }
+            
+            showLoading(connectionStatus, 'Carregando abas da planilha...');
+            loadWorksheetsBtn.disabled = true;
+            
+            try {
+                const result = await makeRequest(API_ENDPOINTS.WORKSHEETS);
+                
+                if (result.success && result.worksheets) {
+                    worksheets = result.worksheets;
+                    worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                    imageWorksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                    
+                    worksheets.forEach(ws => {
+                        const wsTitle = ws.title || ws;
+                        const wsRowCount = ws.row_count || 0;
+                        
+                        const option = document.createElement('option');
+                        option.value = wsTitle;
+                        option.textContent = `${wsTitle} (${wsRowCount} linhas)`;
+                        worksheetSelect.appendChild(option);
+                        
+                        const imageOption = document.createElement('option');
+                        imageOption.value = wsTitle;
+                        imageOption.textContent = `${wsTitle} (${wsRowCount} linhas)`;
+                        imageWorksheetSelect.appendChild(imageOption);
+                    });
+                    
+                    worksheetSelector.style.display = 'block';
+                    loadDataBtn.disabled = false;
+                    
+                    showSuccess(
+                        connectionStatus,
+                        `✅ ${worksheets.length} aba(s) carregada(s) com sucesso!`
+                    );
+                    
+                } else {
+                    throw new Error(result.error || 'Nenhuma aba encontrada');
+                }
+                
+            } catch (error) {
+                console.error('Failed to load worksheets:', error);
+                showError(
+                    connectionStatus,
+                    `Erro ao carregar abas: ${error.message}`,
+                    'Verifique se a planilha existe e tem permissões de acesso.'
+                );
+            } finally {
+                loadWorksheetsBtn.disabled = false;
+            }
+        }
+        
+        async function loadData() {
+            const selectedWorksheet = worksheetSelect.value;
+            if (!selectedWorksheet) {
+                showError(dataContainer, 'Selecione uma aba da planilha primeiro.');
+                return;
+            }
+            
+            showLoading(dataContainer, `Carregando dados da aba "${selectedWorksheet}"...`);
+            loadDataBtn.disabled = true;
+            
+            try {
+                const result = await makeRequest(`${API_ENDPOINTS.WORKSHEET_DATA}?worksheet=${encodeURIComponent(selectedWorksheet)}`);
+                
+                if (result.success && result.data) {
+                    allData = result.data;
+                    currentWorksheet = selectedWorksheet;
+                    currentPage = 1;
+                    
+                    // Extract headers from first data row
+                    if (allData.length > 0) {
+                        currentHeaders = Object.keys(allData[0]);
+                        
+                        // Update search column dropdown
+                        updateSearchColumns();
+                        
+                        // Create add form
+                        createAddForm();
+                    }
+                    
+                    updateStats(result.metadata);
+                    renderTable();
+                    
+                    statsContainer.style.display = 'grid';
+                    
+                    if (allData.length > rowsPerPage) {
+                        setupPagination();
+                        paginationContainer.style.display = 'grid';
+                    }
+                    
+                    showSuccess(connectionStatus, `✅ ${allData.length} registros carregados com sucesso!`);
+                    
+                } else {
+                    throw new Error(result.error || 'Nenhum dado encontrado');
+                }
+                
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                showError(
+                    dataContainer,
+                    `Erro ao carregar dados: ${error.message}`,
+                    'A aba pode estar vazia ou com formato inválido.'
+                );
+            } finally {
+                loadDataBtn.disabled = false;
+            }
+        }
+        
+        // ... (restante das funções como updateSearchColumns, createAddForm, etc.) ...
+
+        // Image Gallery Functions - CORRIGIDAS
+        function setupImageGalleryListeners() {
+            imageWorksheetSelect.addEventListener('change', loadImageData);
+            imageSearch.addEventListener('input', renderImageGallery);
+            imageSort.addEventListener('change', renderImageGallery);
+            closeModal.addEventListener('click', closeImageModal);
+            
+            window.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    closeImageModal();
+                }
+            });
+        }
+        
+        async function loadImageData() {
+            const selectedWorksheet = imageWorksheetSelect.value;
+            if (!selectedWorksheet) {
+                imagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🖼️</h3>
+                        <p>Selecione uma aba que contenha imagens para visualizar</p>
+                    </div>
+                `;
+                imageFilters.style.display = 'none';
+                return;
+            }
+            
+            showLoading(imagesContainer, 'Carregando imagens...');
+            
+            try {
+                // Primeiro verificar se a worksheet existe
+                const worksheetExists = worksheets.some(ws => 
+                    (ws.title || ws) === selectedWorksheet
+                );
+                
+                if (!worksheetExists) {
+                    throw new Error(`A aba "${selectedWorksheet}" não foi encontrada`);
+                }
+                
+                const result = await makeRequest(`${API_ENDPOINTS.WORKSHEET_DATA}?worksheet=${encodeURIComponent(selectedWorksheet)}`);
+                
+                if (result.success && result.data) {
+                    currentImageData = result.data;
+                    imageFilters.style.display = 'block';
+                    renderImageGallery();
+                } else {
+                    throw new Error(result.error || 'Erro ao carregar dados');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar imagens:', error);
+                showError(
+                    imagesContainer,
+                    `Erro ao carregar imagens: ${error.message}`,
+                    'A aba pode não existir ou estar vazia.'
+                );
+            }
+        }
+        
+        function renderImageGallery() {
+            if (!currentImageData || currentImageData.length === 0) {
+                imagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🖼️</h3>
+                        <p>Nenhuma imagem encontrada nesta planilha</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Encontrar colunas que podem conter URLs de imagem
+            const headers = Object.keys(currentImageData[0]);
+            const imageColumns = headers.filter(header => 
+                header.toLowerCase().includes('url') || 
+                header.toLowerCase().includes('image') || 
+                header.toLowerCase().includes('img') ||
+                header.toLowerCase().includes('foto') ||
+                header.toLowerCase().includes('photo') ||
+                header.toLowerCase().includes('link')
+            );
+            
+            if (imageColumns.length === 0) {
+                imagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🔍</h3>
+                        <p>Nenhuma coluna de imagem encontrada. Procure por colunas com "url", "image", "foto" ou "link" no nome.</p>
+                        <p>Colunas disponíveis: ${headers.join(', ')}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Filtrar dados
+            const searchTerm = imageSearch.value.toLowerCase();
+            let filteredData = currentImageData.filter(row => {
+                if (!searchTerm) return true;
+                
+                return Object.values(row).some(value => 
+                    value && value.toString().toLowerCase().includes(searchTerm)
+                );
+            });
+            
+            // Ordenar dados
+            const sortOption = imageSort.value;
+            filteredData.sort((a, b) => {
+                switch(sortOption) {
+                    case 'date-desc':
+                        return (new Date(b.date || b.timestamp || 0) - new Date(a.date || a.timestamp || 0));
+                    case 'date-asc':
+                        return (new Date(a.date || a.timestamp || 0) - new Date(b.date || b.timestamp || 0));
+                    case 'name-asc':
+                        return (a.title || a.name || '').localeCompare(b.title || b.name || '');
+                    case 'name-desc':
+                        return (b.title || b.name || '').localeCompare(a.title || a.name || '');
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Renderizar galeria
+            if (filteredData.length === 0) {
+                imagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🔍</h3>
+                        <p>Nenhuma imagem encontrada com o filtro aplicado</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="success-container">
+                    <h3>✅ ${filteredData.length} imagem(s) encontrada(s)</h3>
+                    <p>Colunas de imagem detectadas: ${imageColumns.join(', ')}</p>
+                </div>
+                <div class="gallery-container">
+            `;
+            
+            filteredData.forEach((row, index) => {
+                // Encontrar a primeira coluna de imagem com URL válido
+                let imageUrl = '';
+                let imageColumn = '';
+                
+                for (const col of imageColumns) {
+                    if (row[col] && isValidUrl(row[col])) {
+                        imageUrl = row[col];
+                        imageColumn = col;
+                        break;
+                    }
+                }
+                
+                if (!imageUrl) return; // Pular se não encontrou imagem válida
+                
+                const title = row.title || row.name || row.filename || `Imagem ${index + 1}`;
+                const description = row.description || row.desc || '';
+                const date = row.date || row.timestamp || '';
+                
+                html += `
+                    <div class="image-card">
+                        <img src="${imageUrl}" alt="${title}" class="image-preview" 
+                             onclick="openImageModal('${imageUrl}', '${title.replace(/'/g, "\\'")}')"
+                             onerror="this.style.display='none'">
+                        <div class="image-info">
+                            <div class="image-title">${title}</div>
+                            <div class="image-description">${description}</div>
+                            <div class="image-date">${formatDate(date)}</div>
+                            <div class="image-source" style="font-size: 10px; color: #666;">
+                                Fonte: ${imageColumn}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            imagesContainer.innerHTML = html;
+        }
+        
+        function openImageModal(imageUrl, title) {
+            modalImage.src = imageUrl;
+            modalCaption.innerHTML = title;
+            imageModal.style.display = 'block';
+        }
+        
+        function closeImageModal() {
+            imageModal.style.display = 'none';
+        }
+
+        // Upload Functions - CORRIGIDAS
+        function setupUploadListeners() {
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            fileInput.addEventListener('change', () => {
+                handleFiles(fileInput.files);
+            });
+            
+            captureLocationBtn.addEventListener('click', captureLocation);
+            uploadBtn.addEventListener('click', startUpload);
+        }
+        
+        function handleFiles(files) {
+            if (uploadInProgress) return;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                if (!file.type.startsWith('image/')) {
+                    showUploadError('Apenas arquivos de imagem são permitidos (JPG, PNG, GIF)');
+                    continue;
+                }
+                
+                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'image-preview-item';
+                        img.title = file.name;
+                        imagePreviews.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            uploadBtn.disabled = selectedFiles.length === 0;
+        }
+        
+        function captureLocation() {
+            locationStatus.textContent = 'Obtendo localização...';
+            
+            if (!navigator.geolocation) {
+                locationStatus.textContent = 'Geolocalização não é suportada pelo seu navegador';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+                    
+                    locationStatus.innerHTML = `
+                        <strong>📍 Localização capturada com sucesso!</strong><br>
+                        Latitude: ${currentLocation.latitude.toFixed(6)}<br>
+                        Longitude: ${currentLocation.longitude.toFixed(6)}<br>
+                        Precisão: ±${currentLocation.accuracy.toFixed(2)} metros
+                    `;
+                },
+                (error) => {
+                    let errorMessage;
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = "Permissão de localização negada";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = "Localização indisponível";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = "Tempo limite excedido";
+                            break;
+                        default:
+                            errorMessage = "Erro desconhecido";
+                    }
+                    
+                    locationStatus.textContent = `❌ ${errorMessage}`;
+                    currentLocation = null;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+        
+        async function startUpload() {
+            if (selectedFiles.length === 0 || uploadInProgress) return;
+            
+            uploadInProgress = true;
+            uploadBtn.disabled = true;
+            progressBar.style.display = 'block';
+            progressFill.style.width = '0%';
+            uploadResults.innerHTML = '';
+            
+            try {
+                const formData = new FormData();
+                
+                // Adicionar arquivos
+                selectedFiles.forEach(file => {
+                    formData.append('photos', file);
+                });
+                
+                // Adicionar metadados
+                formData.append('title', photoTitle.value || 'Foto sem título');
+                formData.append('description', photoDescription.value || '');
+                
+                if (currentLocation) {
+                    formData.append('latitude', currentLocation.latitude);
+                    formData.append('longitude', currentLocation.longitude);
+                    formData.append('accuracy', currentLocation.accuracy);
+                }
+                
+                // Usar o endpoint correto de upload
+                const result = await makeRequest(API_ENDPOINTS.UPLOAD, 'POST', formData);
+                
+                if (result.success) {
+                    showUploadSuccess('✅ Upload concluído com sucesso!');
+                    resetUploadForm();
+                } else {
+                    throw new Error(result.error || 'Erro no upload');
+                }
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                showUploadError(`❌ Erro no upload: ${error.message}`);
+            } finally {
+                uploadInProgress = false;
+                uploadBtn.disabled = selectedFiles.length === 0;
+            }
+        }
+        
+        function showUploadSuccess(message) {
+            uploadResults.innerHTML = `
+                <div class="success-container">
+                    <h3>✅ Sucesso!</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        function showUploadError(message) {
+            uploadResults.innerHTML = `
+                <div class="error-container">
+                    <h3>❌ Erro!</h3>
+                    <p>${message}</p>
+                    <p><strong>Sugestão:</strong> Verifique se o endpoint de upload está configurado no servidor.</p>
+                </div>
+            `;
+        }
+        
+        function resetUploadForm() {
+            selectedFiles = [];
+            currentLocation = null;
+            imagePreviews.innerHTML = '';
+            locationStatus.textContent = 'Clique em "Capturar Localização" para obter coordenadas';
+            photoTitle.value = '';
+            photoDescription.value = '';
+            progressBar.style.display = 'none';
+            progressFill.style.width = '0%';
+            uploadBtn.disabled = true;
+        }
+
+        // Tab Navigation
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.dataset.tab;
+                
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show active tab content
+                tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(`${tabId}Tab`).classList.add('active');
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup event listeners
+            testConnectionBtn.addEventListener('click', testConnection);
+            loadWorksheetsBtn.addEventListener('click', loadWorksheets);
+            loadDataBtn.addEventListener('click', loadData);
+            clearBtn.addEventListener('click', clearAll);
+            searchBtn.addEventListener('click', searchData);
+            
+            // Setup image gallery
+            setupImageGalleryListeners();
+            
+            // Setup upload functionality
+            setupUploadListeners();
+            
+            console.log('📊 Google Sheets Data Manager inicializado');
+        });
+
+        // Funções globais para acesso via HTML
+        window.openImageModal = openImageModal;
+        window.closeImageModal = closeImageModal;
+    </script>
+</body>
+</html>
