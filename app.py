@@ -9,6 +9,13 @@ import gspread
 from google.oauth2.service_account import Credentials
 from google.auth.exceptions import GoogleAuthError
 
+#fazer upload das imagens e depois poder visualizá-las
+import uuid
+import io
+from PIL import Image
+import requests
+from googleapiclient.http import MediaIoBaseUpload
+
 # Configuração de logging
 logging.basicConfig(
     level=logging.DEBUG,
@@ -50,6 +57,61 @@ sheets_status = {
 _client_cache = None
 _spreadsheet_cache = None
 
+
+def upload_to_drive(file_content, filename, mime_type):
+    """Faz upload de um arquivo para o Google Drive e retorna a URL pública"""
+    try:
+        from googleapiclient.discovery import build
+        from googleapiclient.http import MediaIoBaseUpload
+        
+        # Obter credenciais
+        creds_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
+        if not creds_json:
+            raise Exception("Variável GOOGLE_SHEETS_CREDENTIALS não encontrada")
+        
+        creds_json = creds_json.strip()
+        if creds_json.startswith('eyJ'):
+            creds_json = base64.b64decode(creds_json).decode('utf-8')
+        
+        creds_dict = json.loads(creds_json)
+        credentials = Credentials.from_service_account_info(creds_dict)
+        
+        # Criar serviço do Drive
+        drive_service = build('drive', 'v3', credentials=credentials)
+        
+        # Criar arquivo no Drive
+        file_metadata = {
+            'name': filename,
+            'parents': ['root'],  # Você pode especificar uma pasta específica
+            'mimeType': mime_type
+        }
+        
+        media = MediaIoBaseUpload(io.BytesIO(file_content), 
+                                mimetype=mime_type,
+                                resumable=True)
+        
+        file = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, webViewLink, webContentLink'
+        ).execute()
+        
+        # Tornar o arquivo público
+        drive_service.permissions().create(
+            fileId=file['id'],
+            body={'type': 'anyone', 'role': 'reader'}
+        ).execute()
+        
+        # Obter link público
+        file_url = f"https://drive.google.com/uc?id={file['id']}"
+        
+        log_step("DRIVE_UPLOAD", f"✅ Arquivo {filename} upload para Drive: {file_url}")
+        return file_url
+        
+    except Exception as e:
+        log_step("DRIVE_UPLOAD", f"❌ Erro no upload para Drive: {str(e)}", False)
+        raise
+    
 def log_step(step, message, success=True):
     """Registra cada passo com timestamp"""
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -238,6 +300,138 @@ def test_google_sheets_connection():
 # ROTAS DE API PARA O CLIENTE HTML
 # ================================
 
+@app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
+def upload_photos():
+    """📸 Endpoint completo para upload de fotos com armazenamento no Drive"""
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
+    
+    log_step("UPLOAD_PHOTOS", "📸 Requisição de upload de fotos recebida")
+    
+    try:
+        if not sheets_status['initialized']:
+            sheets_result = test_google_sheets_connection()
+            if not sheets_result.get('success', False):
+                return jsonify({
+                    'success': False,
+                    'message': 'Erro de autenticação com o Google Sheets'
+                }), 500
+        
+        # Obter dados do formulário
+        title = request.form.get('title', 'Foto sem título')
+        description = request.form.get('description', '')
+        worksheet_name = request.form.get('worksheet', 'Imagens')
+        latitude = request.form.get('latitude')
+        longitude = request.form.get('longitude')
+        accuracy = request.form.get('accuracy')
+        
+        # Processar arquivos
+        uploaded_files = request.files.getlist('photos')
+        file_count = len(uploaded_files)
+        
+        if file_count == 0:
+            return jsonify({
+                'success': False,
+                'message': 'Nenhum arquivo enviado'
+            }), 400
+        
+        log_step("UPLOAD_PHOTOS", f"Processando {file_count} arquivo(s) para a aba '{worksheet_name}'")
+        
+        client, spreadsheet = get_sheets_client()
+        
+        # Verificar se a worksheet existe, se não, criar
+        try:
+            worksheet = spreadsheet.worksheet(worksheet_name)
+        except gspread.exceptions.WorksheetNotFound:
+            worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="15")
+            # Adicionar cabeçalhos
+            headers = [
+                "Data", "Título", "Descrição", "Latitude", "Longitude", 
+                "Precisão", "Nome do Arquivo", "Tamanho", "Tipo", 
+                "URL da Imagem", "ID Único", "Largura", "Altura", "Formato"
+            ]
+            worksheet.append_row(headers)
+            log_step("UPLOAD_PHOTOS", f"✅ Nova worksheet criada: {worksheet_name}")
+        
+        # Processar cada arquivo
+        results = []
+        for i, file in enumerate(uploaded_files):
+            if file and file.filename:
+                try:
+                    # Ler o arquivo
+                    file_content = file.read()
+                    filename = file.filename
+                    file_size = len(file_content)
+                    unique_id = str(uuid.uuid4())[:8]
+                    
+                    # Processar a imagem para obter metadados
+                    image = Image.open(io.BytesIO(file_content))
+                    width, height = image.size
+                    image_format = image.format
+                    
+                    # Fazer upload para o Google Drive
+                    drive_url = upload_to_drive(file_content, f"{unique_id}_{filename}", file.content_type)
+                    
+                    # Preparar dados para a planilha
+                    row_data = [
+                        datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                        title,
+                        description,
+                        latitude or '',
+                        longitude or '',
+                        accuracy or '',
+                        filename,
+                        file_size,
+                        file.content_type,
+                        drive_url,  # URL pública da imagem
+                        unique_id,
+                        width,
+                        height,
+                        image_format
+                    ]
+                    
+                    # Adicionar à planilha
+                    worksheet.append_row(row_data)
+                    
+                    results.append({
+                        'filename': filename,
+                        'size': file_size,
+                        'type': file.content_type,
+                        'url': drive_url,
+                        'id': unique_id,
+                        'dimensions': f"{width}x{height}",
+                        'status': 'success'
+                    })
+                    
+                    log_step("UPLOAD_PHOTOS", f"✅ Arquivo {i+1}/{file_count} processado: {filename} -> {drive_url}")
+                    
+                except Exception as file_error:
+                    error_msg = f"Erro ao processar {filename}: {str(file_error)}"
+                    log_step("UPLOAD_PHOTOS", error_msg, False)
+                    results.append({
+                        'filename': filename,
+                        'status': 'error',
+                        'error': str(file_error)
+                    })
+        
+        return jsonify({
+            'success': True,
+            'message': f'{file_count} arquivo(s) processado(s) com sucesso!',
+            'results': results,
+            'worksheet': worksheet_name,
+            'spreadsheet_title': spreadsheet.title,
+            'uploaded_count': len([r for r in results if r['status'] == 'success'])
+        })
+        
+    except Exception as e:
+        error_msg = f"❌ Erro no upload de fotos: {str(e)}"
+        log_step("UPLOAD_PHOTOS", error_msg, False)
+        return jsonify({
+            'success': False,
+            'message': 'Erro no processamento do upload',
+            'error': str(e)
+        }), 500
+
 @app.route('/api/sheets/worksheets', methods=['GET'])
 def get_worksheets():
     """📄 Lista todas as abas/worksheets da planilha"""
@@ -268,6 +462,7 @@ def get_worksheets():
         log_step("API_WORKSHEETS", error_msg, False)
         return jsonify({'success': False, 'error': error_msg}), 500
 
+"""
 @app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
 def upload_photos():
     """📸 Endpoint para upload de fotos com metadados"""
@@ -360,6 +555,7 @@ def upload_photos():
             'message': 'Erro no processamento do upload',
             'error': str(e)
         }), 500
+"""
 
 @app.route('/api/sheets/data', methods=['GET'])
 def get_sheet_data():

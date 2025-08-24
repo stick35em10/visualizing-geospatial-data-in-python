@@ -1898,12 +1898,37 @@
         // Adicione esta função para testar o endpoint de upload
         async function testUploadEndpoint() {
             try {
-                const response = await fetch(`${SERVER_URL}/api/upload/photos`, {
+
+                //const response = await fetch(`${SERVER_URL}/api/upload/photos`, {
                     method: 'OPTIONS' // ou HEAD para verificar se existe
                 });
-                console.log('Endpoint status:', response.status);
+                //console.log('Endpoint status:', response.status);
                 //return response.ok;
-                return response.status === 200 || response.status === 204;
+                //return response.status === 200 || response.status === 204;
+
+                // Primeiro tenta OPTIONS (para CORS)
+                try {
+                    const optionsResponse = await fetch(`${SERVER_URL}/api/upload/photos`, {
+                        method: 'OPTIONS'
+                    });
+                    if (optionsResponse.status === 200 || optionsResponse.status === 204) {
+                        return true;
+                    }
+                } catch (optionsError) {
+                    console.log('OPTIONS falhou, tentando HEAD...');
+                }
+
+                // Se OPTIONS falhar, tenta HEAD
+                try {
+                    const headResponse = await fetch(`${SERVER_URL}/api/upload/photos`, {
+                        method: 'HEAD'
+                    });
+                    return headResponse.ok;
+                } catch (headError) {
+                    console.log('HEAD também falhou, endpoint provavelmente não existe');
+                    return false;
+                }
+                
             } catch (error) {
                 //console.log('Endpoint não existe:', error);
                 console.log('Endpoint não existe ou erro de CORS:', error);
@@ -1940,7 +1965,7 @@
             try {
                 const formData = new FormData();
                 
-                // Add files
+                // Add files/arquivos
                 selectedFiles.forEach(file => {
                     formData.append('photos', file);
                 });
@@ -1955,22 +1980,56 @@
                     formData.append('longitude', currentLocation.longitude);
                     formData.append('accuracy', currentLocation.accuracy);
                 }
-                
+
+                // Fazer upload com progresso
                 const response = await fetch(`${SERVER_URL}/api/upload/photos`, {
                     method: 'POST',
                     body: formData
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}
+                    `);
                 }
                 
                 const result = await response.json();
                 
                 if (result.success) {
-                    showUploadSuccess('Upload concluído com sucesso! As imagens foram salvas na planilha.');
-                    resetUploadForm();
+                    //showUploadSuccess('Upload concluído com sucesso! As imagens foram salvas na planilha.');
+                    //resetUploadForm();
+                    showUploadSuccess(
+                        `Upload concluído! ${result.uploaded_count} imagem(ns) salvas com sucesso. ` +
+                        `Verifique a aba "${result.worksheet}" para visualizar.`
+                    );
+                    // Mostrar links das imagens
+                    if (result.results && result.results.length > 0) {
+                        let resultsHTML = '<div style="margin-top: 20px;"><h4>📸 Imagens Enviadas:</h4>';
+                        
+                        result.results.forEach((fileResult, index) => {
+                            if (fileResult.status === 'success') {
+                                resultsHTML += `
+                                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                                        <strong>${index + 1}. ${fileResult.filename}</strong><br>
+                                        📏 ${fileResult.dimensions} | 💾 ${Math.round(fileResult.size / 1024)}KB<br>
+                                        🔗 <a href="${fileResult.url}" target="_blank" style="color: #007bff;">Ver Imagem</a>
+                                    </div>
+                                `;
+                            } else {
+                                resultsHTML += `
+                                    <div style="margin: 10px 0; padding: 10px; border: 1px solid #ff6b6b; border-radius: 5px; color: #dc3545;">
+                                        <strong>❌ ${fileResult.filename}</strong><br>
+                                        Erro: ${fileResult.error}
+                                    </div>
+                                `;
+                            }
+                        });
+                        
+                        resultsHTML += '</div>';
+                        uploadResults.innerHTML += resultsHTML;
+                    }
                     
+                    resetUploadForm();
                     // Recarregar a lista de abas para incluir a nova aba de imagens se necessário
                     await loadWorksheets();
                 } else {
