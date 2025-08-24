@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Google Sheets Data Manager</title>
+    <style>
+        /* ... (seus estilos CSS existentes) ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Google Sheets Data Manager</h1>
+            <p>Visualize, consulte e atualize dados da sua planilha do Google Sheets</p>
+        </div>
+        
+        <div class="content">
+            <!-- Server Configuration -->
+            <div class="server-config">
+                <h3>🌐 Configuração do Servidor</h3>
+                <div class="server-options">
+                    <div class="server-option" data-url="https://visualizing-geospatial-data-in-python-1.onrender.com">
+                        🚀 Render v1 (Servidor Novo)
+                    </div>
+                    <div class="server-option" data-url="https://cors-anywhere.herokuapp.com/https://visualizing-geospatial-data-in-python-1.onrender.com">
+                        🔄 Proxy CORS (Heroku)
+                    </div>
+                    <div class="server-option" data-url="http://localhost:5000">
+                        💻 Local (5000)
+                    </div>
+                    <div class="server-option" data-url="custom">
+                        ⚙️ URL Personalizada
+                    </div>
+                </div>
+                <input type="text" id="customUrl" placeholder="Digite a URL personalizada (ex: https://meuservidor.com)" style="display: none;">
+                <div class="current-url">
+                    <strong>🌐 URL Atual:</strong> <span id="currentUrl">Nenhuma selecionada</span>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn success" id="testConnectionBtn">🔗 Testar Conexão</button>
+                <button class="btn" id="loadWorksheetsBtn" disabled>📄 Carregar Abas</button>
+                <button class="btn" id="loadDataBtn" disabled>📥 Carregar Dados</button>
+                <button class="btn danger" id="clearBtn">🧹 Limpar</button>
+            </div>
+            
+            <!-- Connection Status -->
+            <div id="connectionStatus" style="display: none;"></div>
+            
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" data-tab="view">👀 Visualizar Dados</div>
+                <div class="tab" data-tab="add">➕ Adicionar Dados</div>
+                <div class="tab" data-tab="search">🔍 Pesquisar Dados</div>
+                <div class="tab" data-tab="images">🖼️ Visualizar Imagens</div>
+                <div class="tab" data-tab="upload">📤 Upload de Fotos</div>
+            </div>
+            
+            <!-- View Data Tab -->
+            <div class="tab-content active" id="viewTab">
+                <!-- Worksheet Selector -->
+                <div class="worksheet-selector" id="worksheetSelector" style="display: none;">
+                    <label for="worksheetSelect">📋 Selecionar Aba da Planilha:</label>
+                    <select id="worksheetSelect">
+                        <option value="">Selecione uma aba...</option>
+                    </select>
+                </div>
+                
+                <!-- Stats -->
+                <div class="stats-container" id="statsContainer" style="display: none;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalRows">0</div>
+                        <div class="stat-label">Total de Linhas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalColumns">0</div>
+                        <div class="stat-label">Total de Colunas</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="lastUpdate">---</div>
+                        <div class="stat-label">Última Atualização</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="worksheetName">---</div>
+                        <div class="stat-label">Aba Atual</div>
+                    </div>
+                </div>
+                
+                <!-- Data Container -->
+                <div class="data-container" id="dataContainer">
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Selecione um servidor e clique em "Testar Conexão" para começar</p>
+                    </div>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="controls" id="paginationContainer" style="display: none;">
+                    <button class="btn" id="prevPageBtn" disabled>◀ Anterior</button>
+                    <div class="pagination-info">
+                        <span id="pageInfo">Página 1 de 1</span>
+                    </div>
+                    <button class="btn" id="nextPageBtn" disabled>Próxima ▶</button>
+                </div>
+            </div>
+            
+            <!-- Add Data Tab -->
+            <div class="tab-content" id="addTab">
+                <h3>➕ Adicionar Novo Registro</h3>
+                <div id="addFormContainer">
+                    <div class="empty-state">
+                        <h3>📝</h3>
+                        <p>Carregue os dados primeiro para ver a estrutura do formulário</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Images Tab -->
+            <div class="tab-content" id="imagesTab">
+                <h3>🖼️ Visualizador de Imagens</h3>
+                <p>Selecione uma aba que contenha URLs de imagens para visualizar</p>
+                
+                <div class="worksheet-selector">
+                    <label for="imageWorksheetSelect">📋 Selecionar Aba com Imagens:</label>
+                    <select id="imageWorksheetSelect">
+                        <option value="">Selecione uma aba...</option>
+                    </select>
+                </div>
+                
+                <div class="filter-controls" id="imageFilters" style="display: none;">
+                    <div class="filter-group">
+                        <label for="imageSearch">🔍 Filtrar imagens:</label>
+                        <input type="text" id="imageSearch" placeholder="Digite para filtrar...">
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label for="imageSort">📊 Ordenar por:</label>
+                        <select id="imageSort">
+                            <option value="date-desc">Data (mais recente primeiro)</option>
+                            <option value="date-asc">Data (mais antiga primeiro)</option>
+                            <option value="name-asc">Nome (A-Z)</option>
+                            <option value="name-desc">Nome (Z-A)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="imagesContainer">
+                    <div class="empty-state">
+                        <h3>🖼️</h3>
+                        <p>Selecione uma aba que contenha imagens para visualizar</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Search Data Tab -->
+            <div class="tab-content" id="searchTab">
+                <h3>🔍 Pesquisar Dados</h3>
+                <div class="form-group">
+                    <label for="searchTerm">Termo de Pesquisa:</label>
+                    <input type="text" id="searchTerm" placeholder="Digite o termo para pesquisar...">
+                </div>
+                <div class="form-group">
+                    <label for="searchColumn">Coluna para Pesquisar (opcional):</label>
+                    <select id="searchColumn">
+                        <option value="">Todas as colunas</option>
+                    </select>
+                </div>
+                <button class="btn success" id="searchBtn">🔍 Pesquisar</button>
+                
+                <div id="searchResults" style="margin-top: 20px;"></div>
+            </div>
+            
+            <!-- Upload de Fotos Tab -->
+            <div class="tab-content" id="uploadTab">
+                <h3>📤 Upload de Fotos com Geodados</h3>
+                <p>Selecione fotos, capture a localização e faça upload para o Google Sheets</p>
+                
+                <div class="upload-container">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📸</div>
+                        <h4>Clique ou arraste fotos aqui</h4>
+                        <p>Formatos suportados: JPG, PNG, GIF</p>
+                        <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                    </div>
+                    
+                    <div class="image-preview-container" id="imagePreviews"></div>
+                    
+                    <div class="location-info" id="locationInfo">
+                        <h4>📍 Informações de Localização</h4>
+                        <p id="locationStatus">Clique em "Capturar Localização" para obter coordenadas</p>
+                        <button class="btn" id="captureLocationBtn">🌍 Capturar Localização</button>
+                    </div>
+                    
+                    <div class="metadata-form">
+                        <h4>📝 Informações Adicionais</h4>
+                        <div class="form-group">
+                            <label for="photoTitle">Título da Foto:</label>
+                            <input type="text" id="photoTitle" placeholder="Digite um título para a foto">
+                        </div>
+                        <div class="form-group">
+                            <label for="photoDescription">Descrição:</label>
+                            <textarea id="photoDescription" rows="3" placeholder="Digite uma descrição"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-bar" id="progressBar" style="display: none;">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    
+                    <button class="btn success" id="uploadBtn" disabled>🚀 Fazer Upload</button>
+                </div>
+                
+                <div id="uploadResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para visualização de imagem em tamanho maior -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <img class="modal-content" id="modalImage">
+        <div id="modalCaption" style="color: white; text-align: center; padding: 10px;"></div>
+    </div>
+    
+
+    <script>
+        // Configurações do servidor - ENDPOINTS CORRETOS
+        const API_ENDPOINTS = {
+            HEALTH: '/health',
+            WORKSHEETS: '/api/sheets/worksheets',
+            WORKSHEET_DATA: '/api/sheets/data',
+            UPLOAD: '/upload'
+        };
+
+        // Global variables
+        let SERVER_URL = '';
+        let allData = [];
+        let currentPage = 1;
+        let rowsPerPage = 25;
+        let totalPages = 1;
+        let worksheets = [];
+        let currentWorksheet = '';
+        let isConnected = false;
+        let currentHeaders = [];
+        
+        // Variáveis para gerenciamento de imagens
+        let currentImageData = [];
+        let selectedFiles = [];
+        let currentLocation = null;
+        let uploadInProgress = false;
+
+        // DOM Elements - VERIFICAR SE EXISTEM ANTES DE USAR
+        function getElement(id) {
+            const element = document.getElementById(id);
+            if (!element) {
+                console.warn(`Elemento não encontrado: ${id}`);
+            }
+            return element;
+        }
+
+        // Obter elementos DOM com verificação
+        const serverOptions = document.querySelectorAll('.server-option');
+        const customUrlInput = getElement('customUrl');
+        const currentUrlSpan = getElement('currentUrl');
+        const testConnectionBtn = getElement('testConnectionBtn');
+        const loadWorksheetsBtn = getElement('loadWorksheetsBtn');
+        const loadDataBtn = getElement('loadDataBtn');
+        const clearBtn = getElement('clearBtn');
+        const connectionStatus = getElement('connectionStatus');
+        const worksheetSelector = getElement('worksheetSelector');
+        const worksheetSelect = getElement('worksheetSelect');
+        const statsContainer = getElement('statsContainer');
+        const dataContainer = getElement('dataContainer');
+        const paginationContainer = getElement('paginationContainer');
+        const prevPageBtn = getElement('prevPageBtn');
+        const nextPageBtn = getElement('nextPageBtn');
+        const pageInfo = getElement('pageInfo');
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const addFormContainer = getElement('addFormContainer');
+        const searchTerm = getElement('searchTerm');
+        const searchColumn = getElement('searchColumn');
+        const searchBtn = getElement('searchBtn');
+        const searchResults = getElement('searchResults');
+        
+        // Elementos para imagens
+        const imageWorksheetSelect = getElement('imageWorksheetSelect');
+        const imageFilters = getElement('imageFilters');
+        const imageSearch = getElement('imageSearch');
+        const imageSort = getElement('imageSort');
+        const imagesContainer = getElement('imagesContainer');
+        const imageModal = getElement('imageModal');
+        const modalImage = getElement('modalImage');
+        const modalCaption = getElement('modalCaption');
+        const closeModal = document.querySelector('.close');
+        
+        // Elementos para upload
+        const uploadArea = getElement('uploadArea');
+        const fileInput = getElement('fileInput');
+        const imagePreviews = getElement('imagePreviews');
+        const locationStatus = getElement('locationStatus');
+        const captureLocationBtn = getElement('captureLocationBtn');
+        const photoTitle = getElement('photoTitle');
+        const photoDescription = getElement('photoDescription');
+        const progressBar = getElement('progressBar');
+        const progressFill = getElement('progressFill');
+        const uploadBtn = getElement('uploadBtn');
+        const uploadResults = getElement('uploadResults');
+
+        // Utility Functions
+        function showLoading(container, message) {
+            if (!container) return;
+            container.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${message}</div>
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+        
+        function showSuccess(container, message) {
+            if (!container) return;
+            container.innerHTML = `
+                <div class="success-container">
+                    <h3>✅ Sucesso</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+        
+        function showError(container, message, suggestion = '') {
+            if (!container) return;
+            container.innerHTML = `
+                <div class="error-container">
+                    <h3>❌ Erro</h3>
+                    <p>${message}</p>
+                    ${suggestion ? `<p><strong>Sugestão:</strong> ${suggestion}</p>` : ''}
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'Data não disponível';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR');
+            } catch (e) {
+                return dateString;
+            }
+        }
+        
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        // Server Configuration
+        function setupServerConfiguration() {
+            if (!serverOptions.length) return;
+            
+            serverOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    serverOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const url = this.dataset.url;
+                    if (url === 'custom') {
+                        if (customUrlInput) customUrlInput.style.display = 'block';
+                        if (customUrlInput) customUrlInput.focus();
+                        SERVER_URL = customUrlInput ? customUrlInput.value.trim() : '';
+                    } else {
+                        if (customUrlInput) customUrlInput.style.display = 'none';
+                        SERVER_URL = url;
+                    }
+                    
+                    if (currentUrlSpan) currentUrlSpan.textContent = SERVER_URL || 'URL personalizada não definida';
+                    
+                    // Reset connection status
+                    isConnected = false;
+                    if (loadWorksheetsBtn) loadWorksheetsBtn.disabled = true;
+                    if (loadDataBtn) loadDataBtn.disabled = true;
+                    hideElements();
+                });
+            });
+            
+            if (customUrlInput) {
+                customUrlInput.addEventListener('input', function() {
+                    SERVER_URL = this.value.trim();
+                    if (currentUrlSpan) currentUrlSpan.textContent = SERVER_URL || 'URL personalizada não definida';
+                    
+                    // Reset connection status
+                    isConnected = false;
+                    if (loadWorksheetsBtn) loadWorksheetsBtn.disabled = true;
+                    if (loadDataBtn) loadDataBtn.disabled = true;
+                    hideElements();
+                });
+            }
+        }
+        
+        function hideElements() {
+            if (connectionStatus) connectionStatus.style.display = 'none';
+            if (worksheetSelector) worksheetSelector.style.display = 'none';
+            if (statsContainer) statsContainer.style.display = 'none';
+            if (paginationContainer) paginationContainer.style.display = 'none';
+            if (imageFilters) imageFilters.style.display = 'none';
+        }
+        
+        function updateButtonStates() {
+            if (loadWorksheetsBtn) loadWorksheetsBtn.disabled = !isConnected;
+            if (loadDataBtn) loadDataBtn.disabled = !isConnected || !worksheetSelect || !worksheetSelect.value;
+        }
+
+        // API Functions
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            try {
+                if (!SERVER_URL) {
+                    throw new Error('Nenhum servidor selecionado');
+                }
+                
+                const config = {
+                    method: method,
+                    headers: {}
+                };
+                
+                // Adicionar Content-Type apenas se não for FormData
+                if (data && !(data instanceof FormData)) {
+                    config.headers['Content-Type'] = 'application/json';
+                    config.body = JSON.stringify(data);
+                } else if (data) {
+                    config.body = data;
+                }
+                
+                console.log('🌐 Fazendo request para:', `${SERVER_URL}${endpoint}`);
+                
+                const response = await fetch(`${SERVER_URL}${endpoint}`, config);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Erro detalhado:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                console.error('❌ Request error:', error);
+                
+                // Tratamento específico para erros comuns
+                if (error.message.includes('Failed to fetch')) {
+                    throw new Error('Erro de conexão. Verifique se o servidor está online.');
+                }
+                
+                throw error;
+            }
+        }
+
+        // Main Functions
+        async function testConnection() {
+            if (!SERVER_URL) {
+                showError(connectionStatus, 'Por favor, selecione um servidor primeiro.');
+                return;
+            }
+            
+            showLoading(connectionStatus, 'Testando conexão com o servidor...');
+            if (testConnectionBtn) testConnectionBtn.disabled = true;
+            
+            try {
+                // Test basic connection using health endpoint
+                const result = await makeRequest(API_ENDPOINTS.HEALTH);
+                
+                if (result.status === 'healthy') {
+                    showSuccess(connectionStatus, `✅ Servidor conectado! Versão: ${result.version || 'N/A'}`);
+                    isConnected = true;
+                    updateButtonStates();
+                } else {
+                    throw new Error('Servidor não está saudável');
+                }
+                
+            } catch (error) {
+                console.error('Connection test failed:', error);
+                showError(
+                    connectionStatus,
+                    `Falha na conexão: ${error.message}`,
+                    'Verifique se a URL está correta e o servidor está online.'
+                );
+                isConnected = false;
+                updateButtonStates();
+            } finally {
+                if (testConnectionBtn) testConnectionBtn.disabled = false;
+            }
+        }
+        
+        async function loadWorksheets() {
+            if (!isConnected) {
+                showError(connectionStatus, 'Teste a conexão primeiro.');
+                return;
+            }
+            
+            showLoading(connectionStatus, 'Carregando abas da planilha...');
+            if (loadWorksheetsBtn) loadWorksheetsBtn.disabled = true;
+            
+            try {
+                const result = await makeRequest(API_ENDPOINTS.WORKSHEETS);
+                
+                if (result.success && result.worksheets) {
+                    worksheets = result.worksheets;
+                    if (worksheetSelect) {
+                        worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                    }
+                    if (imageWorksheetSelect) {
+                        imageWorksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                    }
+                    
+                    worksheets.forEach(ws => {
+                        const wsTitle = ws.title || ws;
+                        const wsRowCount = ws.row_count || 0;
+                        
+                        if (worksheetSelect) {
+                            const option = document.createElement('option');
+                            option.value = wsTitle;
+                            option.textContent = `${wsTitle} (${wsRowCount} linhas)`;
+                            worksheetSelect.appendChild(option);
+                        }
+                        
+                        if (imageWorksheetSelect) {
+                            const imageOption = document.createElement('option');
+                            imageOption.value = wsTitle;
+                            imageOption.textContent = `${wsTitle} (${wsRowCount} linhas)`;
+                            imageWorksheetSelect.appendChild(imageOption);
+                        }
+                    });
+                    
+                    if (worksheetSelector) worksheetSelector.style.display = 'block';
+                    if (loadDataBtn) loadDataBtn.disabled = false;
+                    
+                    showSuccess(
+                        connectionStatus,
+                        `✅ ${worksheets.length} aba(s) carregada(s) com sucesso!`
+                    );
+                    
+                } else {
+                    throw new Error(result.error || 'Nenhuma aba encontrada');
+                }
+                
+            } catch (error) {
+                console.error('Failed to load worksheets:', error);
+                showError(
+                    connectionStatus,
+                    `Erro ao carregar abas: ${error.message}`,
+                    'Verifique se a planilha existe e tem permissões de acesso.'
+                );
+            } finally {
+                if (loadWorksheetsBtn) loadWorksheetsBtn.disabled = false;
+            }
+        }
+        
+        async function loadData() {
+            if (!worksheetSelect || !worksheetSelect.value) {
+                showError(dataContainer, 'Selecione uma aba da planilha primeiro.');
+                return;
+            }
+            
+            const selectedWorksheet = worksheetSelect.value;
+            showLoading(dataContainer, `Carregando dados da aba "${selectedWorksheet}"...`);
+            if (loadDataBtn) loadDataBtn.disabled = true;
+            
+            try {
+                const result = await makeRequest(`${API_ENDPOINTS.WORKSHEET_DATA}?worksheet=${encodeURIComponent(selectedWorksheet)}`);
+                
+                if (result.success && result.data) {
+                    allData = result.data;
+                    currentWorksheet = selectedWorksheet;
+                    currentPage = 1;
+                    
+                    // Extract headers from first data row
+                    if (allData.length > 0) {
+                        currentHeaders = Object.keys(allData[0]);
+                        
+                        // Update search column dropdown
+                        updateSearchColumns();
+                        
+                        // Create add form
+                        createAddForm();
+                    }
+                    
+                    updateStats(result.metadata);
+                    renderTable();
+                    
+                    if (statsContainer) statsContainer.style.display = 'grid';
+                    
+                    if (allData.length > rowsPerPage) {
+                        setupPagination();
+                        if (paginationContainer) paginationContainer.style.display = 'grid';
+                    }
+                    
+                    showSuccess(connectionStatus, `✅ ${allData.length} registros carregados com sucesso!`);
+                    
+                } else {
+                    throw new Error(result.error || 'Nenhum dado encontrado');
+                }
+                
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                showError(
+                    dataContainer,
+                    `Erro ao carregar dados: ${error.message}`,
+                    'A aba pode estar vazia ou com formato inválido.'
+                );
+            } finally {
+                if (loadDataBtn) loadDataBtn.disabled = false;
+            }
+        }
+        
+        function updateSearchColumns() {
+            if (!searchColumn) return;
+            
+            searchColumn.innerHTML = '<option value="">Todas as colunas</option>';
+            
+            currentHeaders.forEach(header => {
+                const option = document.createElement('option');
+                option.value = header;
+                option.textContent = header;
+                searchColumn.appendChild(option);
+            });
+        }
+        
+        function createAddForm() {
+            if (!addFormContainer || currentHeaders.length === 0) {
+                if (addFormContainer) {
+                    addFormContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>📝</h3>
+                            <p>Nenhum dado carregado para criar formulário</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            let formHTML = `
+                <form id="addDataForm">
+                    <div class="form-group">
+                        <label for="worksheetName">Aba da Planilha:</label>
+                        <input type="text" id="worksheetName" value="${currentWorksheet}" readonly>
+                    </div>
+            `;
+            
+            currentHeaders.forEach(header => {
+                formHTML += `
+                    <div class="form-group">
+                        <label for="${header}">${header}:</label>
+                        <input type="text" id="${header}" name="${header}" placeholder="Digite o valor para ${header}">
+                    </div>
+                `;
+            });
+            
+            formHTML += `
+                <button type="submit" class="btn success">💾 Salvar Dados</button>
+                </form>
+            `;
+            
+            addFormContainer.innerHTML = formHTML;
+            
+            // Add form submit handler
+            const addForm = document.getElementById('addDataForm');
+            if (addForm) {
+                addForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    await addNewData();
+                });
+            }
+        }
+        
+        async function addNewData() {
+            const formData = {};
+            currentHeaders.forEach(header => {
+                const input = document.getElementById(header);
+                if (input) {
+                    formData[header] = input.value;
+                }
+            });
+            
+            try {
+                showLoading(addFormContainer, 'Salvando dados...');
+                
+                const result = await makeRequest('/api/sheets/add-data', 'POST', {
+                    worksheet: currentWorksheet,
+                    data: formData
+                });
+                
+                if (result.success) {
+                    showSuccess(addFormContainer, 'Dados salvos com sucesso!');
+                    
+                    // Clear form
+                    currentHeaders.forEach(header => {
+                        const input = document.getElementById(header);
+                        if (input) input.value = '';
+                    });
+                    
+                    // Reload data to show the new entry
+                    await loadData();
+                } else {
+                    throw new Error(result.error || 'Erro ao salvar dados');
+                }
+            } catch (error) {
+                console.error('Failed to add data:', error);
+                showError(
+                    addFormContainer,
+                    `Erro ao salvar dados: ${error.message}`
+                );
+            }
+        }
+        
+        async function searchData() {
+            if (!searchTerm || !searchTerm.value.trim()) {
+                if (searchResults) {
+                    searchResults.innerHTML = `
+                        <div class="error-container">
+                            <h3>❌ Erro</h3>
+                            <p>Digite um termo para pesquisar</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            const term = searchTerm.value.trim();
+            const column = searchColumn ? searchColumn.value : '';
+            
+            try {
+                showLoading(searchResults, 'Pesquisando...');
+                
+                // Filter data based on search term
+                const filteredData = allData.filter(item => {
+                    if (column) {
+                        // Search in specific column
+                        return String(item[column] || '').toLowerCase().includes(term.toLowerCase());
+                    } else {
+                        // Search in all columns
+                        return Object.values(item).some(value => 
+                            String(value || '').toLowerCase().includes(term.toLowerCase())
+                        );
+                    }
+                });
+                
+                if (!searchResults) return;
+                
+                if (filteredData.length === 0) {
+                    searchResults.innerHTML = `
+                        <div class="empty-state">
+                            <h3>🔍</h3>
+                            <p>Nenhum resultado encontrado para "${term}"${column ? ` na coluna ${column}` : ''}</p>
+                        </div>
+                    `;
+                } else {
+                    let resultsHTML = `
+                        <div class="success-container">
+                            <h3>✅ ${filteredData.length} resultado(s) encontrado(s)</h3>
+                            <p>Para o termo "${term}"${column ? ` na coluna ${column}` : ''}</p>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        ${currentHeaders.map(header => `<th>${header}</th>`).join('')}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                    `;
+                    
+                    filteredData.forEach(row => {
+                        resultsHTML += `<tr>`;
+                        currentHeaders.forEach(header => {
+                            resultsHTML += `<td>${row[header] || ''}</td>`;
+                        });
+                        resultsHTML += `</tr>`;
+                    });
+                    
+                    resultsHTML += `
+                                </tbody>
+                            </table>
+                        </div>
+                    `;
+                    
+                    searchResults.innerHTML = resultsHTML;
+                }
+            } catch (error) {
+                console.error('Search failed:', error);
+                if (searchResults) {
+                    searchResults.innerHTML = `
+                        <div class="error-container">
+                            <h3>❌ Erro na Pesquisa</h3>
+                            <p>${error.message}</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
+        function updateStats(metadata) {
+            if (!metadata) return;
+            
+            if (document.getElementById('totalRows')) document.getElementById('totalRows').textContent = metadata.total_rows?.toLocaleString() || allData.length;
+            if (document.getElementById('totalColumns')) document.getElementById('totalColumns').textContent = metadata.total_columns || currentHeaders.length;
+            if (document.getElementById('lastUpdate')) document.getElementById('lastUpdate').textContent = metadata.last_update ? 
+                formatDate(metadata.last_update) : new Date().toLocaleString('pt-BR');
+            if (document.getElementById('worksheetName')) document.getElementById('worksheetName').textContent = metadata.worksheet_name || currentWorksheet || '---';
+        }
+        
+        function renderTable() {
+            if (!dataContainer || allData.length === 0) {
+                if (dataContainer) {
+                    dataContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>📊</h3>
+                            <p>Nenhum dado encontrado na aba selecionada.</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            // Calculate pagination
+            totalPages = Math.ceil(allData.length / rowsPerPage);
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = Math.min(startIndex + rowsPerPage, allData.length);
+            const currentData = allData.slice(startIndex, endIndex);
+            
+            let tableHTML = `
+                <div class="table-header">
+                    <h3>📊 Dados da Planilha - ${currentWorksheet}</h3>
+                    <div class="table-controls">
+                        <input type="number" id="rowsPerPage" value="${rowsPerPage}" min="5" max="100" style="width: 80px;">
+                        <span>linhas por página</span>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                ${currentHeaders.map(header => `<th>${header}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            currentData.forEach(row => {
+                tableHTML += `<tr>`;
+                currentHeaders.forEach(header => {
+                    tableHTML += `<td>${row[header] || ''}</td>`;
+                });
+                tableHTML += `</tr>`;
+            });
+            
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            dataContainer.innerHTML = tableHTML;
+            
+            // Update page info
+            if (pageInfo) pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+            
+            // Setup pagination controls
+            if (prevPageBtn) prevPageBtn.disabled = currentPage === 1;
+            if (nextPageBtn) nextPageBtn.disabled = currentPage === totalPages;
+            
+            // Add event listener for rows per page change
+            const rowsPerPageInput = document.getElementById('rowsPerPage');
+            if (rowsPerPageInput) {
+                rowsPerPageInput.addEventListener('change', function() {
+                    rowsPerPage = parseInt(this.value);
+                    currentPage = 1;
+                    renderTable();
+                    setupPagination();
+                });
+            }
+        }
+        
+        function setupPagination() {
+            if (prevPageBtn) {
+                prevPageBtn.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        renderTable();
+                    }
+                });
+            }
+            
+            if (nextPageBtn) {
+                nextPageBtn.addEventListener('click', () => {
+                    if (currentPage < totalPages) {
+                        currentPage++;
+                        renderTable();
+                    }
+                });
+            }
+        }
+        
+        function clearAll() {
+            SERVER_URL = '';
+            allData = [];
+            currentPage = 1;
+            worksheets = [];
+            currentWorksheet = '';
+            isConnected = false;
+            currentHeaders = [];
+            
+            if (serverOptions.length) {
+                serverOptions.forEach(opt => opt.classList.remove('active'));
+            }
+            if (customUrlInput) {
+                customUrlInput.style.display = 'none';
+                customUrlInput.value = '';
+            }
+            if (currentUrlSpan) currentUrlSpan.textContent = 'Nenhuma selecionada';
+            
+            if (loadWorksheetsBtn) loadWorksheetsBtn.disabled = true;
+            if (loadDataBtn) loadDataBtn.disabled = true;
+            
+            hideElements();
+            
+            if (worksheetSelect) worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+            if (dataContainer) {
+                dataContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Selecione um servidor e clique em "Testar Conexão" para começar</p>
+                    </div>
+                `;
+            }
+            
+            if (addFormContainer) {
+                addFormContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📝</h3>
+                        <p>Carregue os dados primeiro para ver a estrutura do formulário</p>
+                    </div>
+                `;
+            }
+            
+            if (searchResults) searchResults.innerHTML = '';
+            if (searchTerm) searchTerm.value = '';
+            if (searchColumn) searchColumn.innerHTML = '<option value="">Todas as colunas</option>';
+        }
+        
+        // Image Gallery Functions
+        function setupImageGalleryListeners() {
+            if (imageWorksheetSelect) {
+                imageWorksheetSelect.addEventListener('change', loadImageData);
+            }
+            if (imageSearch) {
+                imageSearch.addEventListener('input', renderImageGallery);
+            }
+            if (imageSort) {
+                imageSort.addEventListener('change', renderImageGallery);
+            }
+            if (closeModal) {
+                closeModal.addEventListener('click', closeImageModal);
+            }
+            
+            window.addEventListener('click', (e) => {
+                if (e.target === imageModal) {
+                    closeImageModal();
+                }
+            });
+        }
+        
+        async function loadImageData() {
+            if (!imageWorksheetSelect || !imageWorksheetSelect.value) {
+                if (imagesContainer) {
+                    imagesContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>🖼️</h3>
+                            <p>Selecione uma aba que contenha imagens para visualizar</p>
+                        </div>
+                    `;
+                }
+                if (imageFilters) imageFilters.style.display = 'none';
+                return;
+            }
+            
+            const selectedWorksheet = imageWorksheetSelect.value;
+            showLoading(imagesContainer, 'Carregando imagens...');
+            
+            try {
+                // Primeiro verificar se a worksheet existe
+                const worksheetExists = worksheets.some(ws => 
+                    (ws.title || ws) === selectedWorksheet
+                );
+                
+                if (!worksheetExists) {
+                    throw new Error(`A aba "${selectedWorksheet}" não foi encontrada`);
+                }
+                
+                const result = await makeRequest(`${API_ENDPOINTS.WORKSHEET_DATA}?worksheet=${encodeURIComponent(selectedWorksheet)}`);
+                
+                if (result.success && result.data) {
+                    currentImageData = result.data;
+                    if (imageFilters) imageFilters.style.display = 'block';
+                    renderImageGallery();
+                } else {
+                    throw new Error(result.error || 'Erro ao carregar dados');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar imagens:', error);
+                showError(
+                    imagesContainer,
+                    `Erro ao carregar imagens: ${error.message}`,
+                    'A aba pode não existir ou estar vazia.'
+                );
+            }
+        }
+        
+        function renderImageGallery() {
+            if (!imagesContainer || !currentImageData || currentImageData.length === 0) {
+                if (imagesContainer) {
+                    imagesContainer.innerHTML = `
+                        <div class="empty-state">
+                            <h3>🖼️</h3>
+                            <p>Nenhuma imagem encontrada nesta planilha</p>
+                        </div>
+                    `;
+                }
+                return;
+            }
+            
+            // Encontrar colunas que podem conter URLs de imagem
+            const headers = Object.keys(currentImageData[0]);
+            const imageColumns = headers.filter(header => 
+                header.toLowerCase().includes('url') || 
+                header.toLowerCase().includes('image') || 
+                header.toLowerCase().includes('img') ||
+                header.toLowerCase().includes('foto') ||
+                header.toLowerCase().includes('photo') ||
+                header.toLowerCase().includes('link')
+            );
+            
+            if (imageColumns.length === 0) {
+                imagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🔍</h3>
+                        <p>Nenhuma coluna de imagem encontrada. Procure por colunas com "url", "image", "foto" ou "link" no nome.</p>
+                        <p>Colunas disponíveis: ${headers.join(', ')}</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Filtrar dados
+            const searchTerm = imageSearch ? imageSearch.value.toLowerCase() : '';
+            let filteredData = currentImageData.filter(row => {
+                if (!searchTerm) return true;
+                
+                return Object.values(row).some(value => 
+                    value && value.toString().toLowerCase().includes(searchTerm)
+                );
+            });
+            
+            // Ordenar dados
+            const sortOption = imageSort ? imageSort.value : 'date-desc';
+            filteredData.sort((a, b) => {
+                switch(sortOption) {
+                    case 'date-desc':
+                        return (new Date(b.date || b.timestamp || 0) - new Date(a.date || a.timestamp || 0));
+                    case 'date-asc':
+                        return (new Date(a.date || a.timestamp || 0) - new Date(b.date || b.timestamp || 0));
+                    case 'name-asc':
+                        return (a.title || a.name || '').localeCompare(b.title || b.name || '');
+                    case 'name-desc':
+                        return (b.title || b.name || '').localeCompare(a.title || a.name || '');
+                    default:
+                        return 0;
+                }
+            });
+            
+            // Renderizar galeria
+            if (filteredData.length === 0) {
+                imagesContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>🔍</h3>
+                        <p>Nenhuma imagem encontrada com o filtro aplicado</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="success-container">
+                    <h3>✅ ${filteredData.length} imagem(s) encontrada(s)</h3>
+                    <p>Colunas de imagem detectadas: ${imageColumns.join(', ')}</p>
+                </div>
+                <div class="gallery-container">
+            `;
+            
+            filteredData.forEach((row, index) => {
+                // Encontrar a primeira coluna de imagem com URL válido
+                let imageUrl = '';
+                let imageColumn = '';
+                
+                for (const col of imageColumns) {
+                    if (row[col] && isValidUrl(row[col])) {
+                        imageUrl = row[col];
+                        imageColumn = col;
+                        break;
+                    }
+                }
+                
+                if (!imageUrl) return; // Pular se não encontrou imagem válida
+                
+                const title = row.title || row.name || row.filename || `Imagem ${index + 1}`;
+                const description = row.description || row.desc || '';
+                const date = row.date || row.timestamp || '';
+                
+                html += `
+                    <div class="image-card">
+                        <img src="${imageUrl}" alt="${title}" class="image-preview" 
+                             onclick="openImageModal('${imageUrl}', '${title.replace(/'/g, "\\'")}')"
+                             onerror="this.style.display='none'">
+                        <div class="image-info">
+                            <div class="image-title">${title}</div>
+                            <div class="image-description">${description}</div>
+                            <div class="image-date">${formatDate(date)}</div>
+                            <div class="image-source" style="font-size: 10px; color: #666;">
+                                Fonte: ${imageColumn}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `</div>`;
+            imagesContainer.innerHTML = html;
+        }
+        
+        function openImageModal(imageUrl, title) {
+            if (modalImage) modalImage.src = imageUrl;
+            if (modalCaption) modalCaption.innerHTML = title;
+            if (imageModal) imageModal.style.display = 'block';
+        }
+        
+        function closeImageModal() {
+            if (imageModal) imageModal.style.display = 'none';
+        }
+
+        // Upload Functions
+        function setupUploadListeners() {
+            if (!uploadArea || !fileInput) return;
+            
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                handleFiles(e.dataTransfer.files);
+            });
+            
+            fileInput.addEventListener('change', () => {
+                handleFiles(fileInput.files);
+            });
+            
+            if (captureLocationBtn) {
+                captureLocationBtn.addEventListener('click', captureLocation);
+            }
+            if (uploadBtn) {
+                uploadBtn.addEventListener('click', startUpload);
+            }
+        }
+        
+        function handleFiles(files) {
+            if (uploadInProgress || !imagePreviews) return;
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                if (!file.type.startsWith('image/')) {
+                    showUploadError('Apenas arquivos de imagem são permitidos (JPG, PNG, GIF)');
+                    continue;
+                }
+                
+                if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
+                    selectedFiles.push(file);
+                    
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'image-preview-item';
+                        img.title = file.name;
+                        imagePreviews.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+            
+            if (uploadBtn) uploadBtn.disabled = selectedFiles.length === 0;
+        }
+        
+        function captureLocation() {
+            if (!locationStatus) return;
+            
+            locationStatus.textContent = 'Obtendo localização...';
+            
+            if (!navigator.geolocation) {
+                locationStatus.textContent = 'Geolocalização não é suportada pelo seu navegador';
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude,
+                        accuracy: position.coords.accuracy
+                    };
+                    
+                    locationStatus.innerHTML = `
+                        <strong>📍 Localização capturada com sucesso!</strong><br>
+                        Latitude: ${currentLocation.latitude.toFixed(6)}<br>
+                        Longitude: ${currentLocation.longitude.toFixed(6)}<br>
+                        Precisão: ±${currentLocation.accuracy.toFixed(2)} metros
+                    `;
+                },
+                (error) => {
+                    let errorMessage;
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = "Permissão de localização negada";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = "Localização indisponível";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = "Tempo limite excedido";
+                            break;
+                        default:
+                            errorMessage = "Erro desconhecido";
+                    }
+                    
+                    locationStatus.textContent = `❌ ${errorMessage}`;
+                    currentLocation = null;
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                }
+            );
+        }
+        
+        async function startUpload() {
+            if (selectedFiles.length === 0 || uploadInProgress) return;
+            
+            uploadInProgress = true;
+            if (uploadBtn) uploadBtn.disabled = true;
+            if (progressBar) progressBar.style.display = 'block';
+            if (progressFill) progressFill.style.width = '0%';
+            if (uploadResults) uploadResults.innerHTML = '';
+            
+            try {
+                const formData = new FormData();
+                
+                // Adicionar arquivos
+                selectedFiles.forEach(file => {
+                    formData.append('photos', file);
+                });
+                
+                // Adicionar metadados
+                formData.append('title', photoTitle ? photoTitle.value : 'Foto sem título');
+                formData.append('description', photoDescription ? photoDescription.value : '');
+                
+                if (currentLocation) {
+                    formData.append('latitude', currentLocation.latitude);
+                    formData.append('longitude', currentLocation.longitude);
+                    formData.append('accuracy', currentLocation.accuracy);
+                }
+                
+                // Usar o endpoint correto de upload
+                const result = await makeRequest(API_ENDPOINTS.UPLOAD, 'POST', formData);
+                
+                if (result.success) {
+                    showUploadSuccess('✅ Upload concluído com sucesso!');
+                    resetUploadForm();
+                } else {
+                    throw new Error(result.error || 'Erro no upload');
+                }
+                
+            } catch (error) {
+                console.error('Upload error:', error);
+                showUploadError(`❌ Erro no upload: ${error.message}`);
+            } finally {
+                uploadInProgress = false;
+                if (uploadBtn) uploadBtn.disabled = selectedFiles.length === 0;
+            }
+        }
+        
+        function showUploadSuccess(message) {
+            if (!uploadResults) return;
+            uploadResults.innerHTML = `
+                <div class="success-container">
+                    <h3>✅ Sucesso!</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        function showUploadError(message) {
+            if (!uploadResults) return;
+            uploadResults.innerHTML = `
+                <div class="error-container">
+                    <h3>❌ Erro!</h3>
+                    <p>${message}</p>
+                    <p><strong>Sugestão:</strong> Verifique se o endpoint de upload está configurado no servidor.</p>
+                </div>
+            `;
+        }
+        
+        function resetUploadForm() {
+            selectedFiles = [];
+            currentLocation = null;
+            if (imagePreviews) imagePreviews.innerHTML = '';
+            if (locationStatus) locationStatus.textContent = 'Clique em "Capturar Localização" para obter coordenadas';
+            if (photoTitle) photoTitle.value = '';
+            if (photoDescription) photoDescription.value = '';
+            if (progressBar) progressBar.style.display = 'none';
+            if (progressFill) progressFill.style.width = '0%';
+            if (uploadBtn) uploadBtn.disabled = true;
+        }
+
+        // Tab Navigation
+        if (tabs.length) {
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.dataset.tab;
+                    
+                    // Update active tab
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    
+                    // Show active tab content
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        if (content.id === `${tabId}Tab`) {
+                            content.classList.add('active');
+                        }
+                    });
+                });
+            });
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('📊 Google Sheets Data Manager inicializado');
+            
+            // Setup server configuration
+            setupServerConfiguration();
+            
+            // Setup event listeners apenas se os elementos existirem
+            if (testConnectionBtn) {
+                testConnectionBtn.addEventListener('click', testConnection);
+            }
+            if (loadWorksheetsBtn) {
+                loadWorksheetsBtn.addEventListener('click', loadWorksheets);
+            }
+            if (loadDataBtn) {
+                loadDataBtn.addEventListener('click', loadData);
+            }
+            if (clearBtn) {
+                clearBtn.addEventListener('click', clearAll);
+            }
+            if (searchBtn) {
+                searchBtn.addEventListener('click', searchData);
+            }
+            
+            // Setup image gallery
+            setupImageGalleryListeners();
+            
+            // Setup upload functionality
+            setupUploadListeners();
+        });
+
+        // Funções globais para acesso via HTML
+        window.openImageModal = openImageModal;
+        window.closeImageModal = closeImageModal;
+    </script>
+</body>
+</html>
