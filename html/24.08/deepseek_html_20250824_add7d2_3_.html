@@ -1798,7 +1798,8 @@
                 uploadArea.classList.remove('dragover');
             });
             
-            uploadArea.addEventListener('drop', (e) {
+            // CORREÇÃO: Adicionado parêntese de fechamento e arrow function correta
+            uploadArea.addEventListener('drop', (e) => {
                 e.preventDefault();
                 uploadArea.classList.remove('dragover');
                 handleFiles(e.dataTransfer.files);
