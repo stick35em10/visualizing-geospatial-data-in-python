@@ -3,12 +3,12 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     como selecionar e visualizar as imagens gravadas
 
         24.08.2025
-            23:[35,21]
+            23:[52, 35,21]
             16:[18, 07]
             14:[52,35]
             13:[16, 11]
                 git add html/24.08/ README.md cmd.txt
-                git commit -m " 24.08, 23:21 'Upload error: Error: HTTP 404 ' add html/24.08/ and update README.md cmd.txt try selecionar e visualizar as imagens gravadas"
+                git commit -m " 24.08, 23:52 'Upload error: Error: HTTP 404 ' add html/24.08/ and update README.md cmd.txt try selecionar e visualizar as imagens gravadas"
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01
 
             12:[43, 00,] 08:20 /07:22
