@@ -1674,12 +1674,14 @@
             
             // Find columns that might contain image URLs
             const headers = Object.keys(currentImageData[0]);
+            // Na função renderImageGallery(), modifique a busca por colunas de imagem:
             const imageColumns = headers.filter(header => 
                 header.toLowerCase().includes('url') || 
                 header.toLowerCase().includes('image') || 
                 header.toLowerCase().includes('img') ||
                 header.toLowerCase().includes('foto') ||
-                header.toLowerCase().includes('photo')
+                header.toLowerCase().includes('photo') ||
+                header === 'URL da Imagem'  // Nova coluna específica
             );
             
             if (imageColumns.length === 0) {
