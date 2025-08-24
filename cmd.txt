@@ -3,7 +3,7 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     como selecionar e visualizar as imagens gravadas
 
         24.08.2025
-            16:07
+            16:[18, 07]
             14:[52,35]
             13:[16, 11]
                 git add html/24.08/ README.md cmd.txt
