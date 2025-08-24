@@ -1661,7 +1661,8 @@
         }
         
         function renderImageGallery() {
-            if (!currentImageData || currentImageData.length === 0) {
+        if (!currentImageData || currentImageData.length === 0) {
+                //function renderImageGallery() {
                 imagesContainer.innerHTML = `
                     <div class="empty-state">
                         <h3>🖼️</h3>
@@ -1747,7 +1748,7 @@
                 const description = row.description || row.desc || '';
                 const date = row.date || row.timestamp || '';
                 
-                // CORREÇÃO: Uso de template strings corretamente
+            // CORREÇÃO: Uso de template strings corretamente
             const escapedTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             const escapedImageUrl = imageUrl.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             
@@ -1767,8 +1768,8 @@
     //    html += `</div>`;
     //    imagesContainer.innerHTML = html;
             
-            html += `</div>`;
-            imagesContainer.innerHTML = html;
+        html += `</div>`;
+        imagesContainer.innerHTML = html;
         }
     
         // Função global para abrir o modal de imagem
