@@ -1747,22 +1747,31 @@
                 const description = row.description || row.desc || '';
                 const date = row.date || row.timestamp || '';
                 
-                html += `
-                    <div class="image-card">
-                        <img src="${imageUrl}" alt="${title}" class="image-preview" onclick="openImageModal('${imageUrl}', '${title.replace(/'/g, "\\'")}')">
-                        <div class="image-info">
-                            <div class="image-title">${title}</div>
-                            ${description ? `<div class="image-description">${description}</div>` : ''}
-                            ${date ? `<div class="image-date">${formatDate(date)}</div>` : ''}
-                        </div>
+                // CORREÇÃO: Uso de template strings corretamente
+            const escapedTitle = title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            const escapedImageUrl = imageUrl.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+            
+            html += `
+                <div class="image-card">
+                    <img src="${imageUrl}" alt="${title}" class="image-preview" 
+                         onclick="window.openImageModal('${escapedImageUrl}', '${escapedTitle}')">
+                    <div class="image-info">
+                        <div class="image-title">${title}</div>
+                        ${description ? `<div class="image-description">${description}</div>` : ''}
+                        ${date ? `<div class="image-date">${formatDate(date)}</div>` : ''}
                     </div>
-                `;
-            });
+                </div>
+            `;
+        });
+        
+    //    html += `</div>`;
+    //    imagesContainer.innerHTML = html;
             
             html += `</div>`;
             imagesContainer.innerHTML = html;
         }
-        
+    
+        // Função global para abrir o modal de imagem
         function openImageModal(imageUrl, title) {
             modalImage.src = imageUrl;
             modalCaption.innerHTML = title;
