@@ -380,14 +380,13 @@ def upload_photos():
                     if file_size > 5 * 1024 * 1024:
                         raise Exception(f"Arquivo muito grande: {file_size} bytes (limite: 5MB)")
                     
-                    
+                    # grep -n "try" app.py
                     # Processar a imagem para obter metadados
-                    try
+                    try:
                         image = Image.open(io.BytesIO(file_content))
                         width, height = image.size
                         image_format = image.format
                         log_step("UPLOAD_PHOTOS", f"Imagem processada: {width}x{height}, formato: {image_format}")
-                    
                     
                     except Exception as img_error:
                         log_step("UPLOAD_PHOTOS", f"⚠️ Aviso: Erro ao processar imagem: {img_error}")
