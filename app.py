@@ -22,7 +22,10 @@ test_drive_permissions()
 from check_drive import check_drive_permission
 check_drive_permission()
 
-from check_drives import check_drive_permissio
+#from check_drives import check_drive_permissio
+#check_drive_permissio()
+
+#from check_drive import check_drive_permission
 # Configuração de logging
 logging.basicConfig(
     level=logging.DEBUG,
