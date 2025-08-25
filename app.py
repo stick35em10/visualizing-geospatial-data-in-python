@@ -79,9 +79,13 @@ def upload_to_drive(file_content, filename, mime_type):
         # Criar serviço do Drive
         drive_service = build('drive', 'v3', credentials=credentials)
         
+        # Sanitizar o nome do arquivo - remover caracteres problemáticos
+        import re
+        safe_filename = re.sub(r'[^\w\.-]', '_', filename)
+        
         # Criar arquivo no Drive
         file_metadata = {
-            'name': filename,
+            'name': safe_filename, # Usar nome sanitizado
             'parents': ['root'],  # Você pode especificar uma pasta específica
             'mimeType': mime_type
         }
@@ -336,6 +340,7 @@ def upload_photos():
             }), 400
         
         log_step("UPLOAD_PHOTOS", f"Processando {file_count} arquivo(s) para a aba '{worksheet_name}'")
+        log_step("UPLOAD_PHOTOS", f"Arquivos recebidos: {[f.filename for f in uploaded_files]}")
         
         client, spreadsheet = get_sheets_client()
         
@@ -364,12 +369,27 @@ def upload_photos():
                     file_size = len(file_content)
                     unique_id = str(uuid.uuid4())[:8]
                     
-                    # Processar a imagem para obter metadados
-                    image = Image.open(io.BytesIO(file_content))
-                    width, height = image.size
-                    image_format = image.format
+                    log_step("UPLOAD_PHOTOS", f"Processando arquivo {i+1}: {filename} ({file_size} bytes)")
                     
+                    # Verificar tamanho do arquivo (limite de 5MB)
+                    if file_size > 5 * 1024 * 1024:
+                        raise Exception(f"Arquivo muito grande: {file_size} bytes (limite: 5MB)")
+                    
+                    
+                    # Processar a imagem para obter metadados
+                    try
+                        image = Image.open(io.BytesIO(file_content))
+                        width, height = image.size
+                        image_format = image.format
+                        log_step("UPLOAD_PHOTOS", f"Imagem processada: {width}x{height}, formato: {image_format}")
+                    
+                    
+                    except Exception as img_error:
+                        log_step("UPLOAD_PHOTOS", f"⚠️ Aviso: Erro ao processar imagem: {img_error}")
+                        width, height, image_format = 0, 0, 'Desconhecido'
+                        
                     # Fazer upload para o Google Drive
+                    log_step("UPLOAD_PHOTOS", f"Iniciando upload para Drive: {filename}")
                     drive_url = upload_to_drive(file_content, f"{unique_id}_{filename}", file.content_type)
                     
                     # Preparar dados para a planilha
@@ -380,7 +400,7 @@ def upload_photos():
                         latitude or '',
                         longitude or '',
                         accuracy or '',
-                        filename,
+                        filename, # Nome original mantido para referência
                         file_size,
                         file.content_type,
                         drive_url,  # URL pública da imagem

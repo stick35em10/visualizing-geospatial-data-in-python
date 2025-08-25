@@ -2,10 +2,7 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     see foto saved
     como selecionar e visualizar as imagens gravadas
         25.08.2025
-            07:21
-            02:22
-            01:[46, 23]
-            00:[47,08]
+            07:[51, 21], 02:22, 01:[46, 23], 00:[47,08]
                 O erro OPTIONS net::ERR_FAILED indica que há um problema de CORS (Cross-Origin Resource Sharing) ou 
                 que o endpoint /api/upload/photos não existe no servidor.
                     git add app.py html/24.08/ README.md cmd.txt requirements_for_render.txt
