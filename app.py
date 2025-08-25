@@ -15,6 +15,9 @@ import io
 from PIL import Image
 import requests
 from googleapiclient.http import MediaIoBaseUpload
+#####
+from deepseek_python_20250825_81dd1c import test_drive_permissions
+test_drive_permissions()
 
 # Configuração de logging
 logging.basicConfig(
