@@ -160,7 +160,9 @@ def get_sheets_client():
         # Configuração do escopo
         scopes = [
             'https://www.googleapis.com/auth/spreadsheets',
-            'https://www.googleapis.com/auth/drive.readonly'
+            #'https://www.googleapis.com/auth/drive.readonly'
+            'https://www.googleapis.com/auth/drive',  # ← PERMISSÃO COMPLETA (escrita)
+            # 'https://www.googleapis.com/auth/drive.file'  # ← Permissão apenas para arquivos criados pela app
         ]
         
         # Criar credenciais
