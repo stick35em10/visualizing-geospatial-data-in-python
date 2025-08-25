@@ -65,9 +65,11 @@ SHARED_DRIVE_ID = '1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy'
 
 def upload_to_drive(file_content, filename, mime_type):
     """Faz upload de um arquivo para o Google Drive e retorna a URL pública"""
+    """Faz upload de um arquivo para o Google Drive com tratamento robusto de erros"""
     try:
         from googleapiclient.discovery import build
         from googleapiclient.http import MediaIoBaseUpload
+        from googleapiclient.errors import HttpError
         
         # Obter credenciais
         creds_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
@@ -87,15 +89,17 @@ def upload_to_drive(file_content, filename, mime_type):
         # Sanitizar o nome do arquivo - remover caracteres problemáticos
         import re
         safe_filename = re.sub(r'[^\w\.-]', '_', filename)
+        unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_filename}"
         
         # Criar arquivo no Drive
         file_metadata = {
-            'name': safe_filename, # Usar nome sanitizado
+            'name': unique_filename, #safe_filename, # Usar nome sanitizado
             'parents': [SHARED_DRIVE_ID], #['root'],  # 1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy Você pode especificar uma pasta específica
             'mimeType': mime_type
         }
         
-        media = MediaIoBaseUpload(io.BytesIO(file_content), 
+        media = MediaIoBaseUpload(
+                                io.BytesIO(file_content), 
                                 mimetype=mime_type,
                                 resumable=True)
         
@@ -112,18 +116,31 @@ def upload_to_drive(file_content, filename, mime_type):
         # Tornar o arquivo público
         drive_service.permissions().create(
             fileId=file['id'],
-            body={'type': 'anyone', 'role': 'reader'}
+            body={'type': 'anyone', 'role': 'reader'},
+            supportsAllDrives=True
         ).execute()
         
         # Obter link público
-        file_url = f"https://drive.google.com/uc?id={file['id']}"
+        #file_url = f"https://drive.google.com/uc?id={file['id']}"
+        # URL direta para download
+        file_url = f"https://drive.google.com/uc?export=download&id={file['id']}"
         
-        log_step("DRIVE_UPLOAD", f"✅ Arquivo {filename} upload para Drive: {file_url}")
+        #log_step("DRIVE_UPLOAD", f"✅ Arquivo {filename} upload para Drive: {file_url}")
+        log_step("DRIVE_UPLOAD", f"✅ Upload realizado: {unique_filename} -> {file_url}")
         return file_url
-        
-    except Exception as e:
-        log_step("DRIVE_UPLOAD", f"❌ Erro no upload para Drive: {str(e)}", False)
+            
+    except HttpError as e:
+        error_msg = f"Erro HTTP do Drive: {e.resp.status} - {e._get_reason()}"
+        log_step("DRIVE_UPLOAD", error_msg, False)
         raise
+    except Exception as e:
+        #except Exception as e:
+        error_msg = f"Erro no upload: {str(e)}"
+        log_step("DRIVE_UPLOAD", error_msg, False)
+        raise
+        
+        # log_step("DRIVE_UPLOAD", f"❌ Erro no upload para Drive: {str(e)}", False)
+        #raise
     
 def log_step(step, message, success=True):
     """Registra cada passo com timestamp"""
