@@ -1917,7 +1917,7 @@
                         return true;
                     }
                 } catch (optionsError) {
-                    console.log('OPTIONS falhou, tentando HEAD...');
+                    console.log('OPTIONS falhou, tentando HEAD...', optionsError);
                 }
 
                 // Se OPTIONS falhar, tenta HEAD
@@ -1927,8 +1927,18 @@
                     });
                     return headResponse.ok;
                 } catch (headError) {
-                    console.log('HEAD também falhou, endpoint provavelmente não existe');
-                    return false;
+                    console.log('HEAD também falhou, endpoint provavelmente não existe', headError);
+                    //return false;
+                    // Tenta uma requisição GET simples
+                    try {
+                        const getResponse = await fetch(`${SERVER_URL}/api/upload/photos`, {
+                            method: 'GET'
+                        });
+                        return getResponse.ok;
+                    } catch (getError) {
+                        console.log('GET também falhou, endpoint provavelmente não existe', getError);
+                        return false;
+                    }
                 }
                 
             } catch (error) {
@@ -1936,6 +1946,7 @@
                 console.log('Endpoint não existe ou erro de CORS:', error);
                 //return false;
                 // Tentativa alternativa: verificar se o endpoint existe com uma requisição HEAD
+                /*
                 try {
                     const headResponse = await fetch(`${SERVER_URL}/api/upload/photos`, {
                         method: 'HEAD'
@@ -1945,6 +1956,8 @@
                     console.log('Endpoint definitivamente não existe:', headError);
                     return false;
                 }
+                */
+               return false;
             }
         }
         
