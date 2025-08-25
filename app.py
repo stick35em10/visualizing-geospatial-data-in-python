@@ -60,6 +60,8 @@ sheets_status = {
 _client_cache = None
 _spreadsheet_cache = None
 
+# Adicione esta constante no início do arquivo (substitua pelo ID real)
+SHARED_DRIVE_ID = '1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy'
 
 def upload_to_drive(file_content, filename, mime_type):
     """Faz upload de um arquivo para o Google Drive e retorna a URL pública"""
@@ -89,7 +91,7 @@ def upload_to_drive(file_content, filename, mime_type):
         # Criar arquivo no Drive
         file_metadata = {
             'name': safe_filename, # Usar nome sanitizado
-            'parents': ['1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy'], #['root'],  # 1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy Você pode especificar uma pasta específica
+            'parents': [SHARED_DRIVE_ID], #['root'],  # 1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy Você pode especificar uma pasta específica
             'mimeType': mime_type
         }
         
@@ -105,6 +107,8 @@ def upload_to_drive(file_content, filename, mime_type):
             supportsAllDrives=True  # Adicionar esta linha, Solução 3: Modificar o Código para Usar Shared Drive
         ).execute()
         
+        # return file
+    
         # Tornar o arquivo público
         drive_service.permissions().create(
             fileId=file['id'],
