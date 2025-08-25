@@ -22,6 +22,7 @@ test_drive_permissions()
 from check_drive import check_drive_permission
 check_drive_permission()
 
+from check_drives import check_drive_permissio
 # Configuração de logging
 logging.basicConfig(
     level=logging.DEBUG,
@@ -355,6 +356,29 @@ def test_google_sheets_connection():
 # ================================
 # ROTAS DE API PARA O CLIENTE HTML
 # ================================
+
+@app.route('/debug/service-account-info', methods=['GET'])
+def debug_service_account_info():
+    """Retorna o email do service account para configurar no Shared Drive"""
+    try:
+        creds_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
+        if not creds_json:
+            return jsonify({'error': 'Credenciais não encontradas'}), 500
+        
+        creds_json = creds_json.strip()
+        if creds_json.startswith('eyJ'):
+            creds_json = base64.b64decode(creds_json).decode('utf-8')
+        
+        creds_dict = json.loads(creds_json)
+        
+        return jsonify({
+            'service_account_email': creds_dict.get('client_email'),
+            'project_id': creds_dict.get('project_id'),
+            'instructions': 'Adicione este email como membro do Shared Drive com permissão de Editor'
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
 def upload_photos():
