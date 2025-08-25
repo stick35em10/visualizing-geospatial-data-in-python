@@ -100,7 +100,9 @@ def upload_to_drive(file_content, filename, mime_type):
         file = drive_service.files().create(
             body=file_metadata,
             media_body=media,
-            fields='id, webViewLink, webContentLink'
+            fields='id, webViewLink, webContentLink',
+            #serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive
+            supportsAllDrives=True  # Adicionar esta linha, Solução 3: Modificar o Código para Usar Shared Drive
         ).execute()
         
         # Tornar o arquivo público
