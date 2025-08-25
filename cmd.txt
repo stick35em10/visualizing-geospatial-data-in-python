@@ -2,7 +2,7 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     see foto saved
     como selecionar e visualizar as imagens gravadas
         25.08.2025
-            [12:23, 11:32, 08:[24, 14]]
+            [13:00, 12:23, 11:32, 08:[24, 14]]
                  cp -r requirements_for_render.txt requirements_for_render_local.txt
 
                 source ../visualizing-geospatial-data-in-python/venv_visualizing-geospatial/bin/activate

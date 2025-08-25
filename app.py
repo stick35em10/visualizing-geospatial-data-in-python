@@ -89,7 +89,7 @@ def upload_to_drive(file_content, filename, mime_type):
         # Criar arquivo no Drive
         file_metadata = {
             'name': safe_filename, # Usar nome sanitizado
-            'parents': ['root'],  # Você pode especificar uma pasta específica
+            'parents': ['1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy'], #['root'],  # 1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy Você pode especificar uma pasta específica
             'mimeType': mime_type
         }
         
