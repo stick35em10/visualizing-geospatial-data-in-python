@@ -2,18 +2,18 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     see foto saved
     como selecionar e visualizar as imagens gravadas
         25.08.2025
-            08:[24, 14]
+            [11:32, 08:[24, 14]]
                 source ../visualizing-geospatial-data-in-python/venv_visualizing-geospatial/bin/activate
-                
+
                 grep -n "try" app.py
                 O erro é bem claro - há um try sem o : (dois pontos) na linha 382 do seu arquivo app.py.
 
                 git add deepseek_python_20250825_81dd1c.py app.py html/24.08/ README.md cmd.txt requirements_for_render.txt
-                git commit -m " 25.08, 07:51 'Upload error: Error: HTTP 404 ' add html/24.08/ and update README.md cmd.txt try selecionar e visualizar as imagens gravadas"
+                git commit -m " 25.08, 11:33 'Upload error: Error: HTTP 404 ' add html/24.08/ and update README.md cmd.txt try selecionar e visualizar as imagens gravadas"
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01    
 
 
-            07:[51, 21], 02:22, 01:[46, 23], 00:[47,08]
+            07:[51, 21], 02:22, 01:[46, 23], 00:[47,08] 
                 O erro OPTIONS net::ERR_FAILED indica que há um problema de CORS (Cross-Origin Resource Sharing) ou 
                 que o endpoint /api/upload/photos não existe no servidor.
                     git add app.py html/24.08/ README.md cmd.txt requirements_for_render.txt

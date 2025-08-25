@@ -47,7 +47,8 @@ def test_drive_permissions():
         }
         
         media = MediaIoBaseUpload(
-            io.BytesIO(b"Teste de permissão do Drive"),
+            #io.BytesIO(b"Teste de permissão do Drive"),
+            io.BytesIO("Teste de permissão do Drive".encode('utf-8')),  # Com encode
             mimetype='text/plain',
             resumable=True
         )
