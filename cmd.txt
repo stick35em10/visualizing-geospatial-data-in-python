@@ -2,6 +2,8 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     see foto saved
     como selecionar e visualizar as imagens gravadas
         25.08.2025
+            07:21
+            02:22
             01:[46, 23]
             00:[47,08]
                 O erro OPTIONS net::ERR_FAILED indica que há um problema de CORS (Cross-Origin Resource Sharing) ou 

@@ -1913,6 +1913,7 @@
                     const optionsResponse = await fetch(`${SERVER_URL}/api/upload/photos`, {
                         method: 'OPTIONS'
                     });
+                    console.log('OPTIONS response:', optionsResponse.status, optionsResponse.statusText)
                     if (optionsResponse.status === 200 || optionsResponse.status === 204) {
                         return true;
                     }
@@ -1920,6 +1921,7 @@
                     console.log('OPTIONS falhou, tentando HEAD...', optionsError);
                 }
 
+                /*
                 // Se OPTIONS falhar, tenta HEAD
                 try {
                     const headResponse = await fetch(`${SERVER_URL}/api/upload/photos`, {
@@ -1939,8 +1941,25 @@
                         console.log('GET também falhou, endpoint provavelmente não existe', getError);
                         return false;
                     }
+                }*/
+               // Se OPTIONS falhar, tenta uma requisição GET simples
+                try {
+                    const getResponse = await fetch(`${SERVER_URL}/api/upload/photos`, {
+                        method: 'GET'
+                    });
+                    console.log('GET response:', getResponse.status, getResponse.statusText);
+                    // Se conseguir fazer qualquer requisição (mesmo que retorne erro 405),
+                    // significa que o endpoint existe
+                    return true;
+                } catch (getError) {
+                    console.log('GET também falhou:', getError);
+                    return false;
                 }
-                
+            } catch (error) {
+                console.log('Erro geral no teste de endpoint:', error);
+                return false;
+            }
+             /*
             } catch (error) {
                 //console.log('Endpoint não existe:', error);
                 console.log('Endpoint não existe ou erro de CORS:', error);
@@ -1956,9 +1975,9 @@
                     console.log('Endpoint definitivamente não existe:', headError);
                     return false;
                 }
-                */
+                /
                return false;
-            }
+            }*/
         }
         
         // Modifique a função startUpload para verificar primeiro
