@@ -19,6 +19,9 @@ from googleapiclient.http import MediaIoBaseUpload
 from deepseek_python_20250825_81dd1c import test_drive_permissions
 test_drive_permissions()
 
+from check_drive import check_drive_permission
+check_drive_permission()
+
 # Configuração de logging
 logging.basicConfig(
     level=logging.DEBUG,
@@ -92,27 +95,46 @@ def upload_to_drive(file_content, filename, mime_type):
         unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_filename}"
         
         # Criar arquivo no Drive
-        file_metadata = {
-            'name': unique_filename, #safe_filename, # Usar nome sanitizado
-            'parents': [SHARED_DRIVE_ID], #['root'],  # 1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy Você pode especificar uma pasta específica
-            'mimeType': mime_type
-        }
-        
-        media = MediaIoBaseUpload(
-                                io.BytesIO(file_content), 
-                                mimetype=mime_type,
-                                resumable=True)
-        
-        file = drive_service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id, webViewLink, webContentLink',
-            #serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive
-            supportsAllDrives=True  # Adicionar esta linha, Solução 3: Modificar o Código para Usar Shared Drive
-        ).execute()
+        # TENTAR PRIMEIRO NO SHARED DRIVE
+        try:
+            file_metadata = {
+                'name': unique_filename, #safe_filename, # Usar nome sanitizado
+                'parents': [SHARED_DRIVE_ID], #['root'],  # 1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy Você pode especificar uma pasta específica
+                'mimeType': mime_type
+            }
+            
+            media = MediaIoBaseUpload(
+                                    io.BytesIO(file_content), 
+                                    mimetype=mime_type,
+                                    resumable=True)
+            
+            file = drive_service.files().create(
+                body=file_metadata,
+                media_body=media,
+                fields='id, webViewLink, webContentLink',
+                #serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive
+                supportsAllDrives=True  # Adicionar esta linha, Solução 3: Modificar o Código para Usar Shared Drive
+            ).execute()
         
         # return file
-    
+        except HttpError as e:
+            # Se falhar no shared drive, tentar no root (com fallback)
+            if 'storageQuotaExceeded' in str(e):
+                log_step("DRIVE_UPLOAD", "⚠️ Fallback: Tentando upload sem shared drive")
+                
+                file_metadata = {
+                    'name': unique_filename,
+                    'mimeType': mime_type
+                    # Sem parents = vai para root do service account
+                }
+                
+                file = drive_service.files().create(
+                    body=file_metadata,
+                    media_body=media,
+                    fields='id, webViewLink, webContentLink'
+                ).execute()
+            else:
+                raise
         # Tornar o arquivo público
         drive_service.permissions().create(
             fileId=file['id'],
@@ -130,9 +152,10 @@ def upload_to_drive(file_content, filename, mime_type):
         return file_url
             
     except HttpError as e:
-        error_msg = f"Erro HTTP do Drive: {e.resp.status} - {e._get_reason()}"
+        error_msg = f"Erro no upload: {str(e)}" #f"Erro HTTP do Drive: {e.resp.status} - {e._get_reason()}"
         log_step("DRIVE_UPLOAD", error_msg, False)
         raise
+    """    
     except Exception as e:
         #except Exception as e:
         error_msg = f"Erro no upload: {str(e)}"
@@ -141,6 +164,7 @@ def upload_to_drive(file_content, filename, mime_type):
         
         # log_step("DRIVE_UPLOAD", f"❌ Erro no upload para Drive: {str(e)}", False)
         #raise
+    """
     
 def log_step(step, message, success=True):
     """Registra cada passo com timestamp"""

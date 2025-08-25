@@ -4,7 +4,7 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
 
     
         25.08.2025
-            [14:29, 13:00, 12:23, 11:32, 08:[24, 14]]
+            [15:02, 14:29, 13:00, 12:23, 11:32, 08:[24, 14]]
                  cp -r requirements_for_render.txt requirements_for_render_local.txt
 
                 source ../visualizing-geospatial-data-in-python/venv_visualizing-geospatial/bin/activate
@@ -14,7 +14,7 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
                 ✅ Conectado ao Drive. 1 arquivos encontrados.
                 ❌ Erro ao testar permissões do Drive: <HttpError 403 when requesting https://www.googleapis.com/upload/drive/v3/files?fields=id&alt=json&uploadType=resumable returned "Service Accounts do not have storage quota. Leverage shared drives (https://developers.google.com/workspace/drive/api/guides/about-shareddrives), or use OAuth delegation (http://support.google.com/a/answer/7281227) instead."
                 
-                git add deepseek_python_20250825_81dd1c.py app.py html/24.08/ README.md cmd.txt requirements_for_render.txt
+                git add check_drive.py deepseek_python_20250825_81dd1c.py app.py html/24.08/ README.md cmd.txt requirements_for_render.txt
                 git commit -m " 25.08, 14:29 serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive"
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01    
 
