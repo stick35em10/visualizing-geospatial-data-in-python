@@ -441,9 +441,10 @@ def test_google_sheets_connection():
 # ROTAS DE API PARA O CLIENTE HTML
 # ================================
 
+"""
 @app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
 def upload_photos():
-    """Endpoint completo para upload de fotos com armazenamento no Cloudinary"""
+    ""Endpoint completo para upload de fotos com armazenamento no Cloudinary""
     if request.method == 'OPTIONS':
         return jsonify({'status': 'ok'}), 200
     
@@ -587,6 +588,7 @@ def upload_photos():
             'error': str(e)
         }), 500
 
+"""
 # Adicione esta função para debug
 @app.route('/debug/cloudinary', methods=['GET'])
 def debug_cloudinary():
@@ -1109,6 +1111,161 @@ def health_check():
             'timestamp': datetime.now().isoformat()
         }), 500
 
+
+@app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
+def upload_photos():
+    """Endpoint completo para upload de fotos com armazenamento no Cloudinary"""
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
+    
+    log_step("UPLOAD_PHOTOS", "📸 Requisição de upload de fotos recebida")
+    
+    try:
+        if not sheets_status['initialized']:
+            sheets_result = test_google_sheets_connection()
+            if not sheets_result.get('success', False):
+                return jsonify({
+                    'success': False,
+                    'error': 'Erro de autenticação com o Google Sheets'
+                }), 500
+        
+        # Obter dados do formulário
+        title = request.form.get('title', 'Foto sem título')
+        description = request.form.get('description', '')
+        worksheet_name = request.form.get('worksheet', 'Imagens')
+        latitude = request.form.get('latitude')
+        longitude = request.form.get('longitude')
+        accuracy = request.form.get('accuracy')
+        
+        # Processar arquivos
+        uploaded_files = request.files.getlist('photos')
+        file_count = len(uploaded_files)
+        
+        if file_count == 0:
+            return jsonify({
+                'success': False,
+                'error': 'Nenhum arquivo enviado'
+            }), 400
+        
+        log_step("UPLOAD_PHOTOS", f"Processando {file_count} arquivo(s) para a aba '{worksheet_name}'")
+        log_step("UPLOAD_PHOTOS", f"Arquivos recebidos: {[f.filename for f in uploaded_files]}")
+        
+        client, spreadsheet = get_sheets_client()
+        
+        # Verificar se a worksheet existe, se não, criar
+        try:
+            worksheet = spreadsheet.worksheet(worksheet_name)
+        except gspread.exceptions.WorksheetNotFound:
+            worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="15")
+            # Adicionar cabeçalhos
+            headers = [
+                "Data", "Título", "Descrição", "Latitude", "Longitude", 
+                "Precisão", "Nome do Arquivo", "Tamanho", "Tipo", 
+                "URL da Imagem", "ID Único", "Largura", "Altura", "Formato"
+            ]
+            worksheet.append_row(headers)
+            log_step("UPLOAD_PHOTOS", f"✅ Nova worksheet criada: {worksheet_name}")
+        
+        # Processar cada arquivo
+        results = []
+        successful_uploads = 0
+        failed_uploads = 0
+        
+        for i, file in enumerate(uploaded_files):
+            if file and file.filename:
+                try:
+                    # Ler o arquivo
+                    file_content = file.read()
+                    filename = file.filename
+                    file_size = len(file_content)
+                    unique_id = str(uuid.uuid4())[:8]
+                    
+                    log_step("UPLOAD_PHOTOS", f"Processando arquivo {i+1}: {filename} ({file_size} bytes)")
+                    
+                    # Verificar tamanho do arquivo (limite de 10MB para Cloudinary)
+                    if file_size > 10 * 1024 * 1024:
+                        raise Exception(f"Arquivo muito grande: {file_size} bytes (limite: 10MB)")
+                    
+                    # Processar a imagem para obter metadados
+                    try:
+                        image = Image.open(io.BytesIO(file_content))
+                        width, height = image.size
+                        image_format = image.format
+                        log_step("UPLOAD_PHOTOS", f"Imagem processada: {width}x{height}, formato: {image_format}")
+                    
+                    except Exception as img_error:
+                        log_step("UPLOAD_PHOTOS", f"⚠️ Aviso: Erro ao processar imagem: {img_error}")
+                        width, height, image_format = 0, 0, 'Desconhecido'
+                        
+                    # Fazer upload para o Cloudinary
+                    log_step("UPLOAD_PHOTOS", f"Iniciando upload para Cloudinary: {filename}")
+                    image_url = upload_to_cloudinary(file_content, filename)
+                    
+                    # Preparar dados para a planilha
+                    row_data = [
+                        datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                        title,
+                        description,
+                        latitude or '',
+                        longitude or '',
+                        accuracy or '',
+                        filename,
+                        file_size,
+                        file.content_type,
+                        image_url,
+                        unique_id,
+                        width,
+                        height,
+                        image_format
+                    ]
+                    
+                    # Adicionar à planilha
+                    worksheet.append_row(row_data)
+                    
+                    results.append({
+                        'filename': filename,
+                        'size': file_size,
+                        'type': file.content_type,
+                        'url': image_url,
+                        'id': unique_id,
+                        'dimensions': f"{width}x{height}",
+                        'status': 'success'
+                    })
+                    
+                    successful_uploads += 1
+                    log_step("UPLOAD_PHOTOS", f"✅ Arquivo {i+1}/{file_count} processado: {filename} -> {image_url}")
+                    
+                except Exception as file_error:
+                    failed_uploads += 1
+                    error_msg = f"Erro ao processar {filename}: {str(file_error)}"
+                    log_step("UPLOAD_PHOTOS", error_msg, False)
+                    results.append({
+                        'filename': filename,
+                        'status': 'error',
+                        'error': str(file_error)
+                    })
+        
+        return jsonify({
+            'success': True,
+            'message': f'{file_count} arquivo(s) processado(s)!',
+            'results': results,
+            'summary': {
+                'total_files': file_count,
+                'successful': successful_uploads,
+                'failed': failed_uploads,
+                'worksheet': worksheet_name
+            },
+            'spreadsheet_title': spreadsheet.title
+        })
+        
+    except Exception as e:
+        error_msg = f"❌ Erro no upload de fotos: {str(e)}"
+        log_step("UPLOAD_PHOTOS", error_msg, False)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+        
 # ================================
 # CONFIGURAÇÃO E INICIALIZAÇÃO
 # ================================

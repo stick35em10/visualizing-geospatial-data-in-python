@@ -4,7 +4,14 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
 
         27.08.2025
             
-            [20:[28, 05], 16:40, 14:17, 12:23, 11:36, 08:55, 06:48]
+            [22:06, 20:[28, 05], 16:40, 14:17, 12:23, 11:36, 08:55, 06:48]
+                
+                cp -r app/08/27/backUp_app_for_fixed_upload_endpoint.py app.py
+
+                git add app.py cmd.txt html/08.2025/27 README.md requirements_for_render.txt
+                git commit -m " 27.08, 20:28 TypeError: Cannot read properties of undefined (reading 'successful')at HTMLButtonElement.uploadPhotos (fixed_html_client_cloudinary.html"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
                 fixed_html_client_cloudinary.html:1427 Upload failed: TypeError: Cannot read properties of undefined (reading 'successful')
     at HTMLButtonElement.uploadPhotos (fixed_html_client_cloudinary.html:1405:42)
                 cp -r app.py app/08/27/backUp_app_for_fixed_upload_endpoint.py
