@@ -794,10 +794,6 @@
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
-        
-        function formatDate(dateString) {
-            return new Date(dateString).toLocaleString('pt-BR');
-        }
         // Na função testConnection(), atualize a mensagem de sucesso:
         showMessage(
             `✅ <strong>Conexão Estabelecida!</strong><br>
@@ -806,6 +802,10 @@
             Tempo: ${result.duration_seconds?.toFixed(2)}s`,
             'success'
         );
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('pt-BR');
+        }
+        
         
         // Atualize o tratamento de URLs do Cloudinary na tabela:
         // Na função renderTable(), atualize o tratamento de URLs:
