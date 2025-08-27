@@ -3,10 +3,10 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     como selecionar e visualizar as imagens gravadas
 
         27.08.2025
-            [14:17, 12:23, 11:36, 08:55, 06:48]
+            [16:40, 14:17, 12:23, 11:36, 08:55, 06:48]
                 os botões não funcionam — o JS trava já no carregamento
                     git add cmd.txt html/08.2025/ README.md requirements_for_render.txt
-                    git commit -m " 27.08, 14:18 os botões não funcionam — o JS trava já no carregamento try use cloudinary.com fixed_complete_server serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive"
+                    git commit -m " 27.08, 16:40 os botões não funcionam — o JS trava já no carregamento try use cloudinary.com fixed_complete_server serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive"
                     git push --set-upstream origin 01_03_01_Plotting_view_2_01    
 
                 cp -r app/08/27/deepseek_python_20250827_18aad7.py app.py

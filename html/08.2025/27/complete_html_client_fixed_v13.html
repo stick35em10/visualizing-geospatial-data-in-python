@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Client v13 — Sheets + Cloudinary</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:0;background:#0b1020;color:#e6ecff}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px;background:#0f1530;border-bottom:1px solid #1c274f;position:sticky;top:0;z-index:10}
+    h1{font-size:18px;margin:0}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    select, input, button{background:#11183a;color:#e6ecff;border:1px solid #263276;border-radius:10px;padding:10px 12px}
+    button{cursor:pointer}
+    button[disabled]{opacity:.5;cursor:not-allowed}
+    main{padding:20px}
+    .status{margin:12px 0;padding:14px;border-radius:12px;border:1px solid #2a3a85;background:#0e1433}
+    .status.success{border-color:#1f8f55;background:#0e2a1b}
+    .status.error{border-color:#d43c3c;background:#2a0e14}
+    .status.warn{border-color:#caa53b;background:#2a230e}
+    .grid{display:grid;gap:14px}
+    .panel{padding:16px;border:1px solid #21306d;background:#0e1433;border-radius:14px}
+    .table-wrapper{overflow:auto;border-radius:12px;border:1px solid #24327b}
+    table{width:100%;border-collapse:collapse;background:#0b1020}
+    thead th{position:sticky;top:0;background:#0f1638;border-bottom:1px solid #24327b}
+    th,td{padding:8px 10px;border-bottom:1px dashed #1b244f;vertical-align:top}
+    .cell-url img{max-width:120px;max-height:90px;border-radius:10px;border:1px solid #2a3a85}
+    .controls{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+    .note{font-size:12px;opacity:.8}
+    .banner{position:sticky;top:62px;margin:-10px 0 10px;padding:10px 12px;border-radius:10px}
+    .banner.warn{background:#2a230e;border:1px solid #caa53b}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Client v13 — Sheets + Cloudinary</h1>
+    <div class="row">
+      <select id="serverSelect">
+        <option value="">Escolha o servidor…</option>
+        <option value="http://localhost:8000">http://localhost:8000</option>
+        <option value="https://seu-servidor.exemplo">https://seu-servidor.exemplo</option>
+      </select>
+      <button id="btnTest">🔗 Testar Conexão</button>
+      <button id="btnLoad" disabled>📑 Carregar Abas</button>
+      <button id="btnUpload" disabled>📸 Upload Fotos</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <div id="banner" class="banner warn" style="display:none"></div>
+    <div id="status" class="status">Selecione um servidor e clique em <strong>Testar Conexão</strong>.</div>
+    <div class="panel">
+      <div class="controls">
+        <label>Aba:</label>
+        <select id="sheetSelect" disabled></select>
+        <input id="search" placeholder="Buscar…" />
+        <select id="entries">
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="all">Todas</option>
+        </select>
+        <span class="note" id="currentUrl"></span>
+      </div>
+      <div id="data"></div>
+    </div>
+  </main>
+
+  <script>
+    // ------- State -------
+    let SERVER_URL = "";
+    let isConnected = false;
+    let allData = [];
+    const els = {
+      serverSelect: document.getElementById('serverSelect'),
+      btnTest: document.getElementById('btnTest'),
+      btnLoad: document.getElementById('btnLoad'),
+      btnUpload: document.getElementById('btnUpload'),
+      status: document.getElementById('status'),
+      banner: document.getElementById('banner'),
+      currentUrl: document.getElementById('currentUrl'),
+      data: document.getElementById('data'),
+      sheetSelect: document.getElementById('sheetSelect'),
+      search: document.getElementById('search'),
+      entries: document.getElementById('entries'),
+    };
+
+    function showMessage(html, kind='info', timeout=0){
+      els.status.className = 'status ' + (kind==='error'?'error':kind==='success'?'success':kind==='warning'?'warn':'')
+      els.status.innerHTML = html;
+      if(timeout>0){ setTimeout(()=>{ els.status.className='status'; els.status.innerHTML=''; }, timeout); }
+    }
+    function showBanner(msg){
+      els.banner.textContent = msg;
+      els.banner.style.display = 'block';
+    }
+    function hideBanner(){ els.banner.style.display = 'none'; }
+    function showLoading(msg){ showMessage(`⏳ ${msg}`); }
+    function resetConnection(){
+      isConnected = false;
+      els.btnLoad.disabled = true;
+      els.btnUpload.disabled = true;
+      els.sheetSelect.disabled = true;
+      els.data.innerHTML = '';
+    }
+
+    async function makeRequest(path, options={}){
+      const url = SERVER_URL.replace(/\/$/, '') + path;
+      const res = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', ...(options.headers||{}) } });
+      if(!res.ok){
+        const txt = await res.text().catch(()=>'');
+        throw new Error(`HTTP ${res.status} ${res.statusText} — ${txt}`);
+      }
+      return res.json();
+    }
+
+    // ------- Connection test -------
+    async function testConnection(){
+      if(!SERVER_URL){ showMessage('❌ Selecione um servidor.', 'error'); return; }
+      showLoading('Testando conexão…');
+      els.btnTest.disabled = true;
+      try{
+        const sheetsResult = await makeRequest('/debug/full');
+        const cloudResult  = await makeRequest('/debug/cloudinary');
+
+        const sheetsOK = !!(sheetsResult && sheetsResult.success && sheetsResult.summary && sheetsResult.summary.sheets_ok);
+        const cloudOK  = !!(cloudResult && (cloudResult.cloudinary_configured || cloudResult.success));
+
+        showMessage(`
+          ✅ <strong>Conexão Estabelecida</strong><br>
+          Sheets: ${sheetsOK ? '✅' : '❌'} |
+          Cloudinary: ${cloudOK ? '✅' : '❌'}<br>
+          Tempo: ${Number(sheetsResult?.duration_seconds||0).toFixed(2)}s
+        `, 'success');
+
+        isConnected = sheetsOK;
+        els.btnLoad.disabled = !sheetsOK;
+        els.btnUpload.disabled = !cloudOK;
+
+        els.sheetSelect.disabled = !sheetsOK;
+        els.currentUrl.textContent = SERVER_URL;
+
+        hideBanner();
+        if(!cloudOK){
+          showBanner('Cloudinary não configurado – Upload desativado');
+          showMessage(`⚠️ <strong>Cloudinary não configurado – Upload desativado</strong><br>Configure as variáveis CLOUDINARY_* no servidor.`, 'warning', 8000);
+        }
+      }catch(err){
+        console.error(err);
+        showMessage(`❌ Falha na conexão: ${err.message}`, 'error');
+        resetConnection();
+      }finally{
+        els.btnTest.disabled = false;
+      }
+    }
+
+    // ------- Load worksheets list -------
+    async function loadWorksheets(){
+      if(!isConnected) return;
+      showLoading('Carregando abas…');
+      try{
+        const info = await makeRequest('/sheets/info');
+        const sheets = info?.worksheets || info?.sheets || [];
+        els.sheetSelect.innerHTML = ['<option value="">Selecione…</option>']
+          .concat(sheets.map(n => `<option value="${n}">${n}</option>`))
+          .join('');
+        showMessage('✅ Abas carregadas.', 'success', 2000);
+      }catch(err){
+        showMessage(`❌ Falha ao carregar abas: ${err.message}`, 'error');
+      }
+    }
+
+    // ------- Load data of a sheet -------
+    async function loadData(sheetName){
+      if(!sheetName) return;
+      showLoading(`Carregando dados da aba “${sheetName}”…`);
+      try{
+        const rows = await makeRequest(`/sheets/${encodeURIComponent(sheetName)}`);
+        allData = Array.isArray(rows) ? rows : (rows?.data || []);
+        renderTable();
+        showMessage(`✅ ${allData.length} linhas carregadas da aba “${sheetName}”.`, 'success', 2500);
+      }catch(err){
+        showMessage(`❌ Erro ao obter dados: ${err.message}`, 'error');
+      }
+    }
+
+    // ------- Render Table -------
+    function renderTable(){
+      if(!allData || allData.length === 0){
+        els.data.innerHTML = `
+          <div class="status">Nenhum dado encontrado nesta aba.</div>
+        `;
+        return;
+      }
+      const headers = Object.keys(allData[0]);
+      let html = `
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+      `;
+      for(const row of allData){
+        html += `<tr>`;
+        for(const h of headers){
+          const cellValue = row[h] ?? '';
+          if (typeof cellValue === 'string' && (cellValue.includes('cloudinary.com') || cellValue.includes('res.cloudinary.com'))){
+            html += `
+              <td class="cell-url">
+                <img src="${cellValue}" alt="Imagem" onclick="showImageModal('${cellValue}')">
+                <br><a href="${cellValue}" target="_blank">Ver original</a>
+              </td>
+            `;
+          } else if (typeof cellValue === 'string' && cellValue.startsWith('http')){
+            html += `<td class="cell-url"><a href="${cellValue}" target="_blank">${cellValue}</a></td>`;
+          } else {
+            html += `<td>${cellValue}</td>`;
+          }
+        }
+        html += `</tr>`;
+      }
+      html += `</tbody></table></div>`;
+      els.data.innerHTML = html;
+    }
+
+    // ------- Simple image modal -------
+    function showImageModal(url){
+      const w = window.open('', '_blank');
+      if(!w) return;
+      w.document.write(`<!doctype html><title>Imagem</title><img src="${url}" style="max-width:100%;height:auto;display:block;margin:auto">`);
+    }
+
+    // ------- Events -------
+    els.serverSelect.addEventListener('change', e=>{
+      SERVER_URL = e.target.value || "";
+      resetConnection();
+      els.currentUrl.textContent = SERVER_URL || '';
+    });
+    els.btnTest.addEventListener('click', testConnection);
+    els.btnLoad.addEventListener('click', loadWorksheets);
+    els.sheetSelect.addEventListener('change', e=> loadData(e.target.value));
+    els.search.addEventListener('input', ()=>{
+      const q = els.search.value.trim().toLowerCase();
+      if(!q){ renderTable(); return; }
+      const headers = allData.length? Object.keys(allData[0]) : [];
+      const filtered = allData.filter(r => headers.some(h => String(r[h]??'').toLowerCase().includes(q)));
+      const backup = allData;
+      allData = filtered;
+      renderTable();
+      allData = backup;
+    });
+    els.entries.addEventListener('change', ()=>{
+      const val = els.entries.value;
+      const rows = Array.from(els.data.querySelectorAll('tbody tr'));
+      rows.forEach((tr,idx)=>{
+        tr.style.display = (val==='all' || idx < parseInt(val)) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>

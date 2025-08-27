@@ -1,5 +1,5 @@
 
-[visualizar a imagem gravada_27.08_(5)_complete_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/27/complete_html_client_fixed_v5.html)
+[visualizar a imagem gravada_27.08_(5)_complete_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/27/complete_html_client_fixed_v13.html)
 
 [visualizar a imagem gravada_27.08_diagnostic_tool](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/27/diagnostic_tool.html)
 
