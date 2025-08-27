@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import base64
+
 from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -22,6 +23,84 @@ test_drive_permissions()
 from check_drive import check_drive_permission
 check_drive_permission()
 
+# Adicione as importações do Cloudinary:
+# Adicione após as outras importações
+import re  # Adicione esta linha com as outras importações
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+from cloudinary.utils import cloudinary_url
+
+# Configure o Cloudinary (após as configurações do Flask):
+# Configuração do Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
+# Substitua a função upload_to_drive por uma função para o Cloudinary:
+def upload_to_cloudinary(file_content, filename):
+    """Faz upload de um arquivo para o Cloudinary e retorna a URL"""
+    try:
+        # Upload para o Cloudinary
+        upload_result = cloudinary.uploader.upload(
+            file_content,
+            public_id=f"sheets_app/{datetime.now().strftime('%Y%m%d')}/{uuid.uuid4().hex[:8]}_{filename}",
+            resource_type="auto"
+        )
+        
+        # URL otimizada (formato automático e qualidade automática)
+        optimize_url, _ = cloudinary_url(
+            upload_result['public_id'],
+            fetch_format="auto",
+            quality="auto"
+        )
+        
+        log_step("CLOUDINARY_UPLOAD", f"✅ Upload realizado: {filename} -> {optimize_url}")
+        return optimize_url
+        
+    except Exception as e:
+        error_msg = f"❌ Erro no upload para Cloudinary: {str(e)}"
+        log_step("CLOUDINARY_UPLOAD", error_msg, False)
+        raise Exception(error_msg)
+
+def upload_to_cloudinary_advanced(file_content, filename):
+    """Upload avançado para Cloudinary com otimizações"""
+    try:
+        # Upload com otimizações
+        upload_result = cloudinary.uploader.upload(
+            file_content,
+            public_id=f"sheets_app/{datetime.now().strftime('%Y%m%d')}/{uuid.uuid4().hex[:8]}_{filename}",
+            resource_type="auto",
+            quality="auto",
+            fetch_format="auto",
+            transformation=[
+                {'width': 1200, 'height': 1200, 'crop': 'limit'},  # Tamanho máximo
+                {'quality': 'auto'},
+                {'format': 'auto'}
+            ]
+        )
+        
+        # URL para exibição (pode adicionar mais transformações se quiser)
+        display_url, _ = cloudinary_url(
+            upload_result['public_id'],
+            width=800,
+            height=600,
+            crop="fill",
+            quality="auto",
+            format="auto"
+        )
+        
+        log_step("CLOUDINARY_UPLOAD", f"✅ Upload avançado: {filename}")
+        return display_url
+        
+    except Exception as e:
+        error_msg = f"❌ Erro no upload avançado: {str(e)}"
+        log_step("CLOUDINARY_UPLOAD", error_msg, False)
+        raise Exception(error_msg)
+    
 #from check_drives import check_drive_permissio
 #check_drive_permissio()
 
@@ -70,106 +149,108 @@ _spreadsheet_cache = None
 # Adicione esta constante no início do arquivo (substitua pelo ID real)
 SHARED_DRIVE_ID = '1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy'
 
-def upload_to_drive(file_content, filename, mime_type):
-    """Faz upload de um arquivo para o Google Drive e retorna a URL pública"""
-    """Faz upload de um arquivo para o Google Drive com tratamento robusto de erros"""
+def create_shared_folder():
+    """Cria uma pasta compartilhada no Google Drive para armazenar as imagens"""
     try:
-        from googleapiclient.discovery import build
-        from googleapiclient.http import MediaIoBaseUpload
-        from googleapiclient.errors import HttpError
+        drive_service = get_drive_service()
         
-        # Obter credenciais
-        creds_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
-        if not creds_json:
-            raise Exception("Variável GOOGLE_SHEETS_CREDENTIALS não encontrada")
+        # ID do Shared Drive (você precisa obter este ID)
+        SHARED_DRIVE_ID = "YOUR_SHARED_DRIVE_ID_HERE"
         
-        creds_json = creds_json.strip()
-        if creds_json.startswith('eyJ'):
-            creds_json = base64.b64decode(creds_json).decode('utf-8')
+        folder_name = f"SheetsApp_Images_{datetime.now().strftime('%Y%m%d')}"
         
-        creds_dict = json.loads(creds_json)
-        credentials = Credentials.from_service_account_info(creds_dict)
+        # Verificar se a pasta já existe no Shared Drive
+        results = drive_service.files().list(
+            q=f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false",
+            driveId=SHARED_DRIVE_ID,
+            corpora='drive',
+            includeItemsFromAllDrives=True,
+            supportsAllDrives=True,
+            fields="files(id, name)"
+        ).execute()
         
-        # Criar serviço do Drive
-        drive_service = build('drive', 'v3', credentials=credentials)
+        files = results.get('files', [])
         
-        # Sanitizar o nome do arquivo - remover caracteres problemáticos
-        import re
-        safe_filename = re.sub(r'[^\w\.-]', '_', filename)
-        unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{safe_filename}"
-        
-        # Criar arquivo no Drive
-        # TENTAR PRIMEIRO NO SHARED DRIVE
-        try:
-            file_metadata = {
-                'name': unique_filename, #safe_filename, # Usar nome sanitizado
-                'parents': [SHARED_DRIVE_ID], #['root'],  # 1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy Você pode especificar uma pasta específica
-                'mimeType': mime_type
+        if files:
+            folder_id = files[0]['id']
+            log_step("DRIVE_FOLDER", f"✅ Pasta existente encontrada: {folder_id}")
+        else:
+            # Criar nova pasta no Shared Drive
+            folder_metadata = {
+                'name': folder_name,
+                'mimeType': 'application/vnd.google-apps.folder',
+                'parents': [SHARED_DRIVE_ID]
             }
             
-            media = MediaIoBaseUpload(
-                                    io.BytesIO(file_content), 
-                                    mimetype=mime_type,
-                                    resumable=True)
-            
-            file = drive_service.files().create(
-                body=file_metadata,
-                media_body=media,
-                fields='id, webViewLink, webContentLink',
-                #serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive
-                supportsAllDrives=True  # Adicionar esta linha, Solução 3: Modificar o Código para Usar Shared Drive
+            folder = drive_service.files().create(
+                body=folder_metadata,
+                fields='id, name',
+                supportsAllDrives=True
             ).execute()
+            
+            folder_id = folder.get('id')
+            log_step("DRIVE_FOLDER", f"✅ Nova pasta criada no Shared Drive: {folder_name} ({folder_id})")
         
-        # return file
-        except HttpError as e:
-            # Se falhar no shared drive, tentar no root (com fallback)
-            if 'storageQuotaExceeded' in str(e):
-                log_step("DRIVE_UPLOAD", "⚠️ Fallback: Tentando upload sem shared drive")
-                
-                file_metadata = {
-                    'name': unique_filename,
-                    'mimeType': mime_type
-                    # Sem parents = vai para root do service account
-                }
-                
-                file = drive_service.files().create(
-                    body=file_metadata,
-                    media_body=media,
-                    fields='id, webViewLink, webContentLink'
-                ).execute()
-            else:
-                raise
-        # Tornar o arquivo público
-        drive_service.permissions().create(
-            fileId=file['id'],
-            body={'type': 'anyone', 'role': 'reader'},
+        return folder_id
+        
+    except Exception as e:
+        log_step("DRIVE_FOLDER", f"❌ Erro ao criar/encontrar pasta: {str(e)}", False)
+        return None
+
+def upload_to_drive(file_content, filename, mime_type):
+    """Upload de arquivo para o Google Drive com Shared Drive support"""
+    try:
+        drive_service = get_drive_service()
+        
+        # Criar ou obter pasta
+        folder_id = create_shared_folder()
+        
+        # Sanitizar nome do arquivo
+        safe_filename = re.sub(r'[^\w\.-]', '_', filename)
+        unique_filename = f"{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}_{safe_filename}"
+        
+        # Metadados do arquivo
+        file_metadata = {
+            'name': unique_filename,
+            'mimeType': mime_type
+        }
+        
+        # Se temos uma pasta, usar ela como parent
+        if folder_id:
+            file_metadata['parents'] = [folder_id]
+        
+        # Upload do arquivo
+        media = MediaIoBaseUpload(
+            io.BytesIO(file_content),
+            mimetype=mime_type,
+            resumable=True
+        )
+        
+        file = drive_service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, webViewLink, webContentLink, parents',
             supportsAllDrives=True
         ).execute()
         
-        # Obter link público
-        #file_url = f"https://drive.google.com/uc?id={file['id']}"
-        # URL direta para download
-        file_url = f"https://drive.google.com/uc?export=download&id={file['id']}"
+        file_id = file.get('id')
         
-        #log_step("DRIVE_UPLOAD", f"✅ Arquivo {filename} upload para Drive: {file_url}")
-        log_step("DRIVE_UPLOAD", f"✅ Upload realizado: {unique_filename} -> {file_url}")
-        return file_url
+        # URL direta para visualização
+        file_url = f"https://drive.google.com/uc?id={file_id}"
+        
+        log_step("DRIVE_UPLOAD", f"✅ Upload realizado no Shared Drive: {unique_filename} -> {file_url}")
+        return file_url, file_id, unique_filename
             
     except HttpError as e:
-        error_msg = f"Erro no upload: {str(e)}" #f"Erro HTTP do Drive: {e.resp.status} - {e._get_reason()}"
-        log_step("DRIVE_UPLOAD", error_msg, False)
-        raise
-    """    
-    except Exception as e:
-        #except Exception as e:
-        error_msg = f"Erro no upload: {str(e)}"
-        log_step("DRIVE_UPLOAD", error_msg, False)
-        raise
-        
-        # log_step("DRIVE_UPLOAD", f"❌ Erro no upload para Drive: {str(e)}", False)
-        #raise
-    """
+        if 'storageQuotaExceeded' in str(e):
+            raise Exception("Quota de armazenamento excedida. Verifique o Shared Drive.")
+        else:
+            raise Exception(f"Erro HTTP do Drive: {e.resp.status} - {str(e)}")
     
+    except Exception as e:
+        raise Exception(f"Erro no upload: {str(e)}")
+
+
 def log_step(step, message, success=True):
     """Registra cada passo com timestamp"""
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -360,6 +441,196 @@ def test_google_sheets_connection():
 # ROTAS DE API PARA O CLIENTE HTML
 # ================================
 
+# Atualize o endpoint de upload para usar Cloudinary:
+""" 
+@app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
+def upload_photos():
+    ""📸 Endpoint completo para upload de fotos com armazenamento no Cloudinary""
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
+    
+    log_step("UPLOAD_PHOTOS", "📸 Requisição de upload de fotos recebida")
+    
+    try:
+        # ... (código anterior mantido até o processamento de arquivos)
+        
+        # Processar cada arquivo
+        results = []
+        for i, file in enumerate(uploaded_files):
+            if file and file.filename:
+                try:
+                    # ... (código anterior mantido)
+                    
+                    # Fazer upload para o Cloudinary (SUBSTITUINDO O DRIVE)
+                    log_step("UPLOAD_PHOTOS", f"Iniciando upload para Cloudinary: {filename}")
+                    image_url = upload_to_cloudinary(file_content, filename)
+                    
+                    # Preparar dados para a planilha (atualizar a URL)
+                    row_data = [
+                        datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                        title,
+                        description,
+                        latitude or '',
+                        longitude or '',
+                        accuracy or '',
+                        filename,
+                        file_size,
+                        file.content_type,
+                        image_url,  # URL do Cloudinary aqui
+                        unique_id,
+                        width,
+                        height,
+                        image_format
+                    ]
+                    
+                    # ... (resto do código mantido)
+    """
+@app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
+def upload_photos():
+    """📸 Endpoint completo para upload de fotos com armazenamento no Cloudinary"""
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
+    
+    log_step("UPLOAD_PHOTOS", "📸 Requisição de upload de fotos recebida")
+    
+    try:
+        if not sheets_status['initialized']:
+            sheets_result = test_google_sheets_connection()
+            if not sheets_result.get('success', False):
+                return jsonify({
+                    'success': False,
+                    'message': 'Erro de autenticação com o Google Sheets'
+                }), 500
+        
+        # Obter dados do formulário
+        title = request.form.get('title', 'Foto sem título')
+        description = request.form.get('description', '')
+        worksheet_name = request.form.get('worksheet', 'Imagens')
+        latitude = request.form.get('latitude')
+        longitude = request.form.get('longitude')
+        accuracy = request.form.get('accuracy')
+        
+        # Processar arquivos
+        uploaded_files = request.files.getlist('photos')
+        file_count = len(uploaded_files)
+        
+        if file_count == 0:
+            return jsonify({
+                'success': False,
+                'message': 'Nenhum arquivo enviado'
+            }), 400
+        
+        log_step("UPLOAD_PHOTOS", f"Processando {file_count} arquivo(s) para a aba '{worksheet_name}'")
+        log_step("UPLOAD_PHOTOS", f"Arquivos recebidos: {[f.filename for f in uploaded_files]}")
+        
+        client, spreadsheet = get_sheets_client()
+        
+        # Verificar se a worksheet existe, se não, criar
+        try:
+            worksheet = spreadsheet.worksheet(worksheet_name)
+        except gspread.exceptions.WorksheetNotFound:
+            worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="15")
+            # Adicionar cabeçalhos
+            headers = [
+                "Data", "Título", "Descrição", "Latitude", "Longitude", 
+                "Precisão", "Nome do Arquivo", "Tamanho", "Tipo", 
+                "URL da Imagem", "ID Único", "Largura", "Altura", "Formato"
+            ]
+            worksheet.append_row(headers)
+            log_step("UPLOAD_PHOTOS", f"✅ Nova worksheet criada: {worksheet_name}")
+        
+        # Processar cada arquivo
+        results = []
+        for i, file in enumerate(uploaded_files):
+            if file and file.filename:
+                try:
+                    # Ler o arquivo
+                    file_content = file.read()
+                    filename = file.filename
+                    file_size = len(file_content)
+                    unique_id = str(uuid.uuid4())[:8]
+                    
+                    log_step("UPLOAD_PHOTOS", f"Processando arquivo {i+1}: {filename} ({file_size} bytes)")
+                    
+                    # Verificar tamanho do arquivo (limite de 5MB)
+                    if file_size > 5 * 1024 * 1024:
+                        raise Exception(f"Arquivo muito grande: {file_size} bytes (limite: 5MB)")
+                    
+                    # Processar a imagem para obter metadados
+                    try:
+                        image = Image.open(io.BytesIO(file_content))
+                        width, height = image.size
+                        image_format = image.format
+                        log_step("UPLOAD_PHOTOS", f"Imagem processada: {width}x{height}, formato: {image_format}")
+                    
+                    except Exception as img_error:
+                        log_step("UPLOAD_PHOTOS", f"⚠️ Aviso: Erro ao processar imagem: {img_error}")
+                        width, height, image_format = 0, 0, 'Desconhecido'
+                        
+                    # Fazer upload para o Cloudinary (SUBSTITUINDO O DRIVE)
+                    log_step("UPLOAD_PHOTOS", f"Iniciando upload para Cloudinary: {filename}")
+                    image_url = upload_to_cloudinary(file_content, filename)
+                    
+                    # Preparar dados para a planilha
+                    row_data = [
+                        datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                        title,
+                        description,
+                        latitude or '',
+                        longitude or '',
+                        accuracy or '',
+                        filename,
+                        file_size,
+                        file.content_type,
+                        image_url,  # URL do Cloudinary aqui
+                        unique_id,
+                        width,
+                        height,
+                        image_format
+                    ]
+                    
+                    # Adicionar à planilha
+                    worksheet.append_row(row_data)
+                    
+                    results.append({
+                        'filename': filename,
+                        'size': file_size,
+                        'type': file.content_type,
+                        'url': image_url,
+                        'id': unique_id,
+                        'dimensions': f"{width}x{height}",
+                        'status': 'success'
+                    })
+                    
+                    log_step("UPLOAD_PHOTOS", f"✅ Arquivo {i+1}/{file_count} processado: {filename} -> {image_url}")
+                    
+                except Exception as file_error:
+                    error_msg = f"Erro ao processar {filename}: {str(file_error)}"
+                    log_step("UPLOAD_PHOTOS", error_msg, False)
+                    results.append({
+                        'filename': filename,
+                        'status': 'error',
+                        'error': str(file_error)
+                    })
+        
+        return jsonify({
+            'success': True,
+            'message': f'{file_count} arquivo(s) processado(s) com sucesso!',
+            'results': results,
+            'worksheet': worksheet_name,
+            'spreadsheet_title': spreadsheet.title,
+            'uploaded_count': len([r for r in results if r['status'] == 'success'])
+        })
+        
+    except Exception as e:
+        error_msg = f"❌ Erro no upload de fotos: {str(e)}"
+        log_step("UPLOAD_PHOTOS", error_msg, False)
+        return jsonify({
+            'success': False,
+            'message': 'Erro no processamento do upload',
+            'error': str(e)
+        }), 500
+        
 @app.route('/debug/service-account-info', methods=['GET'])
 def debug_service_account_info():
     """Retorna o email do service account para configurar no Shared Drive"""
@@ -383,6 +654,16 @@ def debug_service_account_info():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+    """_summary_
+
+    Raises:
+        Exception: _description_
+
+    Returns:
+        _type_: _description_
+    """
+    """ 
+    
 @app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
 def upload_photos():
     """📸 Endpoint completo para upload de fotos com armazenamento no Drive"""
@@ -529,7 +810,7 @@ def upload_photos():
             'message': 'Erro no processamento do upload',
             'error': str(e)
         }), 500
-
+"""
 @app.route('/api/sheets/worksheets', methods=['GET'])
 def get_worksheets():
     """📄 Lista todas as abas/worksheets da planilha"""
