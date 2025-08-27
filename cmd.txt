@@ -4,13 +4,25 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
 
         27.08.2025
             
-            [20:05, 16:40, 14:17, 12:23, 11:36, 08:55, 06:48]
+            [20:[28, 05], 16:40, 14:17, 12:23, 11:36, 08:55, 06:48]
+                fixed_html_client_cloudinary.html:1427 Upload failed: TypeError: Cannot read properties of undefined (reading 'successful')
+    at HTMLButtonElement.uploadPhotos (fixed_html_client_cloudinary.html:1405:42)
+                cp -r app.py app/08/27/backUp_app_for_fixed_upload_endpoint.py
+                cp -r app/08/27/fixed_upload_endpoint.py app.py
+
+                git add cmd.txt html/08.2025/27 README.md requirements_for_render.txt
+                git commit -m " 27.08, 20:28 TypeError: Cannot read properties of undefined (reading 'successful')at HTMLButtonElement.uploadPhotos (fixed_html_client_cloudinary.html"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01    
+
+                cp -r app.py app/08/27/app_befor_server_cloudinary_integration.py
+                cp -r app/08/27/app_befor_server_cloudinary_integration.py app.py
                 os botões não funcionam — o JS trava já no carregamento
+
                     cp -r app.py app/08/27/app_befor_server_cloudinary_integration.py
                     cp -r app/08/27/app_befor_server_cloudinary_integration.py app.py
 
                     git add cmd.txt html/08.2025/27 README.md requirements_for_render.txt
-                    git commit -m " 27.08, 16:40 os botões não funcionam — o JS trava já no carregamento try use cloudinary.com fixed_complete_server serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive"
+                    git commit -m " 27.08, 20:10 os botões não funcionam — o JS trava já no carregamento try use cloudinary.com fixed_complete_server serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive"
                     git push --set-upstream origin 01_03_01_Plotting_view_2_01    
 
                     git add cmd.txt html/08.2025/ README.md requirements_for_render.txt
