@@ -933,7 +933,8 @@
                     showMessage(
                         `✅ <strong>Conexão Estabelecida!</strong><br>
                         Sheets: ${result.summary.sheets_ok ? '✅' : '❌'} | 
-                        Drive: ${result.summary.drive_ok ? '✅ (Upload disponível)' : '⚠️ (Upload limitado)'}<br>
+                        Cloudinary: ✅ (Upload disponível)<br> |
+                        
                         Tempo: ${result.duration_seconds?.toFixed(2)}s`,
                         'success'
                     );
@@ -1123,8 +1124,11 @@
                     let cellValue = row[header] || '';
                     
                     // Handle different cell types
-                    if (typeof cellValue === 'string' && cellValue.includes('drive.google.com')) {
-                        // Image URL
+                    //if (typeof cellValue === 'string' && cellValue.includes('drive.google.com')) {
+                     // Handle different cell types - ATUALIZADO PARA CLOUDINARY
+            if (typeof cellValue === 'string' && 
+                (cellValue.includes('cloudinary.com') || cellValue.includes('res.cloudinary.com') || cellValue.includes('drive.google.com'))) {
+                        // Image URL (Cloudinary ou Google Drive)
                         tableHTML += `
                             <td class="cell-url">
                                 <img src="${cellValue}" alt="Imagem" class="cell-image" onclick="showImageModal('${cellValue}')">
