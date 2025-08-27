@@ -441,53 +441,9 @@ def test_google_sheets_connection():
 # ROTAS DE API PARA O CLIENTE HTML
 # ================================
 
-# Atualize o endpoint de upload para usar Cloudinary:
-""" 
 @app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
 def upload_photos():
-    ""📸 Endpoint completo para upload de fotos com armazenamento no Cloudinary""
-    if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'}), 200
-    
-    log_step("UPLOAD_PHOTOS", "📸 Requisição de upload de fotos recebida")
-    
-    try:
-        # ... (código anterior mantido até o processamento de arquivos)
-        
-        # Processar cada arquivo
-        results = []
-        for i, file in enumerate(uploaded_files):
-            if file and file.filename:
-                try:
-                    # ... (código anterior mantido)
-                    
-                    # Fazer upload para o Cloudinary (SUBSTITUINDO O DRIVE)
-                    log_step("UPLOAD_PHOTOS", f"Iniciando upload para Cloudinary: {filename}")
-                    image_url = upload_to_cloudinary(file_content, filename)
-                    
-                    # Preparar dados para a planilha (atualizar a URL)
-                    row_data = [
-                        datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        title,
-                        description,
-                        latitude or '',
-                        longitude or '',
-                        accuracy or '',
-                        filename,
-                        file_size,
-                        file.content_type,
-                        image_url,  # URL do Cloudinary aqui
-                        unique_id,
-                        width,
-                        height,
-                        image_format
-                    ]
-                    
-                    # ... (resto do código mantido)
-    """
-@app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
-def upload_photos():
-    """📸 Endpoint completo para upload de fotos com armazenamento no Cloudinary"""
+    """Endpoint completo para upload de fotos com armazenamento no Cloudinary"""
     if request.method == 'OPTIONS':
         return jsonify({'status': 'ok'}), 200
     
@@ -652,7 +608,7 @@ def debug_cloudinary():
             
 @app.route('/debug/service-account-info', methods=['GET'])
 def debug_service_account_info():
-    """Retorna o email do service account para configurar no Shared Drive"""
+    """Retorna o email du service account para configurar no Shared Drive"""
     try:
         creds_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
         if not creds_json:
@@ -673,166 +629,9 @@ def debug_service_account_info():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-    """_summary_
-
-    Raises:
-        Exception: _description_
-
-    Returns:
-        _type_: _description_
-    """
-    """ 
-    
-@app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
-def upload_photos():
-    """📸 Endpoint completo para upload de fotos com armazenamento no Drive"""
-    if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'}), 200
-    
-    log_step("UPLOAD_PHOTOS", "📸 Requisição de upload de fotos recebida")
-    
-    try:
-        if not sheets_status['initialized']:
-            sheets_result = test_google_sheets_connection()
-            if not sheets_result.get('success', False):
-                return jsonify({
-                    'success': False,
-                    'message': 'Erro de autenticação com o Google Sheets'
-                }), 500
-        
-        # Obter dados do formulário
-        title = request.form.get('title', 'Foto sem título')
-        description = request.form.get('description', '')
-        worksheet_name = request.form.get('worksheet', 'Imagens')
-        latitude = request.form.get('latitude')
-        longitude = request.form.get('longitude')
-        accuracy = request.form.get('accuracy')
-        
-        # Processar arquivos
-        uploaded_files = request.files.getlist('photos')
-        file_count = len(uploaded_files)
-        
-        if file_count == 0:
-            return jsonify({
-                'success': False,
-                'message': 'Nenhum arquivo enviado'
-            }), 400
-        
-        log_step("UPLOAD_PHOTOS", f"Processando {file_count} arquivo(s) para a aba '{worksheet_name}'")
-        log_step("UPLOAD_PHOTOS", f"Arquivos recebidos: {[f.filename for f in uploaded_files]}")
-        
-        client, spreadsheet = get_sheets_client()
-        
-        # Verificar se a worksheet existe, se não, criar
-        try:
-            worksheet = spreadsheet.worksheet(worksheet_name)
-        except gspread.exceptions.WorksheetNotFound:
-            worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="15")
-            # Adicionar cabeçalhos
-            headers = [
-                "Data", "Título", "Descrição", "Latitude", "Longitude", 
-                "Precisão", "Nome do Arquivo", "Tamanho", "Tipo", 
-                "URL da Imagem", "ID Único", "Largura", "Altura", "Formato"
-            ]
-            worksheet.append_row(headers)
-            log_step("UPLOAD_PHOTOS", f"✅ Nova worksheet criada: {worksheet_name}")
-        
-        # Processar cada arquivo
-        results = []
-        for i, file in enumerate(uploaded_files):
-            if file and file.filename:
-                try:
-                    # Ler o arquivo
-                    file_content = file.read()
-                    filename = file.filename
-                    file_size = len(file_content)
-                    unique_id = str(uuid.uuid4())[:8]
-                    
-                    log_step("UPLOAD_PHOTOS", f"Processando arquivo {i+1}: {filename} ({file_size} bytes)")
-                    
-                    # Verificar tamanho do arquivo (limite de 5MB)
-                    if file_size > 5 * 1024 * 1024:
-                        raise Exception(f"Arquivo muito grande: {file_size} bytes (limite: 5MB)")
-                    
-                    # grep -n "try" app.py
-                    # Processar a imagem para obter metadados
-                    try:
-                        image = Image.open(io.BytesIO(file_content))
-                        width, height = image.size
-                        image_format = image.format
-                        log_step("UPLOAD_PHOTOS", f"Imagem processada: {width}x{height}, formato: {image_format}")
-                    
-                    except Exception as img_error:
-                        log_step("UPLOAD_PHOTOS", f"⚠️ Aviso: Erro ao processar imagem: {img_error}")
-                        width, height, image_format = 0, 0, 'Desconhecido'
-                        
-                    # Fazer upload para o Google Drive
-                    log_step("UPLOAD_PHOTOS", f"Iniciando upload para Drive: {filename}")
-                    drive_url = upload_to_drive(file_content, f"{unique_id}_{filename}", file.content_type)
-                    
-                    # Preparar dados para a planilha
-                    row_data = [
-                        datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                        title,
-                        description,
-                        latitude or '',
-                        longitude or '',
-                        accuracy or '',
-                        filename, # Nome original mantido para referência
-                        file_size,
-                        file.content_type,
-                        drive_url,  # URL pública da imagem
-                        unique_id,
-                        width,
-                        height,
-                        image_format
-                    ]
-                    
-                    # Adicionar à planilha
-                    worksheet.append_row(row_data)
-                    
-                    results.append({
-                        'filename': filename,
-                        'size': file_size,
-                        'type': file.content_type,
-                        'url': drive_url,
-                        'id': unique_id,
-                        'dimensions': f"{width}x{height}",
-                        'status': 'success'
-                    })
-                    
-                    log_step("UPLOAD_PHOTOS", f"✅ Arquivo {i+1}/{file_count} processado: {filename} -> {drive_url}")
-                    
-                except Exception as file_error:
-                    error_msg = f"Erro ao processar {filename}: {str(file_error)}"
-                    log_step("UPLOAD_PHOTOS", error_msg, False)
-                    results.append({
-                        'filename': filename,
-                        'status': 'error',
-                        'error': str(file_error)
-                    })
-        
-        return jsonify({
-            'success': True,
-            'message': f'{file_count} arquivo(s) processado(s) com sucesso!',
-            'results': results,
-            'worksheet': worksheet_name,
-            'spreadsheet_title': spreadsheet.title,
-            'uploaded_count': len([r for r in results if r['status'] == 'success'])
-        })
-        
-    except Exception as e:
-        error_msg = f"❌ Erro no upload de fotos: {str(e)}"
-        log_step("UPLOAD_PHOTOS", error_msg, False)
-        return jsonify({
-            'success': False,
-            'message': 'Erro no processamento do upload',
-            'error': str(e)
-        }), 500
-"""
 @app.route('/api/sheets/worksheets', methods=['GET'])
 def get_worksheets():
-    """📄 Lista todas as abas/worksheets da planilha"""
+    """Lista todas as abas/worksheets da planilha"""
     log_step("API_WORKSHEETS", "Requisição para listar worksheets")
     
     try:
@@ -860,104 +659,9 @@ def get_worksheets():
         log_step("API_WORKSHEETS", error_msg, False)
         return jsonify({'success': False, 'error': error_msg}), 500
 
-"""
-@app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
-def upload_photos():
-    📸 Endpoint para upload de fotos com metadados
-    if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'}), 200
-    
-    log_step("UPLOAD_PHOTOS", "📸 Requisição de upload de fotos recebida")
-    
-    try:
-        if not sheets_status['initialized']:
-            sheets_result = test_google_sheets_connection()
-            if not sheets_result.get('success', False):
-                return jsonify({
-                    'success': False,
-                    'message': 'Erro de autenticação com o Google Sheets'
-                }), 500
-        
-        # Obter dados do formulário
-        title = request.form.get('title', 'Foto sem título')
-        description = request.form.get('description', '')
-        worksheet_name = request.form.get('worksheet', 'Imagens')
-        latitude = request.form.get('latitude')
-        longitude = request.form.get('longitude')
-        accuracy = request.form.get('accuracy')
-        
-        # Processar arquivos
-        uploaded_files = request.files.getlist('photos')
-        file_count = len(uploaded_files)
-        
-        log_step("UPLOAD_PHOTOS", f"Processando {file_count} arquivo(s) para a aba '{worksheet_name}'")
-        
-        client, spreadsheet = get_sheets_client()
-        
-        # Verificar se a worksheet existe, se não, criar
-        try:
-            worksheet = spreadsheet.worksheet(worksheet_name)
-        except gspread.exceptions.WorksheetNotFound:
-            worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="100", cols="10")
-            # Adicionar cabeçalhos
-            headers = ["Data", "Título", "Descrição", "Latitude", "Longitude", "Precisão", "Nome do Arquivo", "Tamanho", "Tipo"]
-            worksheet.append_row(headers)
-            log_step("UPLOAD_PHOTOS", f"✅ Nova worksheet criada: {worksheet_name}")
-        
-        # Processar cada arquivo
-        results = []
-        for i, file in enumerate(uploaded_files):
-            if file and file.filename:
-                filename = file.filename
-                file_size = len(file.read())
-                file.seek(0)  # Reset file pointer
-                
-                # Aqui você pode salvar o arquivo se necessário, ou apenas registrar os metadados
-                # Por enquanto, vamos apenas registrar os metadados na planilha
-                
-                row_data = [
-                    datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                    title,
-                    description,
-                    latitude or '',
-                    longitude or '',
-                    accuracy or '',
-                    filename,
-                    file_size,
-                    file.content_type
-                ]
-                
-                worksheet.append_row(row_data)
-                results.append({
-                    'filename': filename,
-                    'size': file_size,
-                    'type': file.content_type,
-                    'status': 'success'
-                })
-                
-                log_step("UPLOAD_PHOTOS", f"✅ Arquivo {i+1}/{file_count} processado: {filename}")
-        
-        return jsonify({
-            'success': True,
-            'message': f'{file_count} arquivo(s) processado(s) com sucesso!',
-            'results': results,
-            'worksheet': worksheet_name,
-            'spreadsheet_title': spreadsheet.title
-        })
-        
-    except Exception as e:
-        error_msg = f"❌ Erro no upload de fotos: {str(e)}"
-        log_step("UPLOAD_PHOTOS", error_msg, False)
-        return jsonify({
-            'success': False,
-            'message': 'Erro no processamento do upload',
-            'error': str(e)
-        }), 500
-"""
-
 @app.route('/api/sheets/data', methods=['GET'])
 def get_sheet_data():
-    """📊 Retorna os dados de uma worksheet específica"""
+    """Retorna os dados de uma worksheet específica"""
     log_step("API_DATA", "Requisição para obter dados da planilha")
     
     try:
@@ -1041,7 +745,7 @@ def get_sheet_data():
 
 @app.route('/api/sheets/info', methods=['GET'])
 def get_sheet_info():
-    """ℹ️ Retorna informações gerais sobre a planilha"""
+    """Retorna informações gerais sobre a planilha"""
     log_step("API_INFO", "Requisição para informações da planilha")
     
     try:
@@ -1081,7 +785,7 @@ def get_sheet_info():
 
 @app.route('/debug/environment', methods=['GET'])
 def debug_environment():
-    """🔧 Endpoint para verificar variáveis de ambiente"""
+    """Endpoint para verificar variáveis de ambiente"""
     log_step("DEBUG_ENV", "Requisição de debug de ambiente recebida")
     env_check = check_environment_variables()
     
@@ -1096,7 +800,7 @@ def debug_environment():
 
 @app.route('/debug/credentials', methods=['GET'])
 def debug_credentials():
-    """🔐 Endpoint para testar parse das credenciais"""
+    """Endpoint para testar parse das credenciais"""
     log_step("DEBUG_CREDS", "Requisição de debug de credenciais recebida")
     creds_result = parse_credentials()
     
@@ -1126,14 +830,14 @@ def debug_credentials():
 
 @app.route('/debug/sheets', methods=['GET'])
 def debug_sheets():
-    """📊 Endpoint para testar conexão completa com Google Sheets"""
+    """Endpoint para testar conexão completa com Google Sheets"""
     log_step("DEBUG_SHEETS", "Requisição de debug do Google Sheets recebida")
     result = test_google_sheets_connection()
     return jsonify(result)
 
 @app.route('/debug/full', methods=['GET'])
 def debug_full():
-    """🔍 Endpoint para verificação completa passo a passo"""
+    """Endpoint para verificação completa passo a passo"""
     log_step("DEBUG_FULL", "🚀 Iniciando verificação completa...")
     
     # Reset do status e cache
@@ -1199,7 +903,7 @@ def debug_full():
 
 @app.route('/debug/test-write', methods=['GET'])
 def debug_test_write():
-    """✍️ Testa escrita na planilha"""
+    """Testa escrita na planilha"""
     log_step("DEBUG_WRITE", "Testando escrita na planilha...")
     
     try:
@@ -1222,149 +926,217 @@ def debug_test_write():
             'success': True,
             'message': f'Dados de teste escritos na linha {next_row}',
             'row': next_row,
-            'data': test_data,
-            'spreadsheet_title': spreadsheet.title
+            'data': test_data
         })
         
     except Exception as e:
-        error_msg = f"❌ Erro ao testar escrita: {str(e)}"
+        error_msg = f"Erro na escrita: {str(e)}"
         log_step("DEBUG_WRITE", error_msg, False)
-        return jsonify({'success': False, 'error': error_msg})
+        return jsonify({'success': False, 'error': error_msg}), 500
 
-# ================================
-# ROTAS PRINCIPAIS ORIGINAIS
-# ================================
-
-@app.route('/health', methods=['GET'])
-def health_check():
-    """💓 Endpoint de saúde do servidor"""
+@app.route('/debug/status', methods=['GET'])
+def debug_status():
+    """Retorna o status atual da conexão"""
     return jsonify({
-        'status': 'healthy',
-        'timestamp': datetime.now().isoformat(),
-        'sheets_initialized': sheets_status['initialized'],
-        'service': 'Google Sheets API Server',
-        'version': '3.0',
-        'available_endpoints': {
-            'api': ['/api/sheets/data', '/api/sheets/worksheets', '/api/sheets/info'],
-            'debug': ['/debug/full', '/debug/sheets', '/debug/credentials', '/debug/environment'],
-            'main': ['/health', '/upload', '/']
+        'status': sheets_status,
+        'current_time': datetime.now().isoformat(),
+        'cache_info': {
+            'client_cached': _client_cache is not None,
+            'spreadsheet_cached': _spreadsheet_cache is not None
         }
     })
 
-@app.route('/upload', methods=['POST', 'OPTIONS'])
-def upload_data():
-    """📤 Endpoint principal para upload de dados"""
-    if request.method == 'OPTIONS':
-        return jsonify({'status': 'ok'})
+@app.route('/debug/clear-cache', methods=['GET'])
+def debug_clear_cache():
+    """Limpa o cache de conexão"""
+    global _client_cache, _spreadsheet_cache
+    _client_cache = None
+    _spreadsheet_cache = None
     
-    log_step("UPLOAD", "📨 Requisição de upload recebida")
+    sheets_status['initialized'] = False
+    sheets_status['spreadsheet_accessible'] = False
     
+    log_step("DEBUG_CACHE", "🔄 Cache de conexão limpo")
+    return jsonify({'success': True, 'message': 'Cache limpo'})
+
+@app.route('/debug/check-drive', methods=['GET'])
+def debug_check_drive():
+    """Verifica permissões do Google Drive"""
     try:
-        if not sheets_status['initialized']:
-            sheets_result = test_google_sheets_connection()
-            if not sheets_result.get('success', False):
-                return jsonify({
-                    'success': False,
-                    'message': 'Erro de autenticação com o Google Sheets',
-                    'error': sheets_result.get('error', 'Erro desconhecido')
-                }), 500
+        # Testar permissões do Drive
+        drive_service = get_drive_service()
         
-        data = request.get_json()
-        if not data:
-            return jsonify({'success': False, 'message': 'Nenhum dado recebido'}), 400
+        # Tentar listar alguns arquivos
+        results = drive_service.files().list(
+            pageSize=5,
+            fields="files(id, name, mimeType)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True
+        ).execute()
         
-        coords = data.get('coords', {})
-        metadata = data.get('metadata', {})
-        photo_size = len(data.get('photo', '')) if data.get('photo') else 0
+        files = results.get('files', [])
         
-        log_step("UPLOAD", f"Processando upload: coords={coords}, metadata={metadata}, photo_size={photo_size}")
-        
-        try:
-            client, spreadsheet = get_sheets_client()
-            worksheet = spreadsheet.sheet1
-            
-            upload_id = f"upload_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-            row_data = [
-                datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                upload_id,
-                coords.get('latitude', ''),
-                coords.get('longitude', ''),
-                coords.get('accuracy', ''),
-                metadata.get('userAgent', ''),
-                'Foto recebida' if photo_size > 0 else 'Sem foto',
-                photo_size
-            ]
-            
-            worksheet.append_row(row_data)
-            log_step("UPLOAD", f"✅ Dados salvos com ID: {upload_id}")
-            
-            return jsonify({
-                'success': True,
-                'message': 'Dados salvos com sucesso!',
-                'id': upload_id,
-                'spreadsheet_title': spreadsheet.title
-            })
-            
-        except Exception as save_error:
-            log_step("UPLOAD", f"❌ Erro ao salvar: {save_error}", False)
-            return jsonify({
-                'success': False,
-                'message': 'Erro ao salvar na planilha',
-                'error': str(save_error)
-            }), 500
+        return jsonify({
+            'success': True,
+            'drive_access': True,
+            'files_found': len(files),
+            'sample_files': files,
+            'message': '✅ Acesso ao Google Drive verificado com sucesso'
+        })
         
     except Exception as e:
-        error_msg = f"❌ Erro interno: {str(e)}"
-        log_step("UPLOAD", error_msg, False)
+        error_msg = f"❌ Erro no acesso ao Drive: {str(e)}"
+        log_step("DEBUG_DRIVE", error_msg, False)
         return jsonify({
             'success': False,
-            'message': 'Erro interno do servidor',
+            'drive_access': False,
             'error': error_msg
         }), 500
 
-@app.route('/', methods=['GET'])
-def index():
-    """🏠 Página inicial com informações do serviço"""
+@app.route('/debug/test-shared-drive', methods=['GET'])
+def debug_test_shared_drive():
+    """Testa acesso ao Shared Drive"""
+    try:
+        drive_service = get_drive_service()
+        
+        # Listar Shared Drives
+        drives = drive_service.drives().list(
+            pageSize=10,
+            fields="drives(id, name)"
+        ).execute()
+        
+        shared_drives = drives.get('drives', [])
+        
+        # Verificar se temos acesso ao Shared Drive específico
+        target_drive_id = SHARED_DRIVE_ID
+        target_drive = None
+        
+        for drive in shared_drives:
+            if drive['id'] == target_drive_id:
+                target_drive = drive
+                break
+        
+        if target_drive:
+            # Tentar listar arquivos no Shared Drive
+            results = drive_service.files().list(
+                driveId=target_drive_id,
+                corpora='drive',
+                pageSize=5,
+                fields="files(id, name, mimeType)",
+                supportsAllDrives=True,
+                includeItemsFromAllDrives=True
+            ).execute()
+            
+            files = results.get('files', [])
+            
+            return jsonify({
+                'success': True,
+                'shared_drive_access': True,
+                'target_drive': target_drive,
+                'files_in_drive': len(files),
+                'sample_files': files,
+                'message': f'✅ Acesso ao Shared Drive "{target_drive["name"]}" verificado'
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'shared_drive_access': False,
+                'available_drives': [{'id': d['id'], 'name': d['name']} for d in shared_drives],
+                'message': f'❌ Shared Drive com ID {target_drive_id} não encontrado'
+            })
+            
+    except Exception as e:
+        error_msg = f"❌ Erro no acesso ao Shared Drive: {str(e)}"
+        log_step("DEBUG_SHARED_DRIVE", error_msg, False)
+        return jsonify({
+            'success': False,
+            'shared_drive_access': False,
+            'error': error_msg
+        }), 500
+
+# ================================
+# ROTA PRINCIPAL E HEALTH CHECKS
+# ================================
+
+@app.route('/')
+def home():
+    """Página inicial com informações da API"""
     return jsonify({
-        'service': 'Google Sheets API Server',
-        'version': '3.0',
-        'status': 'running',
+        'message': '🚀 Sheets App API está funcionando!',
+        'version': '1.0.0',
         'endpoints': {
-            'api': {
-                'sheets_data': '/api/sheets/data?worksheet=<name>',
-                'worksheets': '/api/sheets/worksheets',
-                'info': '/api/sheets/info'
-            },
             'debug': {
-                'full': '/debug/full',
-                'environment': '/debug/environment', 
-                'credentials': '/debug/credentials',
-                'sheets': '/debug/sheets',
-                'test_write': '/debug/test-write'
+                '/debug/environment': 'Verificar variáveis de ambiente',
+                '/debug/credentials': 'Testar credenciais',
+                '/debug/sheets': 'Testar conexão com Google Sheets',
+                '/debug/full': 'Verificação completa',
+                '/debug/status': 'Status atual da conexão'
             },
-            'main': {
-                'health': '/health',
-                'upload': '/upload',
-                'index': '/'
+            'api': {
+                '/api/sheets/info': 'Informações da planilha',
+                '/api/sheets/worksheets': 'Listar abas',
+                '/api/sheets/data': 'Obter dados',
+                '/api/upload/photos': 'Upload de fotos'
             }
         },
-        'sheets_status': sheets_status,
-        'client_html_compatible': True
+        'timestamp': datetime.now().isoformat()
     })
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Endpoint de health check para o Render"""
+    try:
+        # Verificação básica de saúde
+        env_ok = os.getenv('GOOGLE_SHEETS_CREDENTIALS') is not None
+        sheets_ok = sheets_status.get('initialized', False)
+        
+        status = 'healthy' if (env_ok and sheets_ok) else 'degraded'
+        
+        return jsonify({
+            'status': status,
+            'timestamp': datetime.now().isoformat(),
+            'details': {
+                'environment_configured': env_ok,
+                'sheets_connected': sheets_ok,
+                'last_test_time': sheets_status.get('last_test_time')
+            }
+        }), 200 if status == 'healthy' else 503
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
+
+# ================================
+# CONFIGURAÇÃO E INICIALIZAÇÃO
+# ================================
+
 if __name__ == '__main__':
-    log_step("STARTUP", "🚀 Iniciando Google Sheets API Server v3.0...")
+    # Inicialização automática ao iniciar o servidor
+    log_step("APP_STARTUP", "🚀 Iniciando Sheets App API...")
     
-    # Teste inicial
-    log_step("STARTUP", "🔍 Executando teste inicial...")
-    initial_test = test_google_sheets_connection()
+    # Verificar ambiente
+    env_check = check_environment_variables()
     
-    if initial_test.get('success', False):
-        log_step("STARTUP", "✅ Google Sheets inicializado com sucesso!")
+    if env_check['all_found']:
+        log_step("APP_STARTUP", "✅ Todas as variáveis de ambiente encontradas")
+        
+        # Testar conexão em background
+        try:
+            test_result = test_google_sheets_connection()
+            if test_result['success']:
+                log_step("APP_STARTUP", "🎉 Conexão com Google Sheets estabelecida com sucesso!")
+            else:
+                log_step("APP_STARTUP", f"⚠️ Conexão falhou: {test_result.get('error', 'Erro desconhecido')}", False)
+        except Exception as e:
+            log_step("APP_STARTUP", f"⚠️ Erro durante inicialização: {str(e)}", False)
     else:
-        log_step("STARTUP", f"⚠️ Falha na inicialização - {initial_test.get('error', 'Erro desconhecido')}", False)
+        log_step("APP_STARTUP", f"❌ Variáveis ausentes: {env_check['missing_vars']}", False)
     
+    # Iniciar servidor
     port = int(os.environ.get('PORT', 5000))
-    log_step("STARTUP", f"🌐 Servidor API rodando na porta {port}")
+    log_step("APP_STARTUP", f"🌐 Servidor iniciado na porta {port}")
     
-    app.run(debug=False, host='0.0.0.0', port=port)
+    app.run(host='0.0.0.0', port=port, debug=False)
