@@ -798,7 +798,28 @@
         function formatDate(dateString) {
             return new Date(dateString).toLocaleString('pt-BR');
         }
+        // Na função testConnection(), atualize a mensagem de sucesso:
+        showMessage(
+            `✅ <strong>Conexão Estabelecida!</strong><br>
+            Sheets: ${result.summary.sheets_ok ? '✅' : '❌'} | 
+            Cloudinary: ✅ (Upload disponível)<br>
+            Tempo: ${result.duration_seconds?.toFixed(2)}s`,
+            'success'
+        );
         
+        // Atualize o tratamento de URLs do Cloudinary na tabela:
+        // Na função renderTable(), atualize o tratamento de URLs:
+        if (typeof cellValue === 'string' && 
+            (cellValue.includes('cloudinary.com') || cellValue.includes('res.cloudinary.com'))) {
+            // Cloudinary URL - mostrar imagem otimizada
+            tableHTML += `
+                <td class="cell-url">
+                    <img src="${cellValue}" alt="Imagem" class="cell-image" 
+                        onclick="showImageModal('${cellValue}')">
+                    <br><a href="${cellValue}" target="_blank">Ver original</a>
+                </td>
+            `;
+        }
         function showMessage(message, type = 'success', duration = 5000) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `status-message status-${type}`;
