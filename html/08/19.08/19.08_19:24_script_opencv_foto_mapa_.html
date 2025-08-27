@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Câmara e Geolocalização</title>
+</head>
+<body>
+    <h1>Tirar Foto com Geolocalização</h1>
+    <video id="videoElement" autoplay></video>
+    <button id="captureBtn">Tirar Foto</button>
+    <div id="output"></div>
+
+    <script>
+        const video = document.getElementById('videoElement');
+        const captureBtn = document.getElementById('captureBtn');
+        const output = document.getElementById('output');
+
+        let stream = null; // Para armazenar o stream da câmara
+
+        // 1. Acessar a câmara
+        function startCamera() {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(s) {
+                        stream = s;
+                        video.srcObject = stream;
+                    })
+                    .catch(function(err) {
+                        console.error("Erro ao aceder à câmara: ", err);
+                        output.innerHTML = "Erro ao aceder à câmara. Verifique as permissões.";
+                    });
+            } else {
+                output.innerHTML = "Seu navegador não suporta a API de câmara.";
+            }
+        }
+
+        // 2. Acessar a geolocalização
+        function getGeolocation() {
+            return new Promise((resolve, reject) => {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const coords = {
+                                latitude: position.coords.latitude,
+                                longitude: position.coords.longitude
+                            };
+                            resolve(coords);
+                        },
+                        (error) => {
+                            console.error("Erro ao obter a geolocalização: ", error);
+                            reject(error);
+                        }
+                    );
+                } else {
+                    reject("Geolocalização não suportada neste navegador.");
+                }
+            });
+        }
+
+        // 3. Lidar com o clique do botão
+        captureBtn.addEventListener('click', async function() {
+            if (!stream) {
+                output.innerHTML = "A câmara não está ativa.";
+                return;
+            }
+
+            // Cria um canvas para desenhar o frame da câmara
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Obtém os dados da foto
+            const photoDataUrl = canvas.toDataURL('image/jpeg');
+
+            try {
+                // Obtém as coordenadas
+                const coords = await getGeolocation();
+                output.innerHTML = `
+                    <p>Foto capturada!</p>
+                    <p>Latitude: ${coords.latitude.toFixed(4)}</p>
+                    <p>Longitude: ${coords.longitude.toFixed(4)}</p>
+                    <img src="${photoDataUrl}" alt="Foto Capturada" width="200">
+                `;
+                
+                // Agora, você pode enviar a photoDataUrl e as coordenadas para um servidor
+                // fetch('/caminho/para/seu/servidor', { method: 'POST', body: JSON.stringify({ photo: photoDataUrl, coords: coords }) });
+
+            } catch (error) {
+                output.innerHTML = `Erro: ${error}`;
+            }
+        });
+
+        // Inicia o processo quando a página carrega
+        startCamera();
+    </script>
+</body>
+</html>

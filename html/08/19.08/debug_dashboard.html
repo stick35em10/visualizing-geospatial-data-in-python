@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Debug Dashboard - Google Sheets</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .server-config {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border-left: 5px solid #007bff;
+        }
+        
+        .server-config h3 {
+            color: #007bff;
+            margin-bottom: 15px;
+        }
+        
+        .server-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .server-option {
+            background: #e9ecef;
+            padding: 10px 15px;
+            border-radius: 25px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .server-option:hover {
+            background: #dee2e6;
+        }
+        
+        .server-option.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+        
+        #customUrl {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 16px;
+        }
+        
+        #customUrl:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        .debug-section {
+            margin: 30px 0;
+            background: #f8f9fa;
+            border-radius: 15px;
+            overflow: hidden;
+            border: 1px solid #dee2e6;
+        }
+        
+        .debug-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .debug-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        
+        .debug-content {
+            padding: 20px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.4);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.success { background: linear-gradient(135deg, #28a745, #20c997); }
+        .btn.warning { background: linear-gradient(135deg, #ffc107, #ffb300); }
+        .btn.danger { background: linear-gradient(135deg, #dc3545, #c82333); }
+        
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        .status-success { background: #28a745; }
+        .status-error { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+        .status-loading { background: #6c757d; }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .result-box {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #007bff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .result-success { border-left-color: #28a745; background: #f8fff9; }
+        .result-error { border-left-color: #dc3545; background: #fff8f8; }
+        .result-warning { border-left-color: #ffc107; background: #fffdf5; }
+        
+        .json-viewer {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .log-viewer {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+        
+        .timestamp {
+            color: #718096;
+            font-size: 0.9em;
+        }
+        
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin: 20px 0;
+        }
+        
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            margin: 0 5px;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        .step.completed {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+        
+        .step.failed {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+        
+        .step.current {
+            background: #cce7ff;
+            border-color: #007bff;
+            color: #004085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Debug Dashboard</h1>
+            <p>Diagnóstico completo do Google Sheets API</p>
+        </div>
+        
+        <div class="content">
+            <!-- Configuração do Servidor -->
+            <div class="server-config">
+                <h3>🌐 Configuração do Servidor</h3>
+                <div class="server-options">
+                    <div class="server-option active" data-url="https://visualizing-geospatial-data-in-python.onrender.com">
+                        🚀 Render (Produção)
+                    </div>
+                    <div class="server-option" data-url="http://localhost:5000">
+                        💻 Local (Desenvolvimento)
+                    </div>
+                    <div class="server-option" data-url="custom">
+                        ⚙️ URL Personalizada
+                    </div>
+                </div>
+                <input type="text" id="customUrl" placeholder="Digite a URL personalizada..." style="display: none;">
+                <p><strong>URL Atual:</strong> <span id="currentUrl">https://visualizing-geospatial-data-in-python.onrender.com</span></p>
+            </div>
+            
+            <!-- Controles Principais -->
+            <div style="text-align: center; margin: 30px 0;">
+                <button class="btn" id="quickTestBtn">⚡ Teste Rápido</button>
+                <button class="btn success" id="fullDebugBtn">🔍 Debug Completo</button>
+                <button class="btn warning" id="refreshLogsBtn">📄 Atualizar Logs</button>
+                <button class="btn danger" id="clearResultsBtn">🗑️ Limpar Resultados</button>
+            </div>
+            
+            <!-- Progresso dos Testes -->
+            <div class="progress-steps" id="progressSteps" style="display: none;">
+                <div class="step" id="step1">
+                    <strong>1. Ambiente</strong><br>
+                    <small>Variáveis de ambiente</small>
+                </div>
+                <div class="step" id="step2">
+                    <strong>2. Credenciais</strong><br>
+                    <small>Parse do JSON</small>
+                </div>
+                <div class="step" id="step3">
+                    <strong>3. Conexão</strong><br>
+                    <small>Google Sheets API</small>
+                </div>
+            </div>
+            
+            <!-- Seção: Teste de Saúde -->
+            <div class="debug-section">
+                <div class="debug-header">
+                    <h3>💓 Teste de Saúde do Servidor</h3>
+                    <button class="btn" id="healthTestBtn">Testar</button>
+                </div>
+                <div class="debug-content" id="healthResult">
+                    <p>Clique em "Testar" para verificar se o servidor está online.</p>
+                </div>
+            </div>
+            
+            <!-- Seção: Variáveis de Ambiente -->
+            <div class="debug-section">
+                <div class="debug-header">
+                    <h3>🔧 Variáveis de Ambiente</h3>
+                    <button class="btn" id="envTestBtn">Verificar</button>
+                </div>
+                <div class="debug-content" id="envResult">
+                    <p>Verifica se as variáveis GOOGLE_SHEETS_CREDENTIALS e SPREADSHEET_ID estão definidas.</p>
+                </div>
+            </div>
+            
+            <!-- Seção: Credenciais -->
+            <div class="debug-section">
+                <div class="debug-header">
+                    <h3>🔐 Teste de Credenciais</h3>
+                    <button class="btn" id="credsTestBtn">Testar</button>
+                </div>
+                <div class="debug-content" id="credsResult">
+                    <p>Verifica se as credenciais JSON estão no formato correto.</p>
+                </div>
+            </div>
+            
+            <!-- Seção: Conexão Google Sheets -->
+            <div class="debug-section">
+                <div class="debug-header">
+                    <h3>📊 Conexão Google Sheets</h3>
+                    <button class="btn" id="sheetsTestBtn">Testar</button>
+                </div>
+                <div class="debug-content" id="sheetsResult">
+                    <p>Testa a autenticação e acesso à planilha.</p>
+                </div>
+            </div>
+            
+            <!-- Seção: Logs do Servidor -->
+            <div class="debug-section">
+                <div class="debug-header">
+                    <h3>📝 Logs do Servidor</h3>
+                    <button class="btn" id="logsBtn">Carregar Logs</button>
+                </div>
+                <div class="debug-content" id="logsResult">
+                    <p>Visualiza os logs detalhados do servidor.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let SERVER_URL = 'https://visualizing-geospatial-data-in-python.onrender.com';
+        
+        // Elementos DOM
+        const serverOptions = document.querySelectorAll('.server-option');
+        const customUrlInput = document.getElementById('customUrl');
+        const currentUrlSpan = document.getElementById('currentUrl');
+        const progressSteps = document.getElementById('progressSteps');
+        
+        // Configuração do servidor
+        serverOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                serverOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                const url = this.dataset.url;
+                if (url === 'custom') {
+                    customUrlInput.style.display = 'block';
+                    customUrlInput.focus();
+                } else {
+                    customUrlInput.style.display = 'none';
+                    SERVER_URL = url;
+                    currentUrlSpan.textContent = url;
+                }
+            });
+        });
+        
+        customUrlInput.addEventListener('input', function() {
+            SERVER_URL = this.value;
+            currentUrlSpan.textContent = this.value || 'URL personalizada não definida';
+        });
+        
+        // Funções utilitárias
+        function showLoading(containerId) {
+            document.getElementById(containerId).innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div class="loading-spinner"></div>
+                    <p>Carregando...</p>
+                </div>
+            `;
+        }
+        
+        function showResult(containerI

@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Google Sheets Data Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        /* Server Configuration */
+        .server-config {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .server-config h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            font-size: 1.3rem;
+        }
+        
+        .server-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .server-option {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .server-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+        
+        .server-option.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+        }
+        
+        #customUrl {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        #customUrl:focus {
+            border-color: #007bff;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+        }
+        
+        .current-url {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #28a745;
+            font-family: 'Monaco', 'Consolas', monospace;
+            word-break: break-all;
+        }
+        
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 18px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,123,255,0.4);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            box-shadow: 0 4px 15px rgba(40,167,69,0.3);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(135deg, #ffc107, #ffb300);
+            color: #212529;
+            box-shadow: 0 4px 15px rgba(255,193,7,0.3);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            box-shadow: 0 4px 15px rgba(220,53,69,0.3);
+        }
+        
+        /* Worksheet selector */
+        .worksheet-selector {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+        .worksheet-selector label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .worksheet-selector select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .worksheet-selector select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        /* Stats */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            border: 2px solid #dee2e6;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        /* Data Table */
+        .data-container {
+            margin: 30px 0;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+        
+        .table-header {
+            background: linear-gradient(135deg, #495057, #343a40);
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-header h3 {
+            margin: 0;
+            font-size: 1.3rem;
+        }
+        
+        .table-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .table-controls input {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            placeholder-color: rgba(255,255,255,0.7);
+        }
+        
+        .table-controls input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .table-wrapper {
+            max-height: 600px;
+            overflow: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            padding: 15px 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background: #fafafa;
+        }
+        
+        .data-table tr:nth-child(even):hover {
+            background: #f0f0f0;
+        }
+        
+        /* Cell types */
+        .cell-image {
+            max-width: 100px;
+            max-height: 60px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        
+        .cell-image:hover {
+            transform: scale(1.1);
+        }
+        
+        .cell-coordinates {
+            font-family: 'Monaco', 'Consolas', monospace;
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        
+        .cell-timestamp {
+            color: #6c757d;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        
+        .cell-long-text {
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .cell-long-text:hover {
+            background: #e9ecef;
+        }
+        
+        /* Loading */
+        .loading-container {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 18px;
+            color: #6c757d;
+        }
+        
+        /* Error states */
+        .error-container {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            border: 1px solid #f5c6cb;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .error-container h3 {
+            color: #721c24;
+            margin-bottom: 15px;
+        }
+        
+        .error-container p {
+            color: #721c24;
+            margin-bottom: 10px;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        
+        .empty-state h3 {
+            font-size: 2rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Modal for images */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .modal img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 10px;
+        }
+        
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 25px;
+            color: white;
+            font-size: 35px;
+            font-weight: bold;
+            cursor: pointer;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .close:hover {
+            background: rgba(0,0,0,0.8);
+        }
+        
+        /* Filters */
+        .filters-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+        
+        .filters-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #495057;
+        }
+        
+        .filter-group input, .filter-group select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .filter-group input:focus, .filter-group select:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 15px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+            
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .server-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .data-table {
+                font-size: 0.9rem;
+            }
+            
+            .data-table th,
+            .data-table td {
+                padding: 8px 6px;
+            }
+            
+            .table-wrapper {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Google Sheets Data Viewer</h1>
+            <p>Visualize e explore os dados da sua planilha</p>
+        </div>
+        
+        <div class="content">
+            <!-- Server Configuration -->
+            <div class="server-config">
+                <h3>🌐 Configuração do Servidor</h3>
+                <div class="server-options">
+                    <div class="server-option active" data-url="https://visualizing-geospatial-data-in-python.onrender.com">
+                        🚀 Render (Produção)
+                    </div>
+                    <div class="server-option" data-url="http://localhost:5000">
+                        💻 Local (5000)
+                    </div>
+                    <div class="server-option" data-url="http://localhost:5500">
+                        💻 Local (5500)
+                    </div>
+                    <div class="server-option" data-url="custom">
+                        ⚙️ URL Personalizada
+                    </div>
+                </div>
+                <input type="text" id="customUrl" placeholder="Digite a URL personalizada" style="display: none;">
+                <div class="current-url">
+                    <strong>🌐 URL Atual:</strong> <span id="currentUrl">https://visualizing-geospatial-data-in-python.onrender.com</span>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div class="controls">
+                <button class="btn success" id="loadDataBtn">📥 Carregar Dados</button>
+                <button class="btn" id="refreshBtn">🔄 Atualizar</button>
+                <button class="btn warning" id="exportBtn" disabled>📤 Exportar CSV</button>
+                <button class="btn danger" id="clearBtn">🧹 Limpar Visualização</button>
+            </div>
+            
+            <!-- Worksheet Selector -->
+            <div class="worksheet-selector" id="worksheetSelector" style="display: none;">
+                <label for="worksheetSelect">Selecionar Aba da Planilha:</label>
+                <select id="worksheetSelect">
+                    <option value="">Carregando abas...</option>
+                </select>
+            </div>
+            
+            <!-- Stats -->
+            <div class="stats-container" id="statsContainer" style="display: none;">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalRows">0</div>
+                    <div class="stat-label">Total de Linhas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="totalColumns">0</div>
+                    <div class="stat-label">Total de Colunas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="lastUpdate">---</div>
+                    <div class="stat-label">Última Atualização</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="dataSize">0 KB</div>
+                    <div class="stat-label">Tamanho dos Dados</div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters-container" id="filtersContainer" style="display: none;">
+                <h4>🔍 Filtros e Busca</h4>
+                <div class="filters-row">
+                    <div class="filter-group">
+                        <label>Buscar em todas as colunas:</label>
+                        <input type="text" id="globalSearch" placeholder="Digite para buscar...">
+                    </div>
+                    <div class="filter-group">
+                        <label>Linhas por página:</label>
+                        <select id="rowsPerPage">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                            <option value="all">Todas</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Ordenar por:</label>
+                        <select id="sortColumn">
+                            <option value="">Sem ordenação</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Ordem:</label>
+                        <select id="sortOrder">
+                            <option value="asc">Crescente</option>
+                            <option value="desc">Decrescente</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Data Container -->
+            <div class="data-container" id="dataContainer">
+                <div class="empty-state">
+                    <h3>📊</h3>
+                    <p>Clique em "Carregar Dados" para visualizar o conteúdo da planilha</p>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="controls" id="paginationContainer" style="display: none;">
+                <button class="btn" id="prevPageBtn" disabled>◀ Anterior</button>
+                <div style="display: flex; align-items: center; justify-content: center; padding: 18px;">
+                    <span id="pageInfo">Página 1 de 1</span>
+                </div>
+                <button class="btn" id="nextPageBtn" disabled>Próxima ▶</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Modal -->
+    <div id="imageModal" class="modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="Imagem">
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let SERVER_URL = 'https://visualizing-geospatial-data-in-python.onrender.com';
+        let allData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let rowsPerPage = 25;
+        let worksheets = [];
+        let currentWorksheet = '';
+        
+        // DOM Elements
+        const serverOptions = document.querySelectorAll('.server-option');
+        const customUrlInput = document.getElementById('customUrl');
+        const currentUrlSpan = document.getElementById('currentUrl');
+        const loadDataBtn = document.getElementById('loadDataBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const exportBtn = document.getElementById('exportBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const worksheetSelector = document.getElementById('worksheetSelector');
+        const worksheetSelect = document.getElementById('worksheetSelect');
+        const statsContainer = document.getElementById('statsContainer');
+        const filtersContainer = document.getElementById('filtersContainer');
+        const dataContainer = document.getElementById('dataContainer');
+        const paginationContainer = document.getElementById('paginationContainer');
+        const globalSearch = document.getElementById('globalSearch');
+        const rowsPerPageSelect = document.getElementById('rowsPerPage');
+        const sortColumn = document.getElementById('sortColumn');
+        const sortOrder = document.getElementById('sortOrder');
+        const prevPageBtn = document.getElementById('prevPageBtn');
+        const nextPageBtn = document.getElementById('nextPageBtn');
+        const pageInfo = document.getElementById('pageInfo');
+        
+        // Server configuration
+        serverOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                serverOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                const url = this.dataset.url;
+                if (url === 'custom') {
+                    customUrlInput.style.display = 'block';
+                    customUrlInput.focus();
+                } else {
+                    customUrlInput.style.display = 'none';
+                    SERVER_URL = url;
+                    currentUrlSpan.textContent = url;
+                }
+            });
+        });
+        
+        customUrlInput.addEventListener('input', function() {
+            const url = this.value.trim();
+            SERVER_URL = url;
+            currentUrlSpan.textContent = url || 'URL personalizada não definida';
+        });
+        
+        // API Functions
+        async function makeRequest(endpoint, method = 'GET', data = null) {
+            try {
+                const config = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                };
+                
+                if (data) {
+                    config.body = JSON.stringify(data);
+                }
+                
+                const response = await fetch(`${SERVER_URL}${endpoint}`, config);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                return await response.json();
+            } catch (error) {
+                throw new Error(`Erro de conexão: ${error.message}`);
+            }
+        }
+        
+        // Loading state
+        function showLoading(message = 'Carregando dados...') {
+            dataContainer.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${message}</div>
+                </div>
+            `;
+        }
+        
+        // Error state
+        function showError(title, message, suggestion = '') {
+            dataContainer.innerHTML = `
+                <div class="error-container">
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                    ${suggestion ? `<p><strong>Sugestão:</strong> ${suggestion}</p>` : ''}
+                    <button class="btn" onclick="window.open('${SERVER_URL}/debug', '_blank')">
+                        🔍 Ir para Debug Dashboard
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Load worksheets
+        async function loadWorksheets() {
+            try {
+                const result = await makeRequest('/debug/sheets');
+                if (result.success && result.worksheet_names) {
+                    worksheets = result.worksheet_names;
+                    worksheetSelect.innerHTML = '';
+                    
+                    worksheets.forEach((name, index) => {
+                        const option = document.createElement('option');
+                        option.value = name;
+                        option.textContent = name;
+                        if (index === 0) option.selected = true;
+                        worksheetSelect.appendChild(option);
+                    });
+                    
+                    currentWorksheet = worksheets[0] || '';
+                    worksheetSelector.style.display = 'block';
+                    return true;
+                } else {
+                    throw new Error('Não foi possível carregar as abas da planilha');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar worksheets:', error);
+                return false;
+            }
+        }
+        
+        // Load data from sheets
+        async function loadData() {
+            showLoading('Conectando com Google Sheets...');
+            loadDataBtn.disabled = true;
+            
+            try {
+                // First load worksheets if not loaded
+                if (worksheets.length === 0) {
+                    const worksheetsLoaded = await loadWorksheets();
+                    if (!worksheetsLoaded) {
+                        throw new Error('Falha ao carregar abas da planilha');
+                    }
+                }
+                
+                showLoading('Carregando dados da planilha...');
+                
+                // Get data from the selected worksheet
+                const worksheet = currentWorksheet || worksheets[0];
+                const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(worksheet)}`);
+                
+                if (result.success && result.data) {
+                    allData = result.data;
+                    filteredData = [...allData];
+                    
+                    updateStats();
+                    updateSortOptions();
+                    renderTable();
+                    
+                    statsContainer.style.display = 'grid';
+                    filtersContainer.style.display = 'block';
+                    exportBtn.disabled = false;
+                    
+                    showSuccess('Dados carregados com sucesso!');
+                } else {
+                    throw new Error(result.error || 'Dados não encontrados');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                showError(
+                    '❌ Erro ao Carregar Dados',
+                    error.message,
+                    'Verifique se o servidor está online e as credenciais estão corretas.'
+                );
+            } finally {
+                loadDataBtn.disabled = false;
+            }
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const totalRows = allData.length;
+            const totalColumns = allData.length > 0 ? Object.keys(allData[0]).length : 0;
+            const dataSize = new Blob([JSON.stringify(allData)]).size;
+            
+            document.getElementById('totalRows').textContent = totalRows.toLocaleString();
+            document.getElementById('totalColumns').textContent = totalColumns;
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
+            document.getElementById('dataSize').textContent = formatBytes(dataSize);
+        }
+        
+        // Update sort options
+        function updateSortOptions() {
+            if (allData.length === 0) return;
+            
+            const columns = Object.keys(allData[0]);
+            sortColumn.innerHTML = '<option value="">Sem ordenação</option>';
+            
+            columns.forEach(column => {
+                const option = document.createElement('option');
+                option.value = column;
+                option.textContent = column;
+                sortColumn.appendChild(option);
+            });
+        }
+        
+        // Render table
+        function renderTable() {
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = rowsPerPage === 'all' ? filteredData.length : startIndex + parseInt(rowsPerPage);
+            const pageData = filteredData.slice(startIndex, endIndex);
+            
+            if (pageData.length ===
