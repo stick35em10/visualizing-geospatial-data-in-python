@@ -2,11 +2,31 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     see foto saved
     como selecionar e visualizar as imagens gravadas
 
-    
+        27.08.2025
+
+            05:[59, 41, 30, 00]
+                git add app.py cmd.txt html/08.2025/ README.md
+                git commit -m " 27.08, 5:59 fixed_complete_server serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01
+                
+                git checkout 01_03_01_Plotting_view_2_01
+
+                cp -r app/27.08/fixed_complete_server.py app.py
+
+                git add app.py cmd.txt html/24.08/ app/27.08/ html/08/ README.md
+                git commit -m " 27.08, 5:41 fixed_complete_server serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_02
+
+                git branch 01_03_01_Plotting_view_2_02 
+                git checkout 01_03_01_Plotting_view_2_02
+                git add check_drives.py check_drive.py deepseek_python_20250825_81dd1c.py app.py html/24.08/ README.md cmd.txt requirements_for_render.txt
+                git commit -m " 25.08, 15:33 serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_02
+
         25.08.2025
             15:33
                 cp -r deepseek_python_20250825_285b55.py check_drive.py
-                
+
                 git add check_drives.py check_drive.py deepseek_python_20250825_81dd1c.py app.py html/24.08/ README.md cmd.txt requirements_for_render.txt
                 git commit -m " 25.08, 15:33 serviço do Google Cloud que não tem permissão para armazenar arquivos no Google Drive"
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01
