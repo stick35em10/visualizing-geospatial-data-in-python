@@ -630,7 +630,26 @@ def upload_photos():
             'message': 'Erro no processamento do upload',
             'error': str(e)
         }), 500
+
+# Adicione esta função para debug
+@app.route('/debug/cloudinary', methods=['GET'])
+def debug_cloudinary():
+    """Testa a configuração do Cloudinary"""
+    try:
+        # Verificar se as variáveis de ambiente estão definidas
+        cloud_name = os.getenv('CLOUDINARY_CLOUD_NAME')
+        api_key = os.getenv('CLOUDINARY_API_KEY')
+        api_secret = os.getenv('CLOUDINARY_API_SECRET')
         
+        return jsonify({
+            'cloudinary_configured': all([cloud_name, api_key, api_secret]),
+            'cloud_name': cloud_name,
+            'api_key': api_key[:10] + '...' if api_key else None,
+            'api_secret': api_secret[:10] + '...' if api_secret else None
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+            
 @app.route('/debug/service-account-info', methods=['GET'])
 def debug_service_account_info():
     """Retorna o email do service account para configurar no Shared Drive"""
