@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Client v13 — Sheets + Cloudinary</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:0;background:#0b1020;color:#e6ecff}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px;background:#0f1530;border-bottom:1px solid #1c274f;position:sticky;top:0;z-index:10}
+    h1{font-size:18px;margin:0}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    select, input, button{background:#11183a;color:#e6ecff;border:1px solid #263276;border-radius:10px;padding:10px 12px}
+    button{cursor:pointer}
+    button[disabled]{opacity:.5;cursor:not-allowed}
+    main{padding:20px}
+    .status{margin:12px 0;padding:14px;border-radius:12px;border:1px solid #2a3a85;background:#0e1433}
+    .status.success{border-color:#1f8f55;background:#0e2a1b}
+    .status.error{border-color:#d43c3c;background:#2a0e14}
+    .status.warn{border-color:#caa53b;background:#2a230e}
+    .grid{display:grid;gap:14px}
+    .panel{padding:16px;border:1px solid #21306d;background:#0e1433;border-radius:14px}
+    .table-wrapper{overflow:auto;border-radius:12px;border:1px solid #24327b}
+    table{width:100%;border-collapse:collapse;background:#0b1020}
+    thead th{position:sticky;top:0;background:#0f1638;border-bottom:1px solid #24327b}
+    th,td{padding:8px 10px;border-bottom:1px dashed #1b244f;vertical-align:top}
+    .cell-url img{max-width:120px;max-height:90px;border-radius:10px;border:1px solid #2a3a85}
+    .controls{display:flex;gap:8px;align-items:center;margin-bottom:10px}
+    .note{font-size:12px;opacity:.8}
+    .banner{position:sticky;top:62px;margin:-10px 0 10px;padding:10px 12px;border-radius:10px}
+    .banner.warn{background:#2a230e;border:1px solid #caa53b}
+    .upload-form{display:grid;gap:10px}
+    .upload-form label{font-weight:bold}
+    .upload-form input, .upload-form textarea{background:#11183a;color:#e6ecff;border:1px solid #263276;border-radius:8px;padding:8px}
+    .upload-actions{display:flex;gap:10px;margin-top:15px}
+    #imageGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:15px;margin-top:15px}
+    .image-card{background:#0e1433;border:1px solid #21306d;border-radius:12px;padding:15px;overflow:hidden}
+    .image-card img{width:100%;height:200px;object-fit:cover;border-radius:8px;margin-bottom:10px}
+    .image-card .info{font-size:13px;opacity:0.9}
+    .image-card .actions{margin-top:10px;display:flex;gap:8px}
+    .image-card .actions button{padding:6px 12px;font-size:12px}
+    .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center}
+    .modal-content{max-width:90vw;max-height:90vh}
+    .modal-content img{max-width:100%;max-height:100%;object-fit:contain}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Client v13 — Sheets + Cloudinary</h1>
+    <div class="row">
+      <select id="serverSelect">
+        <option value="">Escolha o servidor…</option>
+        <option value="http://localhost:8000">http://localhost:8000</option>
+        <option value="https://seu-servidor.exemplo">https://seu-servidor.exemplo</option>
+      </select>
+      <button id="btnTest">🔗 Testar Conexão</button>
+      <button id="btnLoad" disabled>📑 Carregar Abas</button>
+      <button id="btnUpload" disabled>📸 Upload Fotos</button>
+      <button id="btnImages" disabled>🖼️ Gerenciar Imagens</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <div id="banner" class="banner warn" style="display:none"></div>
+    <div id="status" class="status">Selecione um servidor e clique em <strong>Testar Conexão</strong>.</div>
+    <div class="panel">
+      <div class="controls">
+        <label>Aba:</label>
+        <select id="sheetSelect" disabled></select>
+        <input id="search" placeholder="Buscar…" />
+        <select id="entries">
+          <option value="25">25</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+          <option value="all">Todas</option>
+        </select>
+        <span class="note" id="currentUrl"></span>
+      </div>
+      <div id="data"></div>
+    </div>
+
+    <!-- Image Management Panel (Hidden by default) -->
+    <div id="imagePanel" class="panel" style="display:none;">
+      <h3>🖼️ Gerenciamento de Imagens</h3>
+      <div class="controls">
+        <button onclick="loadImages()">🔄 Atualizar Lista</button>
+        <button onclick="toggleImagePanel()">❌ Fechar</button>
+        <input id="imageSearch" placeholder="Buscar imagens..." />
+      </div>
+      <div id="imageGrid"></div>
+    </div>
+
+    <!-- Upload Form Modal (Hidden by default) -->
+    <div id="uploadModal" class="panel" style="display:none;">
+      <h3>📸 Upload de Fotos</h3>
+      <form id="uploadForm">
+        <div class="upload-form">
+          <label>Título:</label>
+          <input type="text" id="uploadTitle" placeholder="Título da foto" required>
+          
+          <label>Descrição:</label>
+          <textarea id="uploadDescription" placeholder="Descrição opcional" rows="3"></textarea>
+          
+          <label>Aba de destino:</label>
+          <input type="text" id="uploadWorksheet" value="Imagens" placeholder="Nome da aba">
+          
+          <label>Fotos:</label>
+          <input type="file" id="uploadFiles" multiple accept="image/*" required>
+          
+          <div class="upload-actions">
+            <button type="submit">📤 Enviar Fotos</button>
+            <button type="button" onclick="toggleUploadModal()">❌ Cancelar</button>
+          </div>
+        </div>
+      </form>
+      <div id="uploadProgress"></div>
+    </div>
+  </main>
+
+  <script>
+    // ------- State -------
+    let SERVER_URL = "";
+    let isConnected = false;
+    let allData = [];
+    let allImages = [];
+    const els = {
+      serverSelect: document.getElementById('serverSelect'),
+      btnTest: document.getElementById('btnTest'),
+      btnLoad: document.getElementById('btnLoad'),
+      btnUpload: document.getElementById('btnUpload'),
+      btnImages: document.getElementById('btnImages'),
+      status: document.getElementById('status'),
+      banner: document.getElementById('banner'),
+      currentUrl: document.getElementById('currentUrl'),
+      data: document.getElementById('data'),
+      sheetSelect: document.getElementById('sheetSelect'),
+      search: document.getElementById('search'),
+      entries: document.getElementById('entries'),
+      imagePanel: document.getElementById('imagePanel'),
+      uploadModal: document.getElementById('uploadModal'),
+      imageGrid: document.getElementById('imageGrid'),
+      imageSearch: document.getElementById('imageSearch'),
+    };
+
+    function showMessage(html, kind='info', timeout=0){
+      els.status.className = 'status ' + (kind==='error'?'error':kind==='success'?'success':kind==='warning'?'warn':'')
+      els.status.innerHTML = html;
+      if(timeout>0){ setTimeout(()=>{ els.status.className='status'; els.status.innerHTML=''; }, timeout); }
+    }
+    function showBanner(msg){
+      els.banner.textContent = msg;
+      els.banner.style.display = 'block';
+    }
+    function hideBanner(){ els.banner.style.display = 'none'; }
+    function showLoading(msg){ showMessage(`⏳ ${msg}`); }
+    function resetConnection(){
+      isConnected = false;
+      els.btnLoad.disabled = true;
+      els.btnUpload.disabled = true;
+      els.btnImages.disabled = true;
+      els.sheetSelect.disabled = true;
+      els.data.innerHTML = '';
+    }
+
+    async function makeRequest(path, options={}){
+      const url = SERVER_URL.replace(/\/$/, '') + path;
+      const res = await fetch(url, { ...options, headers: { 'Content-Type': 'application/json', ...(options.headers||{}) } });
+      if(!res.ok){
+        const txt = await res.text().catch(()=>'');
+        throw new Error(`HTTP ${res.status} ${res.statusText} — ${txt}`);
+      }
+      return res.json();
+    }
+
+    // ------- Connection test -------
+    async function testConnection(){
+      if(!SERVER_URL){ showMessage('❌ Selecione um servidor.', 'error'); return; }
+      showLoading('Testando conexão…');
+      els.btnTest.disabled = true;
+      try{
+        const sheetsResult = await makeRequest('/debug/full');
+        const cloudResult  = await makeRequest('/debug/cloudinary');
+
+        const sheetsOK = !!(sheetsResult && sheetsResult.success && sheetsResult.summary && sheetsResult.summary.sheets_ok);
+        const cloudOK  = !!(cloudResult && (cloudResult.cloudinary_configured || cloudResult.success));
+
+        showMessage(`
+          ✅ <strong>Conexão Estabelecida</strong><br>
+          Sheets: ${sheetsOK ? '✅' : '❌'} |
+          Cloudinary: ${cloudOK ? '✅' : '❌'}<br>
+          Tempo: ${Number(sheetsResult?.duration_seconds||0).toFixed(2)}s
+        `, 'success');
+
+        isConnected = sheetsOK;
+        els.btnLoad.disabled = !sheetsOK;
+        els.btnUpload.disabled = !cloudOK;
+        els.btnImages.disabled = !sheetsOK;
+
+        els.sheetSelect.disabled = !sheetsOK;
+        els.currentUrl.textContent = SERVER_URL;
+
+        hideBanner();
+        if(!cloudOK){
+          showBanner('Cloudinary não configurado – Upload desativado');
+          showMessage(`⚠️ <strong>Cloudinary não configurado – Upload desativado</strong><br>Configure as variáveis CLOUDINARY_* no servidor.`, 'warning', 8000);
+        }
+      }catch(err){
+        console.error(err);
+        showMessage(`❌ Falha na conexão: ${err.message}`, 'error');
+        resetConnection();
+      }finally{
+        els.btnTest.disabled = false;
+      }
+    }
+
+    // ------- Load worksheets list -------
+    async function loadWorksheets(){
+      if(!isConnected) return;
+      showLoading('Carregando abas…');
+      try{
+        const info = await makeRequest('/sheets/info');
+        const sheets = info?.worksheets || info?.sheets || [];
+        els.sheetSelect.innerHTML = ['<option value="">Selecione…</option>']
+          .concat(sheets.map(n => `<option value="${n}">${n}</option>`))
+          .join('');
+        showMessage('✅ Abas carregadas.', 'success', 2000);
+      }catch(err){
+        showMessage(`❌ Falha ao carregar abas: ${err.message}`, 'error');
+      }
+    }
+
+    // ------- Load data of a sheet -------
+    async function loadData(sheetName){
+      if(!sheetName) return;
+      showLoading(`Carregando dados da aba “${sheetName}”…`);
+      try{
+        const rows = await makeRequest(`/sheets/${encodeURIComponent(sheetName)}`);
+        allData = Array.isArray(rows) ? rows : (rows?.data || []);
+        renderTable();
+        showMessage(`✅ ${allData.length} linhas carregadas da aba “${sheetName}”.`, 'success', 2500);
+      }catch(err){
+        showMessage(`❌ Erro ao obter dados: ${err.message}`, 'error');
+      }
+    }
+
+    // ------- Render Table -------
+    function renderTable(){
+      if(!allData || allData.length === 0){
+        els.data.innerHTML = `
+          <div class="status">Nenhum dado encontrado nesta aba.</div>
+        `;
+        return;
+      }
+      const headers = Object.keys(allData[0]);
+      let html = `
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+      `;
+      for(const row of allData){
+        html += `<tr>`;
+        for(const h of headers){
+          const cellValue = row[h] ?? '';
+          if (typeof cellValue === 'string' && (cellValue.includes('cloudinary.com') || cellValue.includes('res.cloudinary.com'))){
+            html += `
+              <td class="cell-url">
+                <img src="${cellValue}" alt="Imagem" onclick="showImageModal('${cellValue}')">
+                <br><a href="${cellValue}" target="_blank">Ver original</a>
+              </td>
+            `;
+          } else if (typeof cellValue === 'string' && cellValue.startsWith('http')){
+            html += `<td class="cell-url"><a href="${cellValue}" target="_blank">${cellValue}</a></td>`;
+          } else {
+            html += `<td>${cellValue}</td>`;
+          }
+        }
+        html += `</tr>`;
+      }
+      html += `</tbody></table></div>`;
+      els.data.innerHTML = html;
+    }
+
+    // ------- Image Management Functions -------
+    function showImageModal(url){
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal-content">
+          <img src="${url}" alt="Imagem">
+        </div>
+      `;
+      overlay.onclick = () => document.body.removeChild(overlay);
+      document.body.appendChild(overlay);
+    }
+
+    function toggleImagePanel(){
+      const isVisible = els.imagePanel.style.display !== 'none';
+      els.imagePanel.style.display = isVisible ? 'none' : 'block';
+      if(!isVisible) loadImages();
+    }
+
+    function toggleUploadModal(){
+      const isVisible = els.uploadModal.style.display !== 'none';
+      els.uploadModal.style.display = isVisible ? 'none' : 'block';
+    }
+
+    async function loadImages(){
+      if(!isConnected) return;
+      showLoading('Carregando imagens...');
+      try{
+        const result = await makeRequest('/api/images/list');
+        allImages = result.images || [];
+        renderImages();
+        showMessage(`✅ ${allImages.length} imagens carregadas.`, 'success', 2000);
+      }catch(err){
+        showMessage(`❌ Erro ao carregar imagens: ${err.message}`, 'error');
+      }
+    }
+
+    function renderImages(){
+      if(!allImages || allImages.length === 0){
+        els.imageGrid.innerHTML = '<div class="status">Nenhuma imagem encontrada.</div>';
+        return;
+      }
+
+      const searchTerm = els.imageSearch.value.toLowerCase();
+      const filteredImages = searchTerm ? 
+        allImages.filter(img => 
+          (img.title || '').toLowerCase().includes(searchTerm) ||
+          (img.description || '').toLowerCase().includes(searchTerm) ||
+          (img.filename || '').toLowerCase().includes(searchTerm)
+        ) : allImages;
+
+      els.imageGrid.innerHTML = filteredImages.map(img => `
+        <div class="image-card">
+          <img src="${img.url}" alt="${img.title || img.filename}" onclick="showImageModal('${img.url}')">
+          <div class="info">
+            <strong>${img.title || 'Sem título'}</strong><br>
+            ${img.description || ''}<br>
+            <small>Arquivo: ${img.filename}</small><br>
+            <small>Tamanho: ${img.dimensions} | ${formatFileSize(img.size)}</small><br>
+            <small>Data: ${img.upload_date}</small>
+          </div>
+          <div class="actions">
+            <button onclick="copyImageUrl('${img.url}')">📋 Copiar URL</button>
+            <button onclick="deleteImage('${img.id}')">🗑️ Remover</button>
+            <button onclick="downloadImage('${img.url}', '${img.filename}')">💾 Baixar</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatFileSize(bytes){
+      if(!bytes || bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function copyImageUrl(url){
+      navigator.clipboard.writeText(url).then(() => {
+        showMessage('✅ URL copiada para a área de transferência!', 'success', 2000);
+      }).catch(() => {
+        // Fallback para browsers antigos
+        const textarea = document.createElement('textarea');
+        textarea.value = url;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showMessage('✅ URL copiada!', 'success', 2000);
+      });
+    }
+
+    async function deleteImage(imageId){
+      if(!confirm('Tem certeza que deseja remover esta imagem da planilha?')) return;
+      
+      showLoading('Removendo imagem...');
+      try{
+        await makeRequest(`/api/images/delete/${imageId}`, { method: 'DELETE' });
+        showMessage('✅ Imagem removida com sucesso!', 'success', 2000);
+        loadImages(); // Reload the list
+      }catch(err){
+        showMessage(`❌ Erro ao remover imagem: ${err.message}`, 'error');
+      }
+    }
+
+    function downloadImage(url, filename){
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename || 'imagem.jpg';
+      a.target = '_blank';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // ------- Upload Form Handler -------
+    async function handleUpload(event){
+      event.preventDefault();
+      
+      const title = document.getElementById('uploadTitle').value;
+      const description = document.getElementById('uploadDescription').value;
+      const worksheet = document.getElementById('uploadWorksheet').value;
+      const files = document.getElementById('uploadFiles').files;
+
+      if(!files || files.length === 0){
+        showMessage('❌ Selecione pelo menos uma imagem.', 'error');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('title', title);
+      formData.append('description', description);
+      formData.append('worksheet', worksheet);
+      
+      for(let file of files){
+        formData.append('photos', file);
+      }
+
+      const progressDiv = document.getElementById('uploadProgress');
+      progressDiv.innerHTML = '⏳ Enviando fotos...';
+
+      try{
+        const response = await fetch(`${SERVER_URL}/api/upload/photos`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+        
+        if(result.success){
+          progressDiv.innerHTML = `✅ ${result.uploaded_count} foto(s) enviada(s) com sucesso!`;
+          document.getElementById('uploadForm').reset();
+          setTimeout(() => {
+            toggleUploadModal();
+            loadImages(); // Refresh image list
+          }, 2000);
+        }else{
+          progressDiv.innerHTML = `❌ Erro: ${result.message}`;
+        }
+      }catch(err){
+        progressDiv.innerHTML = `❌ Erro no upload: ${err.message}`;
+      }
+    }
+
+    // ------- Events -------
+    els.serverSelect.addEventListener('change', e=>{
+      SERVER_URL = e.target.value || "";
+      resetConnection();
+      els.currentUrl.textContent = SERVER_URL || '';
+    });
+    els.btnTest.addEventListener('click', testConnection);
+    els.btnLoad.addEventListener('click', loadWorksheets);
+    els.btnUpload.addEventListener('click', toggleUploadModal);
+    els.btnImages.addEventListener('click', toggleImagePanel);
+    els.sheetSelect.addEventListener('change', e=> loadData(e.target.value));
+    els.imageSearch.addEventListener('input', renderImages);
+    document.getElementById('uploadForm').addEventListener('submit', handleUpload);
+    els.search.addEventListener('input', ()=>{
+      const q = els.search.value.trim().toLowerCase();
+      if(!q){ renderTable(); return; }
+      const headers = allData.length? Object.keys(allData[0]) : [];
+      const filtered = allData.filter(r => headers.some(h => String(r[h]??'').toLowerCase().includes(q)));
+      const backup = allData;
+      allData = filtered;
+      renderTable();
+      allData = backup;
+    });
+    els.entries.addEventListener('change', ()=>{
+      const val = els.entries.value;
+      const rows = Array.from(els.data.querySelectorAll('tbody tr'));
+      rows.forEach((tr,idx)=>{
+        tr.style.display = (val==='all' || idx < parseInt(val)) ? '' : 'none';
+      });
+    });
+  </script>
+</body>
+</html>
