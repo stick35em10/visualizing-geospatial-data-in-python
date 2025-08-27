@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Diagnóstico - Google Sheets & Drive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .diagnostic-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            border: 2px solid #dee2e6;
+        }
+        
+        .diagnostic-section h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .status-ok { background: #28a745; }
+        .status-warning { background: #ffc107; }
+        .status-error { background: #dc3545; }
+        .status-unknown { background: #6c757d; }
+        
+        .btn {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,123,255,0.3);
+        }
+        
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+        }
+        
+        .result-box {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .success { border-color: #28a745; background: #f8fff9; }
+        .error { border-color: #dc3545; background: #fff8f8; }
+        .warning { border-color: #ffc107; background: #fffdf0; }
+        
+        .input-group {
+            margin: 15px 0;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .checklist li {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin: 8px 0;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .checklist .icon {
+            margin-right: 12px;
+            font-size: 18px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #28a745, #20c997);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔧 Diagnóstico Completo</h1>
+            <p>Google Sheets & Drive - Resolver Problemas de Conexão</p>
+        </div>
+        
+        <div class="content">
+            <!-- Configuração do Servidor -->
+            <div class="diagnostic-section">
+                <h3>🌐 Configuração do Servidor <span id="serverStatus" class="status-indicator status-unknown"></span></h3>
+                <div class="input-group">
+                    <label>URL do Servidor:</label>
+                    <input type="text" id="serverUrl" value="https://visualizing-geospatial-data-in-python-2.onrender.com" placeholder="URL do seu servidor">
+                </div>
+                <button class="btn" id="testServerBtn">🔍 Testar Servidor</button>
+                <button class="btn" id="testHealthBtn">❤️ Health Check</button>
+                <div id="serverResult" class="result-box" style="display: none;"></div>
+            </div>
+            
+            <!-- Status das Conexões -->
+            <div class="diagnostic-section">
+                <h3>🔗 Status das Conexões</h3>
+                <div class="grid-2">
+                    <div>
+                        <h4>Google Sheets <span id="sheetsStatus" class="status-indicator status-unknown"></span></h4>
+                        <ul class="checklist" id="sheetsChecklist">
+                            <li><span class="icon">⏳</span> Aguardando teste...</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Google Drive <span id="driveStatus" class="status-indicator status-unknown"></span></h4>
+                        <ul class="checklist" id="driveChecklist">
+                            <li><span class="icon">⏳</span> Aguardando teste...</li>
+                        </ul>
+                    </div>
+                </div>
+                <button class="btn" id="testConnectionsBtn">🔗 Testar Todas as Conexões</button>
+                <div id="connectionsResult" class="result-box" style="display: none;"></div>
+            </div>
+            
+            <!-- Teste de Planilha -->
+            <div class="diagnostic-section">
+                <h3>📊 Teste de Planilha <span id="sheetTestStatus" class="status-indicator status-unknown"></span></h3>
+                <div class="input-group">
+                    <label>ID da Planilha:</label>
+                    <input type="text" id="spreadsheetId" placeholder="1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy">
+                </div>
+                <button class="btn" id="testSheetAccessBtn">📋 Testar Acesso à Planilha</button>
+                <button class="btn" id="listWorksheetsBtn">📄 Listar Abas</button>
+                <div id="sheetTestResult" class="result-box" style="display: none;"></div>
+            </div>
+            
+            <!-- Teste de Drive -->
+            <div class="diagnostic-section">
+                <h3>💾 Teste de Google Drive <span id="driveTestStatus" class="status-indicator status-unknown"></span></h3>
+                <div class="input-group">
+                    <label>ID da Pasta Drive:</label>
+                    <input type="text" id="folderId" value="1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy" placeholder="ID da pasta no Google Drive">
+                </div>
+                <button class="btn" id="testDriveAccessBtn">🗂️ Testar Acesso ao Drive</button>
+                <button class="btn" id="testUploadBtn">📤 Teste de Upload (imagem pequena)</button>
+                <div id="driveTestResult" class="result-box" style="display: none;"></div>
+            </div>
+            
+            <!-- Diagnóstico Automático -->
+            <div class="diagnostic-section">
+                <h3>🤖 Diagnóstico Automático</h3>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="diagnosticProgress"></div>
+                </div>
+                <div id="diagnosticText">Clique em "Executar Diagnóstico Completo" para iniciar</div>
+                <button class="btn" id="runFullDiagnosticBtn">🚀 Executar Diagnóstico Completo</button>
+                <div id="diagnosticResult" class="result-box" style="display: none;"></div>
+            </div>
+            
+            <!-- Soluções -->
+            <div class="diagnostic-section">
+                <h3>🛠️ Soluções Comuns</h3>
+                <div class="grid-2">
+                    <div>
+                        <h4>Problemas de Servidor</h4>
+                        <ul>
+                            <li>Servidor Render pode estar dormindo (cold start)</li>
+                            <li>Timeout de requisição (aumentar tempo limite)</li>
+                            <li>Problemas de CORS</li>
+                            <li>Variáveis de ambiente não configuradas</li>
+                        </ul>
+                        <button class="btn" id="wakeupServerBtn">⏰ Despertar Servidor</button>
+                    </div>
+                    <div>
+                        <h4>Problemas de Credenciais</h4>
+                        <ul>
+                            <li>Service Account sem permissões</li>
+                            <li>Credenciais JSON malformadas</li>
+                            <li>Planilha não compartilhada</li>
+                            <li>APIs não habilitadas no GCP</li>
+                        </ul>
+                        <button class="btn danger" id="resetConnectionBtn">🔄 Reset Conexões</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Log de Atividades -->
+            <div class="diagnostic-section">
+                <h3>📋 Log de Atividades</h3>
+                <div id="activityLog" class="result-box">
+[Aguardando ações...]
+                </div>
+                <button class="btn" id="clearLogBtn">🧹 Limpar Log</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let SERVER_URL = '';
+        let diagnosticResults = {};
+        
+        // DOM Elements
+        const serverUrlInput = document.getElementById('serverUrl');
+        const serverStatus = document.getElementById('serverStatus');
+        const sheetsStatus = document.getElementById('sheetsStatus');
+        const driveStatus = document.getElementById('driveStatus');
+        const sheetTestStatus = document.getElementById('sheetTestStatus');
+        const driveTestStatus = document.getElementById('driveTestStatus');
+        const activityLog = document.getElementById('activityLog');
+        const diagnosticProgress = document.getElementById('diagnosticProgress');
+        const diagnosticText = document.getElementById('diagnosticText');
+        
+        // Utility functions
+        function logActivity(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
+            activityLog.textContent += logEntry;
+            activityLog.scrollTop = activityLog.scrollHeight;
+        }
+        
+        function updateStatus(element, status, message = '') {
+            element.className = `status-indicator status-${status}`;
+            if (message) logActivity(message, status);
+        }
+        
+        function showResult(elementId, content, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.className = `result-box ${type}`;
+            element.textContent = typeof content === 'object' ? JSON.stringify(content, null, 2) : content;
+            element.style.display = 'block';
+        }
+        
+        function updateChecklist(listId, items) {
+            const list = document.getElementById(listId);
+            list.innerHTML = '';
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.innerHTML = `<span class="icon">${item.icon}</span> ${item.text}`;
+                list.appendChild(li);
+            });
+        }
+        
+        async function makeRequest(endpoint, method = 'GET', data = null, timeout = 30000) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            
+            try {
+                const config = {
+                    method: method,
+                    headers: {},
+                    signal: controller.signal
+                };
+                
+                if (data instanceof FormData) {
+                    config.body = data;
+                } else if (data) {
+                    config.headers['Content-Type'] = 'application/json';
+                    config.body = JSON.stringify(data);
+                }
+                
+                logActivity(`Fazendo requisição: ${method} ${SERVER_URL}${endpoint}`);
+                
+                const response = await fetch(`${SERVER_URL}${endpoint}`, config);
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                logActivity(`Resposta recebida: ${response.status}`);
+                return result;
+                
+            } catch (error) {
+                clearTimeout(timeoutId);
+                if (error.name === 'AbortError') {
+                    throw new Error('Timeout: Servidor demorou muito para responder');
+                }
+                throw error;
+            }
+        }
+        
+        // Test functions
+        async function testServer() {
+            SERVER_URL = serverUrlInput.value.trim();
+            if (!SERVER_URL) {
+                logActivity('URL do servidor não informada', 'error');
+                return;
+            }
+            
+            try {
+                updateStatus(serverStatus, 'warning', 'Testando servidor...');
+                const result = await makeRequest('/', 'GET', null, 15000);
+                
+                if (result.service && result.version) {
+                    updateStatus(serverStatus, 'ok', 'Servidor online e funcionando');
+                    showResult('serverResult', result, 'success');
+                } else {
+                    throw new Error('Resposta inesperada do servidor');
+                }
+            } catch (error) {
+                updateStatus(serverStatus, 'error', `Erro no servidor: ${error.message}`);
+                showResult('serverResult', error.message, 'error');
+            }
+        }
+        
+        async function testHealth() {
+            try {
+                updateStatus(serverStatus, 'warning', 'Verificando saúde do servidor...');
+                const result = await makeRequest('/health', 'GET', null, 10000);
+                
+                showResult('serverResult', result, result.status === 'healthy' ? 'success' : 'warning');
+                logActivity(`Health check: ${result.status}`);
+            } catch (error) {
+                logActivity(`Erro no health check: ${error.message}`, 'error');
+                showResult('serverResult', error.message, 'error');
+            }
+        }
+        
+        async function testConnections() {
+            try {
+                updateStatus(sheetsStatus, 'warning', 'Testando conexões...');
+                updateStatus(driveStatus, 'warning');
+                
+                const result = await makeRequest('/debug/full', 'GET', null, 45000);
+                
+                // Update Sheets status
+                if (result.summary?.sheets_ok) {
+                    updateStatus(sheetsStatus, 'ok', 'Google Sheets: Conectado');
+                    updateChecklist('sheetsChecklist', [
+                        { icon: '✅', text: 'Credenciais válidas' },
+                        { icon: '✅', text: 'Autenticação OK' },
+                        { icon: '✅', text: 'Planilha acessível' },
+                        { icon: '✅', text: `Service Account: ${result.connections?.client_email || 'N/A'}` }
+                    ]);
+                } else {
+                    updateStatus(sheetsStatus, 'error', 'Google Sheets: Erro');
+                    updateChecklist('sheetsChecklist', [
+                        { icon: '❌', text: 'Falha na conexão' },
+                        { icon: '⚠️', text: 'Verificar credenciais' },
+                        { icon: '⚠️', text: 'Verificar permissões' }
+                    ]);
+                }
+                
+                // Update Drive status
+                if (result.summary?.drive_ok) {
+                    updateStatus(driveStatus, 'ok', 'Google Drive: Conectado');
+                    updateChecklist('driveChecklist', [
+                        { icon: '✅', text: 'API Drive ativa' },
+                        { icon: '✅', text: 'Permissões OK' },
+                        { icon: '✅', text: 'Upload disponível' }
+                    ]);
+                } else {
+                    updateStatus(driveStatus, 'warning', 'Google Drive: Limitado');
+                    updateChecklist('driveChecklist', [
+                        { icon: '⚠️', text: 'Acesso limitado' },
+                        { icon: '❌', text: 'Upload pode não funcionar' },
+                        { icon: '💡', text: 'Verificar permissões Drive API' }
+                    ]);
+                }
+                
+                showResult('connectionsResult', result, result.success ? 'success' : 'error');
+                
+            } catch (error) {
+                updateStatus(sheetsStatus, 'error', `Erro nas conexões: ${error.message}`);
+                updateStatus(driveStatus, 'error');
+                showResult('connectionsResult', error.message, 'error');
+            }
+        }
+        
+        async function testSheetAccess() {
+            try {
+                updateStatus(sheetTestStatus, 'warning', 'Testando acesso à planilha...');
+                
+                const spreadsheetId = document.getElementById('spreadsheetId').value.trim();
+                if (spreadsheetId) {
+                    logActivity(`Testando planilha específica: ${spreadsheetId}`);
+                }
+                
+                const result = await makeRequest('/api/sheets/worksheets');
+                
+                if (result.success && result.worksheets) {
+                    updateStatus(sheetTestStatus, 'ok', `Planilha acessível: ${result.worksheets.length} aba(s)`);
+                    showResult('sheetTestResult', result, 'success');
+                } else {
+                    throw new Error(result.error || 'Falha no acesso à planilha');
+                }
+                
+            } catch (error) {
+                updateStatus(sheetTestStatus, 'error', `Erro na planilha: ${error.message}`);
+                showResult('sheetTestResult', error.message, 'error');
+            }
+        }
+        
+        async function listWorksheets() {
+            try {
+                const result = await makeRequest('/api/sheets/worksheets');
+                showResult('sheetTestResult', result, result.success ? 'success' : 'error');
+                
+                if (result.success) {
+                    logActivity(`Abas encontradas: ${result.worksheets.map(w => w.title).join(', ')}`);
+                }
+            } catch (error) {
+                showResult('sheetTestResult', error.message, 'error');
+            }
+        }
+        
+        async function testDriveAccess() {
+            try {
+                updateStatus(driveTestStatus, 'warning', 'Testando acesso ao Drive...');
+                
+                // Criar um teste simples de upload
+                const testData = new FormData();
+                testData.append('title', 'Teste de Diagnóstico');
+                testData.append('description', 'Arquivo de teste para diagnóstico');
+                testData.append('worksheet', 'Teste');
+                
+                // Criar uma imagem pequena de teste (1x1 pixel PNG)
+                const canvas = document.createElement('canvas');
+                canvas.width = 1;
+                canvas.height = 1;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#FF0000';
+                ctx.fillRect(0, 0, 1, 1);
+                
+                canvas.toBlob(blob => {
+                    testData.append('photos', blob, 'test.png');
+                    performDriveTest(testData);
+                }, 'image/png');
+                
+            } catch (error) {
+                updateStatus(driveTestStatus, 'error', `Erro no Drive: ${error.message}`);
+                showResult('driveTestResult', error.message, 'error');
+            }
+        }
+        
+        async function performDriveTest(testData) {
+            try {
+                const result = await makeRequest('/api/upload/photos', 'POST', testData, 60000);
+                
+                if (result.success) {
+                    updateStatus(driveTestStatus, 'ok', 'Google Drive: Upload funcionando');
+                    showResult('driveTestResult', result, 'success');
+                    logActivity(`Teste de upload bem-sucedido: ${result.summary?.successful} arquivo(s)`);
+                } else {
+                    throw new Error(result.error || 'Falha no upload de teste');
+                }
+                
+            } catch (error) {
+                updateStatus(driveTestStatus, 'error', `Erro no teste de Drive: ${error.message}`);
+                showResult('driveTestResult', error.message, 'error');
+            }
+        }
+        
+        async function testUpload() {
+            // Create a simple test file
+            const canvas = document.createElement('canvas');
+            canvas.width = 100;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            
+            // Draw a simple test pattern
+            ctx.fillStyle = '#FF0000';
+            ctx.fillRect(0, 0, 50, 50);
+            ctx.fillStyle = '#00FF00';
+            ctx.fillRect(50, 0, 50, 50);
+            ctx.fillStyle = '#0000FF';
+            ctx.fillRect(0, 50, 50, 50);
+            ctx.fillStyle = '#FFFF00';
+            ctx.fillRect(50, 50, 50, 50);
+            
+            canvas.toBlob(async (blob) => {
+                const formData = new FormData();
+                formData.append('title', 'Teste de Upload de Diagnóstico');
+                formData.append('description', 'Imagem de teste criada pelo diagnóstico');
+                formData.append('worksheet', 'Teste_Diagnostico');
+                formData.append('photos', blob, 'diagnostic_test.png');
+                
+                try {
+                    logActivity('Iniciando teste de upload com imagem de 100x100px');
+                    const result = await makeRequest('/api/upload/photos', 'POST', formData, 120000);
+                    showResult('driveTestResult', result, result.success ? 'success' : 'error');
+                    
+                    if (result.success) {
+                        logActivity(`Upload de teste bem-sucedido!`);
+                    }
+                } catch (error) {
+                    showResult('driveTestResult', error.message, 'error');
+                }
+            }, 'image/png');
+        }
+        
+        async function runFullDiagnostic() {
+            logActivity('=== INICIANDO DIAGNÓSTICO COMPLETO ===', 'info');
+            
+            const steps = [
+                { name: 'Servidor', func: testServer },
+                { name: 'Health Check', func: testHealth },
+                { name: 'Conexões', func: testConnections },
+                { name: 'Planilha', func: testSheetAccess },
+                { name: 'Drive', func: testDriveAccess }
+            ];
+            
+            for (let i = 0; i < steps.length; i++) {
+                const step = steps[i];
+                const progress = ((i + 1) / steps.length) * 100;
+                
+                diagnosticProgress.style.width = progress + '%';
+                diagnosticText.textContent = `Executando: ${step.name}... (${i + 1}/${steps.length})`;
+                
+                try {
+                    await step.func();
+                    await new Promise(resolve => setTimeout(resolve, 1000)); // Pausa entre testes
+                } catch (error) {
+                    logActivity(`Erro no passo ${step.name}: ${error.message}`, 'error');
+                }
+            }
+            
+            diagnosticText.textContent = 'Diagnóstico completo finalizado!';
+            logActivity('=== DIAGNÓSTICO COMPLETO FINALIZADO ===', 'info');
+            
+            // Compile final report
+            const report = {
+                timestamp: new Date().toISOString(),
+                server_url: SERVER_URL,
+                results: {
+                    server: serverStatus.className.includes('ok'),
+                    sheets: sheetsStatus.className.includes('ok'),
+                    drive: driveStatus.className.includes('ok'),
+                    sheet_test: sheetTestStatus.className.includes('ok'),
+                    drive_test: driveTestStatus.className.includes('ok')
+                }
+            };
+            
+            showResult('diagnosticResult', report, 'success');
+        }
+        
+        async function wakeupServer() {
+            logActivity('Tentando despertar servidor...');
+            for (let i = 1; i <= 3; i++) {
+                try {
+                    logActivity(`Tentativa ${i}/3`);
+                    await makeRequest('/health', 'GET', null, 30000);
+                    logActivity('Servidor desperto!', 'ok');
+                    break;
+                } catch (error) {
+                    logActivity(`Tentativa ${i} falhou: ${error.message}`, 'warning');
+                    if (i < 3) {
+                        await new Promise(resolve => setTimeout(resolve, 5000));
+                    }
+                }
+            }
+        }
+        
+        function resetConnection() {
+            logActivity('Resetando todas as conexões...', 'warning');
+            updateStatus(serverStatus, 'unknown');
+            updateStatus(sheetsStatus, 'unknown');
+            updateStatus(driveStatus, 'unknown');
+            updateStatus(sheetTestStatus, 'unknown');
+            updateStatus(driveTestStatus, 'unknown');
+            
+            // Hide all result boxes
+            document.querySelectorAll('.result-box').forEach(box => {
+                box.style.display = 'none';
+            });
+            
+            diagnosticProgress.style.width = '0%';
+            diagnosticText.textContent = 'Conexões resetadas. Execute o diagnóstico novamente.';
+        }
+        
+        function clearLog() {
+            activityLog.textContent = '[Log limpo]\n';
+        }
+        
+        // Event listeners
+        document.getElementById('testServerBtn').addEventListener('click', testServer);
+        document.getElementById('testHealthBtn').addEventListener('click', testHealth);
+        document.getElementById('testConnectionsBtn').addEventListener('click', testConnections);
+        document.getElementById('testSheetAccessBtn').addEventListener('click', testSheetAccess);
+        document.getElementById('listWorksheetsBtn').addEventListener('click', listWorksheets);
+        document.getElementById('testDriveAccessBtn').addEventListener('click', testDriveAccess);
+        document.getElementById('testUploadBtn').addEventListener('click', testUpload);
+        document.getElementById('runFullDiagnosticBtn').addEventListener('click', runFullDiagnostic);
+        document.getElementById('wakeupServerBtn').addEventListener('click', wakeupServer);
+        document.getElementById('resetConnectionBtn').addEventListener('click', resetConnection);
+        document.getElementById('clearLogBtn').addEventListener('click', clearLog);
+        
+        // Initialize
+        serverUrlInput.addEventListener('input', (e) => {
+            SERVER_URL = e.target.value.trim();
+        });
+        
+        // Set initial server URL
+        SERVER_URL = serverUrlInput.value.trim();
+        
+        logActivity('Ferramenta de diagnóstico carregada. Configure a URL do servidor e execute os testes.');
+    </script>
+</body>
+</html>
