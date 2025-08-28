@@ -4,9 +4,11 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
 
         28.08.2025
             
+            7:00
+            NameError: name 'app' is not defined
             [06:48]
                 git add app.py cmd.txt html/08.2025/27 README.md requirements_for_render.txt
-                git commit -m " 27.08, 20:28 TypeError: Cannot read properties of undefined (reading 'successful')at HTMLButtonElement.uploadPhotos (fixed_html_client_cloudinary.html"
+                git commit -m " 28.08, 07:01 NameError: name 'app' is not defined"
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01
 
     see foto saved
