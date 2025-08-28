@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnóstico do Servidor Render</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .server-info {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+        }
+        
+        .status-waiting { border-left: 4px solid #3498db; }
+        .status-processing { border-left: 4px solid #f39c12; }
+        .status-success { border-left: 4px solid #27ae60; }
+        .status-error { border-left: 4px solid #e74c3c; }
+        
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-health { background: linear-gradient(45deg, #27ae60, #229954); }
+        .btn-debug { background: linear-gradient(45deg, #f39c12, #e67e22); }
+        .btn-sheets { background: linear-gradient(45deg, #9b59b6, #8e44ad); }
+        .btn-upload { background: linear-gradient(45deg, #e74c3c, #c0392b); }
+        .btn-full { background: linear-gradient(45deg, #2c3e50, #34495e); }
+        
+        .output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            padding: 8px;
+            border-bottom: 1px solid #34495e;
+        }
+        
+        .log-time {
+            color: #3498db;
+            margin-right: 10px;
+        }
+        
+        .log-success { color: #27ae60; }
+        .log-error { color: #e74c3c; }
+        .log-warning { color: #f39c12; }
+        .log-info { color: #3498db; }
+        
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: #ecf0f1;
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .controls {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🩺 Diagnóstico do Servidor</h1>
+            <p class="subtitle">Teste completo da aplicação Flask no Render</p>
+        </header>
+        
+        <div class="server-info">
+            <h3>📊 Informações do Servidor</h3>
+            <p><strong>URL:</strong> <span id="serverUrl">https://visualizing-geospatial-data-in-python-2.onrender.com</span></p>
+            <p><strong>Status:</strong> <span id="serverStatus">Verificando...</span></p>
+            <p><strong>Última verificação:</strong> <span id="lastCheck">-</span></p>
+        </div>
+        
+        <div class="status-card status-waiting">
+            <h3>📋 Status do Diagnóstico</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%"></div>
+            </div>
+            <p id="diagnosisStatus">Aguardando início do diagnóstico...</p>
+        </div>
+        
+        <div class="controls">
+            <button class="btn-health" onclick="testEndpoint('/health')">Testar Health Check</button>
+            <button class="btn-debug" onclick="testEndpoint('/debug/full')">Teste Completo</button>
+            <button class="btn-sheets" onclick="testEndpoint('/api/sheets/info')">Info Planilha</button>
+            <button class="btn-upload" onclick="testSimpleUpload()">Teste Upload Simples</button>
+            <button class="btn-full" onclick="runFullDiagnosis()">Diagnóstico Completo</button>
+        </div>
+        
+        <div class="output">
+            <h4>📝 Log de Execução:</h4>
+            <div id="logContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const SERVER_BASE_URL = 'https://visualizing-geospatial-data-in-python-2.onrender.com';
+        const logContainer = document.getElementById('logContainer');
+        const serverStatus = document.getElementById('serverStatus');
+        const lastCheck = document.getElementById('lastCheck');
+        const diagnosisStatus = document.getElementById('diagnosisStatus');
+        const progressFill = document.querySelector('.progress-fill');
+        
+        function addLog(message, type = 'info') {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<span class="log-time">[${timeString}]</span> ${message}`;
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        function updateServerStatus(status, type = 'waiting') {
+            serverStatus.textContent = status;
+            serverStatus.className = type;
+            lastCheck.textContent = new Date().toLocaleString();
+        }
+        
+        function updateProgress(percent) {
+            progressFill.style.width = `${percent}%`;
+        }
+        
+        async function testEndpoint(endpoint) {
+            const button = event.target;
+            const originalText = button.textContent;
+            
+            try {
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner"></span> Testando...';
+                
+                addLog(`Iniciando teste: ${endpoint}`, 'info');
+                updateServerStatus('Testando...', 'processing');
+                
+                const startTime = Date.now();
+                const response = await fetch(`${SERVER_BASE_URL}${endpoint}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    signal: AbortSignal.timeout(10000) // 10 segundos timeout
+                });
+                
+                const responseTime = Date.now() - startTime;
+                
+                addLog(`Resposta recebida: HTTP ${response.status} (${responseTime}ms)`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addLog(`✅ Sucesso! Resposta: ${JSON.stringify(data).substring(0, 200)}...`, 'success');
+                    updateServerStatus('Online ✅', 'success');
+                } else {
+                    const errorText = await response.text();
+                    addLog(`❌ Erro HTTP ${response.status}: ${errorText}`, 'error');
+                    updateServerStatus(`Erro ${response.status} ❌`, 'error');
+                }
+                
+            } catch (error) {
+                addLog(`💥 Erro de conexão: ${error.message}`, 'error');
+                updateServerStatus('Offline ❌', 'error');
+                
+                if (error.name === 'TimeoutError') {
+                    addLog('⏰ Timeout: O servidor não respondeu em 10 segundos', 'error');
+                }
+                
+                addLog('🔧 Possíveis soluções:', 'warning');
+                addLog('1. Verifique se o servidor está rodando no Render', 'warning');
+                addLog('2. Confirme as variáveis de ambiente no Render', 'warning');
+                addLog('3. Verifique os logs do servidor no dashboard do Render', 'warning');
+                addLog('4. O servidor pode estar iniciando (aguarde 1-2 minutos)', 'warning');
+                
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+        
+        async function testSimpleUpload() {
+            const button = event.target;
+            const originalText = button.textContent;
+            
+            try {
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner"></span> Testando upload...';
+                
+                addLog('Iniciando teste de upload simples...', 'info');
+                
+                // Criar um arquivo de teste muito pequeno
+                const testContent = 'Este é um arquivo de teste para verificar o upload';
+                const testBlob = new Blob([testContent], { type: 'text/plain' });
+                const testFile = new File([testBlob], 'teste_upload.txt');
+                
+                const formData = new FormData();
+                formData.append('photos', testFile);
+                formData.append('title', 'Teste de Diagnóstico');
+                formData.append('description', 'Upload de teste para verificar funcionamento');
+                formData.append('worksheet', 'Testes');
+                
+                const response = await fetch(`${SERVER_BASE_URL}/api/upload/photos`, {
+                    method: 'POST',
+                    body: formData,
+                    signal: AbortSignal.timeout(15000) // 15 segundos para upload
+                });
+                
+                addLog(`Resposta do upload: HTTP ${response.status}`, 'info');
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    addLog(`✅ Upload bem-sucedido! Mensagem: ${result.message}`, 'success');
+                } else {
+                    const error = await response.json().catch(() => ({ error: 'Erro desconhecido' }));
+                    addLog(`❌ Erro no upload: ${error.error || JSON.stringify(error)}`, 'error');
+                }
+                
+            } catch (error) {
+                addLog(`💥 Erro no upload: ${error.message}`, 'error');
+                
+                if (error.name === 'TimeoutError') {
+                    addLog('⏰ Timeout: O upload demorou muito (15 segundos)', 'error');
+                }
+                
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+        
+        async function runFullDiagnosis() {
+            addLog('🚀 Iniciando diagnóstico completo...', 'info');
+            updateProgress(0);
+            
+            const tests = [
+                { endpoint: '/health', name: 'Health Check' },
+                { endpoint: '/debug/environment', name: 'Variáveis de Ambiente' },
+                { endpoint: '/debug/credentials', name: 'Credenciais' },
+                { endpoint: '/api/sheets/info', name: 'Informações da Planilha' }
+            ];
+            
+            let successCount = 0;
+            
+            for (let i = 0; i < tests.length; i++) {
+                const test = tests[i];
+                const progress = ((i + 1) / tests.length) * 100;
+                updateProgress(progress);
+                
+                addLog(`🔍 Executando teste: ${test.name}`, 'info');
+                diagnosisStatus.textContent = `Executando: ${test.name}`;
+                
+                try {
+                    const response = await fetch(`${SERVER_BASE_URL}${test.endpoint}`, {
+                        method: 'GET',
+                        signal: AbortSignal.timeout(10000)
+                    });
+                    
+                    if (response.ok) {
+                        addLog(`✅ ${test.name}: OK (HTTP ${response.status})`, 'success');
+                        successCount++;
+                    } else {
+                        addLog(`❌ ${test.name}: Erro HTTP ${response.status}`, 'error');
+                    }
+                    
+                } catch (error) {
+                    addLog(`💥 ${test.name}: ${error.message}`, 'error');
+                }
+                
+                // Pequena pausa entre testes
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            
+            updateProgress(100);
+            
+            // Resultado final
+            if (successCount === tests.length) {
+                addLog('🎉 Todos os testes passaram! O servidor está funcionando corretamente.', 'success');
+                diagnosisStatus.textContent = '✅ Todos os testes passaram!';
+                updateServerStatus('Totalmente Operacional ✅', 'success');
+            } else {
+                addLog(`⚠️ ${successCount}/${tests.length} testes passaram. Há problemas no servidor.`, 'warning');
+                diagnosisStatus.textContent = `⚠️ ${successCount}/${tests.length} testes passaram`;
+                updateServerStatus('Com Problemas ⚠️', 'error');
+            }
+            
+            addLog('📋 Resumo do diagnóstico concluído.', 'info');
+        }
+        
+        // Iniciar verificação automática ao carregar a página
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('Página carregada. Clique em "Testar Health Check" para começar.', 'info');
+            updateServerStatus('Aguardando teste...', 'waiting');
+        });
+    </script>
+</body>
+</html>
