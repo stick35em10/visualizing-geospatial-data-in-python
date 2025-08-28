@@ -806,6 +806,233 @@
         const modalImage = document.getElementById('modalImage');
         const closeModal = document.querySelector('.close');
         
+        // Add this to your HTML client to fix existing broken Cloudinary URLs
+
+        function fixCloudinaryUrl(brokenUrl) {
+            /**
+            * Fix malformed Cloudinary URLs
+            * Convert from: https://res.cloudinary.com/dtiwcyief/image/upload/f_auto,q_auto/v1/sheets_app/20250827/4df6fb38_actividades%20f%C3%ADsicas%2006.jpg
+            * To: https://res.cloudinary.com/dtiwcyief/image/upload/sheets_app/20250827/4df6fb38_actividades_fisicas_06.jpg
+            */
+            
+            if (!brokenUrl || !brokenUrl.includes('cloudinary.com')) {
+                return brokenUrl; // Not a Cloudinary URL
+            }
+            
+            try {
+                // Extract the base URL and path
+                const baseUrl = 'https://res.cloudinary.com/dtiwcyief/image/upload/';
+                
+                // Find the actual file path after the transformations
+                const pathMatch = brokenUrl.match(/sheets_app\/.*$/);
+                if (!pathMatch) {
+                    return brokenUrl; // Can't parse, return as is
+                }
+                
+                let filePath = pathMatch[0];
+                
+                // Decode URL encoding
+                filePath = decodeURIComponent(filePath);
+                
+                // Sanitize the filename part
+                const pathParts = filePath.split('/');
+                if (pathParts.length >= 3) {
+                    // Get the filename (last part)
+                    let filename = pathParts[pathParts.length - 1];
+                    
+                    // Sanitize filename: remove accents, spaces, etc.
+                    filename = filename
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '') // Remove diacritical marks
+                        .toLowerCase()
+                        .replace(/[^\w\-_.]/g, '_') // Replace special chars with underscore
+                        .replace(/_+/g, '_') // Remove multiple underscores
+                        .replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+                    
+                    pathParts[pathParts.length - 1] = filename;
+                    filePath = pathParts.join('/');
+                }
+                
+                const fixedUrl = baseUrl + filePath;
+                console.log('Fixed URL:', brokenUrl, '->', fixedUrl);
+                return fixedUrl;
+                
+            } catch (error) {
+                console.error('Error fixing Cloudinary URL:', error);
+                return brokenUrl; // Return original if we can't fix it
+            }
+        }
+
+        // Enhanced renderTable function with URL fixing
+        function renderTable() {
+            if (allData.length === 0) {
+                dataContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Nenhum dado encontrado na aba selecionada.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const headers = Object.keys(allData[0]);
+
+            let tableHTML = `
+                <div class="table-header">
+                    <h3>📊 Dados da Planilha</h3>
+                    <div class="table-controls">
+                        <input type="text" placeholder="Buscar..." id="searchInput">
+                        <select id="entriesSelect">
+                            <option value="25">25 linhas</option>
+                            <option value="50">50 linhas</option>
+                            <option value="100">100 linhas</option>
+                            <option value="all">Todas</option>
+                        </select>
+                        <button class="btn warning" onclick="fixAllImageUrls()" style="padding: 8px 12px; font-size: 12px;">🔧 Fix URLs</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+            `;
+
+            headers.forEach(header => {
+                tableHTML += `<th>${header}</th>`;
+            });
+
+            tableHTML += `
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            allData.forEach(row => {
+                tableHTML += '<tr>';
+                headers.forEach(header => {
+                    let cellValue = row[header] || '';
+
+                    // Handle different cell types with URL fixing
+                    if (typeof cellValue === 'string' && 
+                        (cellValue.includes('cloudinary.com') || 
+                        cellValue.includes('res.cloudinary.com') || 
+                        cellValue.includes('drive.google.com'))) {
+                        
+                        // Fix the URL if it's broken
+                        const originalUrl = cellValue;
+                        const fixedUrl = fixCloudinaryUrl(cellValue);
+                        const isCloudinary = cellValue.includes('cloudinary.com');
+                        const isFixed = originalUrl !== fixedUrl;
+                        
+                        tableHTML += `
+                            <td class="cell-url">
+                                <img src="${fixedUrl}" 
+                                    alt="Imagem" 
+                                    class="cell-image" 
+                                    onclick="showImageModal('${fixedUrl}')"
+                                    onerror="handleImageError(this, '${originalUrl}')">
+                                <br>
+                                <a href="${fixedUrl}" target="_blank" style="font-size: 0.8em;">
+                                    ${isFixed ? '🔧 Fixed' : 'Ver original'}
+                                </a>
+                                ${isCloudinary ? '<span class="cloudinary-badge">🔥</span>' : ''}
+                                ${isFixed ? '<span style="color: orange; font-size: 0.7em;"> (URL corrigida)</span>' : ''}
+                            </td>
+                        `;
+                    } else if (typeof cellValue === 'string' && cellValue.length > 50) {
+                        // Long text
+                        tableHTML += `<td title="${cellValue}">${cellValue.substring(0, 50)}...</td>`;
+                    } else {
+                        // Regular cell
+                        tableHTML += `<td>${cellValue}</td>`;
+                    }
+                });
+                tableHTML += '</tr>';
+            });
+
+            tableHTML += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            dataContainer.innerHTML = tableHTML;
+
+            // Add search functionality
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.addEventListener('input', filterTable);
+            }
+
+            const entriesSelect = document.getElementById('entriesSelect');
+            if (entriesSelect) {
+                entriesSelect.addEventListener('change', filterTable);
+            }
+        }
+
+        // Handle image loading errors
+        function handleImageError(img, originalUrl) {
+            console.error('Image failed to load:', img.src);
+            
+            // Try the original URL as fallback
+            if (img.src !== originalUrl) {
+                console.log('Trying original URL as fallback:', originalUrl);
+                img.src = originalUrl;
+            } else {
+                // Show a placeholder or error message
+                img.style.display = 'none';
+                img.parentNode.innerHTML += '<span style="color: red; font-size: 0.8em;">❌ Imagem não encontrada</span>';
+            }
+        }
+
+        // Function to fix all image URLs in the current data
+        function fixAllImageUrls() {
+            if (!allData || allData.length === 0) {
+                showMessage('❌ Nenhum dado carregado para corrigir.', 'error');
+                return;
+            }
+            
+            let fixedCount = 0;
+            const fixedData = allData.map(row => {
+                const newRow = { ...row };
+                Object.keys(newRow).forEach(key => {
+                    const value = newRow[key];
+                    if (typeof value === 'string' && value.includes('cloudinary.com')) {
+                        const fixedUrl = fixCloudinaryUrl(value);
+                        if (fixedUrl !== value) {
+                            newRow[key] = fixedUrl;
+                            fixedCount++;
+                        }
+                    }
+                });
+                return newRow;
+            });
+            
+            if (fixedCount > 0) {
+                allData = fixedData;
+                renderTable();
+                showMessage(`✅ ${fixedCount} URL(s) corrigida(s) na visualização local.`, 'success');
+            } else {
+                showMessage('ℹ️ Nenhuma URL precisou ser corrigida.', 'warning');
+            }
+        }
+
+        // Test a specific Cloudinary URL
+        async function testCloudinaryUrl(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+
+        // Add global functions to window
+        window.fixAllImageUrls = fixAllImageUrls;
+        window.handleImageError = handleImageError;
+
+
+
         // Utility Functions
         function formatBytes(bytes) {
             if (bytes === 0) return '0 B';
@@ -1084,6 +1311,7 @@
         }
         
         // Render Table
+        /*
         function renderTable() {
             if (allData.length === 0) {
                 dataContainer.innerHTML = `
@@ -1174,7 +1402,7 @@
                 entriesSelect.addEventListener('change', filterTable);
             }
         }
-        
+        */
         // Filter Table
         function filterTable() {
             const searchInput = document.getElementById('searchInput');

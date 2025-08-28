@@ -2,6 +2,16 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     see foto saved
     como selecionar e visualizar as imagens gravadas
 
+        28.08.2025
+            
+            [06:48]
+                git add app.py cmd.txt html/08.2025/27 README.md requirements_for_render.txt
+                git commit -m " 27.08, 20:28 TypeError: Cannot read properties of undefined (reading 'successful')at HTMLButtonElement.uploadPhotos (fixed_html_client_cloudinary.html"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
+    see foto saved
+    como selecionar e visualizar as imagens gravadas
+
         27.08.2025
             
             [22:06, 20:[28, 05], 16:40, 14:17, 12:23, 11:36, 08:55, 06:48]
