@@ -3,7 +3,11 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     como selecionar e visualizar as imagens gravadas
 
         28.08.2025
-            
+            08:30
+                git add  js/ app.py cmd.txt html/08.2025/27 README.md requirements_for_render.txt
+                git commit -m " 28.08, 08:30 and the Advanced Camera Features JavaScript code "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
             7:00
             NameError: name 'app' is not defined
             [06:48]

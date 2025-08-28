@@ -626,6 +626,102 @@
                 overflow-x: auto;
             }
         }
+        /* Camera Section Styles - Add to your existing CSS */
+        .camera-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .camera-preview {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto 20px;
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #cameraVideo {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
+
+        .captured-photos {
+            margin-top: 20px;
+        }
+
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .photo-item {
+            position: relative;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .photo-item:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+
+        .photo-item .photo-actions {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .photo-action-btn {
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+        }
+
+        .photo-action-btn:hover {
+            background: rgba(0,0,0,0.9);
+        }
+
+        @media (max-width: 768px) {
+            .camera-controls {
+                flex-direction: column;
+            }
+            
+            .photos-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
     </style>
 </head>
 <body>
@@ -664,6 +760,8 @@
                 <button type="button" class="btn success" id="testConnectionBtn">🔗 Testar Conexão</button>
                 <button type="button" class="btn" id="loadWorksheetsBtn" disabled>📄 Carregar Abas</button>
                 <button type="button" class="btn" id="loadDataBtn" disabled>📥 Ver Dados</button>
+                <!-- Add this to your existing controls section -->
+                <button type="button" class="btn warning" id="toggleCameraBtn">📷 Mostrar Câmera</button>
                 <button type="button" class="btn warning" id="showUploadBtn" disabled>📸 Upload Fotos</button>
                 <button type="button" class="btn danger" id="clearBtn">🧹 Limpar</button>
             </div>
@@ -725,6 +823,31 @@
                 <div class="controls">
                     <button type="button" class="btn success" id="uploadBtn" disabled>🚀 Enviar Imagens</button>
                     <button type="button" class="btn" id="cancelUploadBtn">❌ Cancelar</button>
+                </div>
+            </div>
+
+            <!-- Camera Section - Add this after the upload form in your HTML -->
+            <div class="camera-section" id="cameraSection" style="display: none;">
+                <h3>📷 Câmera ao Vivo</h3>
+                
+                <!-- Camera Controls -->
+                <div class="camera-controls">
+                    <button type="button" class="btn success" id="startCameraBtn">📹 Iniciar Câmera</button>
+                    <button type="button" class="btn danger" id="stopCameraBtn" style="display: none;">⏹️ Parar Câmera</button>
+                    <button type="button" class="btn" id="capturePhotoBtn" disabled>📸 Capturar Foto</button>
+                    <button type="button" class="btn warning" id="switchCameraBtn" disabled>🔄 Trocar Câmera</button>
+                </div>
+                
+                <!-- Camera Preview -->
+                <div class="camera-preview">
+                    <video id="cameraVideo" autoplay playsinline></video>
+                    <canvas id="cameraCanvas" style="display: none;"></canvas>
+                </div>
+                
+                <!-- Captured Photos Preview -->
+                <div class="captured-photos" id="capturedPhotos">
+                    <h5>📸 Fotos Capturadas</h5>
+                    <div class="photos-grid" id="photosGrid"></div>
                 </div>
             </div>
             
@@ -1742,6 +1865,18 @@
                 });
                 console.log('Image modal listener added');
             }
+            // Add this to your setupEventListeners function
+            const toggleCameraBtn = document.getElementById('toggleCameraBtn');
+            if (toggleCameraBtn) {
+                toggleCameraBtn.addEventListener('click', () => {
+                    const cameraSection = document.getElementById('cameraSection');
+                    if (cameraSection) {
+                        const isVisible = cameraSection.style.display !== 'none';
+                        cameraSection.style.display = isVisible ? 'none' : 'block';
+                        toggleCameraBtn.textContent = isVisible ? '📷 Mostrar Câmera' : '❌ Ocultar Câmera';
+                    }
+                });
+            }
         }
         
         // Initialize everything when DOM is ready
@@ -1756,6 +1891,11 @@
         // Make functions global for onclick handlers
         window.showImageModal = showImageModal;
         window.removeFile = removeFile;
+        
     </script>
+    <!-- Add this just before the closing </body> tag in your HTML -->
+    
+    <script src="/js/advanced-camera-features.js"></script>
+
 </body>
 </html>
