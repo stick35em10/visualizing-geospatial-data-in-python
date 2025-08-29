@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Autenticação - Visualizando Dados Geoespaciais</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 450px;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+        
+        .form-container {
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        
+        button {
+            width: 100%;
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-register {
+            background: linear-gradient(45deg, #27ae60, #229954);
+        }
+        
+        .btn-logout {
+            background: linear-gradient(45deg, #e74c3c, #c0392b);
+        }
+        
+        .form-toggle {
+            text-align: center;
+            margin-top: 20px;
+            color: #7f8c8d;
+        }
+        
+        .form-toggle a {
+            color: #3498db;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .form-toggle a:hover {
+            text-decoration: underline;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .app-content {
+            display: none;
+        }
+        
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .auth-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .auth-actions button {
+            flex: 1;
+        }
+        
+        .password-strength {
+            height: 5px;
+            background: #eee;
+            border-radius: 3px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .password-strength-fill {
+            height: 100%;
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        
+        .weak {
+            background: #e74c3c;
+        }
+        
+        .medium {
+            background: #f39c12;
+        }
+        
+        .strong {
+            background: #27ae60;
+        }
+        
+        .status-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+            border-left: 4px solid #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="auth-container">
+        <header>
+            <h1>🔐 Autenticação</h1>
+            <p class="subtitle">Acesso restrito à aplicação de dados geoespaciais</p>
+        </header>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="form-container" id="login-form">
+            <div class="form-group">
+                <label for="login-email">Email:</label>
+                <input type="email" id="login-email" placeholder="Seu email cadastrado">
+            </div>
+            
+            <div class="form-group">
+                <label for="login-password">Senha:</label>
+                <input type="password" id="login-password" placeholder="Sua senha">
+            </div>
+            
+            <button id="login-btn">Entrar</button>
+            
+            <div class="form-toggle">
+                Não tem uma conta? <a id="show-register">Registre-se</a>
+            </div>
+        </div>
+        
+        <div class="form-container" id="register-form" style="display: none;">
+            <div class="form-group">
+                <label for="register-name">Nome completo:</label>
+                <input type="text" id="register-name" placeholder="Seu nome completo">
+            </div>
+            
+            <div class="form-group">
+                <label for="register-email">Email:</label>
+                <input type="email" id="register-email" placeholder="Seu melhor email">
+            </div>
+            
+            <div class="form-group">
+                <label for="register-password">Senha:</label>
+                <input type="password" id="register-password" placeholder="Crie uma senha segura">
+                <div class="password-strength">
+                    <div class="password-strength-fill" id="password-strength-bar"></div>
+                </div>
+                <small style="color:#7f8c8d">A senha deve ter pelo menos 8 caracteres, incluindo números e letras maiúsculas</small>
+            </div>
+            
+            <div class="form-group">
+                <label for="register-confirm">Confirmar senha:</label>
+                <input type="password" id="register-confirm" placeholder="Digite a senha novamente">
+            </div>
+            
+            <button class="btn-register" id="register-btn">Criar conta</button>
+            
+            <div class="form-toggle">
+                Já tem uma conta? <a id="show-login">Faça login</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container app-content" id="app-content">
+        <header>
+            <h1>🌍 Dados Geoespaciais</h1>
+            <p class="subtitle">Visualização de dados geográficos</p>
+        </header>
+        
+        <div class="user-info">
+            <h3>Bem-vindo, <span id="user-name">Usuário</span>!</h3>
+            <p>Email: <span id="user-email">user@example.com</span></p>
+            <p>Você tem acesso completo à aplicação.</p>
+        </div>
+        
+        <div class="status-card">
+            <h3>📊 Conteúdo Protegido</h3>
+            <p>Esta área só está visível para usuários autenticados. Aqui você pode acessar todos os recursos da aplicação de visualização de dados geoespaciais.</p>
+            
+            <div class="auth-actions">
+                <button class="btn-logout" id="logout-btn">Sair</button>
+                <button onclick="window.location.href='https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/28/deepseek_html_20250828_ba5af7.html'">Acessar Aplicação</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos DOM
+        const authContainer = document.getElementById('auth-container');
+        const appContent = document.getElementById('app-content');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const messageDiv = document.getElementById('message');
+        const passwordStrengthBar = document.getElementById('password-strength-bar');
+        
+        // Alternar entre formulários
+        document.getElementById('show-register').addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+            hideMessage();
+        });
+        
+        document.getElementById('show-login').addEventListener('click', () => {
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            hideMessage();
+        });
+        
+        // Verificar força da senha
+        document.getElementById('register-password').addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            
+            // Verificar comprimento
+            if (password.length >= 8) strength += 25;
+            
+            // Verificar letras maiúsculas e minúsculas
+            if (password.match(/([a-z].*[A-Z])|([A-Z].*[a-z])/)) strength += 25;
+            
+            // Verificar números
+            if (password.match(/([0-9])/)) strength += 25;
+            
+            // Verificar caracteres especiais
+            if (password.match(/([!,@,#,$,%,^,&,*,?,_,~])/)) strength += 25;
+            
+            // Atualizar barra de força
+            passwordStrengthBar.style.width = strength + '%';
+            
+            // Atualizar cor
+            if (strength <= 25) {
+                passwordStrengthBar.className = 'password-strength-fill weak';
+            } else if (strength <= 75) {
+                passwordStrengthBar.className = 'password-strength-fill medium';
+            } else {
+                passwordStrengthBar.className = 'password-strength-fill strong';
+            }
+        });
+        
+        // Funções de exibição de mensagens
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+        }
+        
+        function hideMessage() {
+            messageDiv.style.display = 'none';
+        }
+        
+        // Funções de autenticação (simuladas)
+        function registerUser(name, email, password) {
+            // Verificar se o usuário já existe
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const userExists = users.some(user => user.email === email);
+            
+            if (userExists) {
+                showMessage('Este email já está registrado.', 'error');
+                return false;
+            }
+            
+            // Validar força da senha
+            if (password.length < 8) {
+                showMessage('A senha deve ter pelo menos 8 caracteres.', 'error');
+                return false;
+            }
+            
+            if (!password.match(/([a-z].*[A-Z])|([A-Z].*[a-z])/)) {
+                showMessage('A senha deve conter letras maiúsculas e minúsculas.', 'error');
+                return false;
+            }
+            
+            if (!password.match(/([0-9])/)) {
+                showMessage('A senha deve conter pelo menos um número.', 'error');
+                return false;
+            }
+            
+            // Adicionar novo usuário
+            users.push({
+                name,
+                email,
+                password: btoa(password) // Criptografia básica (apenas para demonstração)
+            });
+            
+            localStorage.setItem('users', JSON.stringify(users));
+            showMessage('Conta criada com sucesso! Faça login para continuar.', 'success');
+            
+            // Mostrar formulário de login
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+            
+            return true;
+        }
+        
+        function loginUser(email, password) {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(user => user.email === email && user.password === btoa(password));
+            
+            if (!user) {
+                showMessage('Email ou senha incorretos.', 'error');
+                return false;
+            }
+            
+            // Criar sessão de usuário
+            localStorage.setItem('currentUser', JSON.stringify({
+                name: user.name,
+                email: user.email,
+                loginTime: new Date().getTime()
+            }));
+            
+            showMessage('Login realizado com sucesso!', 'success');
+            
+            // Redirecionar para conteúdo principal após breve delay
+            setTimeout(() => {
+                authContainer.style.display = 'none';
+                appContent.style.display = 'block';
+                document.getElementById('user-name').textContent = user.name;
+                document.getElementById('user-email').textContent = user.email;
+            }, 1000);
+            
+            return true;
+        }
+        
+        function logoutUser() {
+            localStorage.removeItem('currentUser');
+            authContainer.style.display = 'block';
+            appContent.style.display = 'none';
+            loginForm.style.display = 'block';
+            registerForm.style.display = 'none';
+            
+            // Limpar formulários
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+            document.getElementById('register-name').value = '';
+            document.getElementById('register-email').value = '';
+            document.getElementById('register-password').value = '';
+            document.getElementById('register-confirm').value = '';
+            
+            showMessage('Você saiu da sua conta.', 'success');
+        }
+        
+        function checkAuth() {
+            const currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            
+            if (currentUser) {
+                authContainer.style.display = 'none';
+                appContent.style.display = 'block';
+                document.getElementById('user-name').textContent = currentUser.name;
+                document.getElementById('user-email').textContent = currentUser.email;
+            }
+        }
+        
+        // Event listeners para os botões
+        document.getElementById('register-btn').addEventListener('click', () => {
+            const name = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const confirm = document.getElementById('register-confirm').value;
+            
+            if (!name || !email || !password || !confirm) {
+                showMessage('Por favor, preencha todos os campos.', 'error');
+                return;
+            }
+            
+            if (password !== confirm) {
+                showMessage('As senhas não coincidem.', 'error');
+                return;
+            }
+            
+            registerUser(name, email, password);
+        });
+        
+        document.getElementById('login-btn').addEventListener('click', () => {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                showMessage('Por favor, preencha todos os campos.', 'error');
+                return;
+            }
+            
+            loginUser(email, password);
+        });
+        
+        document.getElementById('logout-btn').addEventListener('click', logoutUser);
+        
+        // Verificar autenticação ao carregar a página
+        document.addEventListener('DOMContentLoaded', checkAuth);
+    </script>
+</body>
+</html>

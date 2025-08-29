@@ -1,10 +1,19 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
+    
+    Sistema de Autenticação para Aplicação de Dados Geoespaciais
+        29.08.2025
+            20:50
+                git add    html/08.2025/29/ cmd.txt README.md 
+                git commit -m " 29.08, 20:50 Sistema de Autenticação para Aplicação de Dados Geoespaciais "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01
+
     see foto saved
+
     como selecionar e visualizar as imagens gravadas
         28.08.2025
-            19:45
+            20:14, 19:45
                 git add  js/ app.py cmd.txt html/08.2025/28 html/08.2025/27 README.md requirements_for_render.txt
-                git commit -m " 28.08, 08:30 and the Advanced Camera Features JavaScript code "
+                git commit -m " 28.08, 20:14 and the Advanced Camera Features JavaScript code "
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01
 
             08:30
