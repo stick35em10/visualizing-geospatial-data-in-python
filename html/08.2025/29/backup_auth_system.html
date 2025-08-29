@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -141,12 +141,6 @@
         
         .app-content {
             display: none;
-            width: 100%;
-            max-width: 1200px;
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         
         .user-info {
@@ -265,20 +259,26 @@
         </div>
     </div>
     
-    <div class="app-content" id="app-content">
+    <div class="container app-content" id="app-content">
+        <header>
+            <h1>🌍 Dados Geoespaciais</h1>
+            <p class="subtitle">Visualização de dados geográficos</p>
+        </header>
+        
         <div class="user-info">
             <h3>Bem-vindo, <span id="user-name">Usuário</span>!</h3>
             <p>Email: <span id="user-email">user@example.com</span></p>
+            <p>Você tem acesso completo à aplicação.</p>
+        </div>
+        
+        <div class="status-card">
+            <h3>📊 Conteúdo Protegido</h3>
+            <p>Esta área só está visível para usuários autenticados. Aqui você pode acessar todos os recursos da aplicação de visualização de dados geoespaciais.</p>
+            
             <div class="auth-actions">
                 <button class="btn-logout" id="logout-btn">Sair</button>
-                <button id="access-app-btn">Acessar Aplicação</button>
+                <button onclick="window.location.href='https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/28/deepseek_html_20250828_ba5af7.html'">Acessar Aplicação</button>
             </div>
-        </div>
-
-        <div class="status-card">
-            <h3>🌍 Dados Geoespaciais</h3>
-            <p>Você foi autenticado com sucesso! Agora pode acessar a aplicação completa de visualização de dados geoespaciais.</p>
-            <p>Clique no botão abaixo para ser redirecionado para a aplicação principal.</p>
         </div>
     </div>
 
@@ -302,11 +302,6 @@
             registerForm.style.display = 'none';
             loginForm.style.display = 'block';
             hideMessage();
-        });
-        
-        // Botão para acessar a aplicação
-        document.getElementById('access-app-btn').addEventListener('click', () => {
-            window.location.href = 'https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/28/deepseek_html_20250828_ba5af7.html';
         });
         
         // Verificar força da senha
