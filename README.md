@@ -1,3 +1,7 @@
+[visualizar a imagem gravada_29.08_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/29/deepseek_html_20250829_4b75ce.html)
+
+html/08.2025/29/deepseek_html_20250829_4b75ce.html
+
 [visualizar a imagem gravada_28.08_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/29/auth_system.html)
 
 [visualizar a imagem gravada_28.08_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/28/deepseek_html_20250828_5a19ca.html)

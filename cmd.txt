@@ -2,8 +2,10 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
     
     Sistema de Autenticação para Aplicação de Dados Geoespaciais
         29.08.2025
-            20:50
-                git add    html/08.2025/29/ cmd.txt README.md 
+            considere a html/08.2025/28/deepseek_html_20250828_ba5af7.html como base e a outra complete_html_client_fixed_v14.html a ser anexada a base tendo em conta que a app.py é serdidor das duas
+
+            22:38, 20:50
+                git add html/08.2025/29/ cmd.txt README.md 
                 git commit -m " 29.08, 20:50 Sistema de Autenticação para Aplicação de Dados Geoespaciais "
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01
 
