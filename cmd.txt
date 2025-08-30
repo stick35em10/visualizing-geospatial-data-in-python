@@ -1,8 +1,22 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
     
     Sistema de Autenticação para Aplicação de Dados Geoespaciais
+        30.08.2025
+            actualizar a 
+            html/08.2025/29/auth_system.html
+            para aceder 
+            html/08.2025/29/deepseek_html_20250829_4b75ce.html
+                cp -r html/08.2025/29/auth_system.html html/08.2025/30/backup_auth_system.html
+                cp -r html/08.2025/30/deepseek_html_20250830_83351a.html html/08.2025/30/auth_system.html
+
+                git add html/08.2025/30/ cmd.txt README.md
+                git commit -m " 29.08, 23:38 Sistema de Autenticação para Aplicação de Dados Geoespaciais "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01          
+
+
         29.08.2025
             considere a html/08.2025/28/deepseek_html_20250828_ba5af7.html como base e a outra complete_html_client_fixed_v14.html a ser anexada a base tendo em conta que a app.py é serdidor das duas
+                html/08.2025/29/deepseek_html_20250829_4b75ce.html
                 23:03
                     deepseek_html_20250829_a22450
                     auth_system.html
@@ -10,8 +24,8 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
                         HTML
                         app.py
                             git add html/08.2025/29/ cmd.txt README.md 
-                            git commit -m " 29.08, 20:50 Sistema de Autenticação para Aplicação de Dados Geoespaciais "
-                            git push --set-upstream origin 01_03_01_Plotting_view_2_01            
+                            git commit -m " 29.08, 23:38 Sistema de Autenticação para Aplicação de Dados Geoespaciais "
+                            git push --set-upstream origin 01_03_01_Plotting_view_2_01          
 
                     peço para garantir que a auth possa aceder ao deep segurndo a app
 
