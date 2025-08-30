@@ -1,6 +1,6 @@
 
 
-[auth_visualizar a imagem gravada_30.08_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/30/auth_system.html)
+[auth_visualizar a imagem gravada_30.08_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/29/deepseek_html_20250829_4b75ce.html)
 
 [visualizar a imagem gravada_29.08_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/29/deepseek_html_20250829_4b75ce.html)
 
