@@ -1,6 +1,19 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
-    
+
     Sistema de Autenticação para Aplicação de Dados Geoespaciais
+        05.09.2025
+            01_03_01_Plotting_view_2_01_rsa
+                git add html/08.2025/30/ cmd.txt README.md
+                git commit -m " 05.09, 05:24 Sistema de Autenticação para Aplicação de Dados Geoespaciais "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa
+
+        04.09.2025
+            criar um novo google sheet
+                para informação de casa,
+                    terra do rand
+                        criar novo servidor 
+        02.09.2025
+            
         30.08.2025
             actualizar a 
             html/08.2025/29/auth_system.html
