@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizar Fotos Armazenadas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .config-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .server-config {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 15px;
+            border-left: 5px solid #4facfe;
+            margin-bottom: 20px;
+        }
+
+        .server-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .server-option {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .server-option:hover {
+            background: #bbdefb;
+            transform: translateY(-2px);
+        }
+
+        .server-option.active {
+            background: #4facfe;
+            color: white;
+            border-color: #2196f3;
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.4);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .worksheet-selector {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .status {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .status-loading {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .photos-container {
+            padding: 30px;
+        }
+
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .photo-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .photo-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .photo-image:hover {
+            transform: scale(1.05);
+        }
+
+        .photo-info {
+            padding: 20px;
+        }
+
+        .photo-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .photo-meta {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .photo-location {
+            background: #e8f4fd;
+            color: #1976d2;
+            padding: 8px 12px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .photo-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-small {
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            border-radius: 15px;
+        }
+
+        .btn-view {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .btn-download {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            padding: 20px;
+        }
+
+        .modal-image {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            color: white;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            z-index: 1001;
+        }
+
+        .modal-close:hover {
+            color: #4facfe;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4facfe;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .stats-bar {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4facfe;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        .filter-section {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .photos-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-controls {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 Galeria de Fotos</h1>
+            <p>Visualize todas as fotos armazenadas na sua planilha Google Sheets</p>
+        </div>
+
+        <div class="config-section">
+            <div class="server-config">
+                <h3>🌐 Configuração do Servidor</h3>
+                <div class="server-options">
+                    <div class="server-option active" data-url="https://visualizing-geospatial-data-in-python-3.onrender.com">
+                        Render (Produção)
+                    </div>
+                    <div class="server-option" data-url="http://localhost:5000">
+                        Local (Desenvolvimento)
+                    </div>
+                    <div class="server-option" data-url="custom">
+                        URL Personalizada
+                    </div>
+                </div>
+                <input type="text" id="customUrl" placeholder="Digite a URL personalizada" style="display: none;">
+            </div>
+
+            <div class="controls">
+                <div class="worksheet-selector">
+                    <label for="worksheetSelect">Selecionar Aba:</label>
+                    <select id="worksheetSelect">
+                        <option value="Imagens">Imagens</option>
+                    </select>
+                </div>
+                <button id="loadPhotosBtn">🔄 Carregar Fotos</button>
+                <button id="refreshBtn">♻️ Atualizar Lista</button>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <h3>🔍 Filtros</h3>
+            <div class="filter-controls">
+                <div style="flex: 1;">
+                    <label for="searchInput">Pesquisar por título:</label>
+                    <input type="text" id="searchInput" placeholder="Digite para pesquisar...">
+                </div>
+                <div style="flex: 1;">
+                    <label for="dateFilter">Filtrar por data:</label>
+                    <input type="date" id="dateFilter">
+                </div>
+                <button id="clearFiltersBtn" class="btn-small">🗑️ Limpar Filtros</button>
+            </div>
+        </div>
+
+        <div id="statusDiv" class="status status-loading" style="display: none;">
+            <div class="loading-spinner"></div>
+            Carregando...
+        </div>
+
+        <div class="photos-container">
+            <div class="stats-bar" id="statsBar" style="display: none;">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalPhotos">0</div>
+                    <div class="stat-label">Total de Fotos</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="visiblePhotos">0</div>
+                    <div class="stat-label">Fotos Visíveis</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="photosWithLocation">0</div>
+                    <div class="stat-label">Com Localização</div>
+                </div>
+            </div>
+
+            <div class="photos-grid" id="photosGrid">
+                <!-- Fotos serão carregadas aqui dinamicamente -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para visualização ampliada -->
+    <div id="photoModal" class="modal">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" class="modal-image" src="" alt="">
+        </div>
+    </div>
+
+    <script>
+        // Variáveis globais
+        let SERVER_BASE_URL = 'https://visualizing-geospatial-data-in-python-3.onrender.com';
+        let allPhotos = [];
+        let filteredPhotos = [];
+
+        // Elementos DOM
+        const statusDiv = document.getElementById('statusDiv');
+        const photosGrid = document.getElementById('photosGrid');
+        const worksheetSelect = document.getElementById('worksheetSelect');
+        const loadPhotosBtn = document.getElementById('loadPhotosBtn');
+        const refreshBtn = document.getElementById('refreshBtn');
+        const customUrlInput = document.getElementById('customUrl');
+        const searchInput = document.getElementById('searchInput');
+        const dateFilter = document.getElementById('dateFilter');
+        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+        const statsBar = document.getElementById('statsBar');
+
+        // Configuração do servidor
+        const serverOptions = document.querySelectorAll('.server-option');
+        serverOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                serverOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                const url = this.dataset.url;
+                if (url === 'custom') {
+                    customUrlInput.style.display = 'block';
+                    customUrlInput.focus();
+                } else {
+                    customUrlInput.style.display = 'none';
+                    SERVER_BASE_URL = url;
+                }
+            });
+        });
+
+        customUrlInput.addEventListener('input', function() {
+            SERVER_BASE_URL = this.value;
+        });
+
+        // Funções de status
+        function showStatus(message, type = 'loading') {
+            statusDiv.style.display = 'block';
+            statusDiv.className = `status status-${type}`;
+            
+            if (type === 'loading') {
+                statusDiv.innerHTML = `
+                    <div class="loading-spinner"></div>
+                    ${message}
+                `;
+            } else {
+                statusDiv.innerHTML = message;
+            }
+        }
+
+        function hideStatus() {
+            statusDiv.style.display = 'none';
+        }
+
+        // Carregar lista de worksheets
+        async function loadWorksheets() {
+            try {
+                const response = await fetch(`${SERVER_BASE_URL}/api/sheets/worksheets`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    worksheetSelect.innerHTML = '';
+                    data.worksheets.forEach(ws => {
+                        const option = document.createElement('option');
+                        option.value = ws.title;
+                        option.textContent = ws.title;
+                        if (ws.title === 'Imagens') {
+                            option.selected = true;
+                        }
+                        worksheetSelect.appendChild(option);
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar worksheets:', error);
+            }
+        }
+
+        // Carregar fotos
+        async function loadPhotos() {
+            try {
+                showStatus('🔄 Carregando fotos da planilha...', 'loading');
+                
+                const worksheet = worksheetSelect.value || 'Imagens';
+                const response = await fetch(`${SERVER_BASE_URL}/api/sheets/data?worksheet=${encodeURIComponent(worksheet)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    allPhotos = data.data.filter(row => row['URL da Imagem'] && row['URL da Imagem'].trim() !== '');
+                    filteredPhotos = [...allPhotos];
+                    
+                    displayPhotos();
+                    updateStats();
+                    hideStatus();
+                    
+                    if (allPhotos.length === 0) {
+                        showStatus('📷 Nenhuma foto encontrada na planilha', 'error');
+                    }
+                } else {
+                    throw new Error(data.error || 'Erro desconhecido');
+                }
+                
+            } catch (error) {
+                console.error('Erro ao carregar fotos:', error);
+                showStatus(`❌ Erro ao carregar fotos: ${error.message}`, 'error');
+                photosGrid.innerHTML = '';
+            }
+        }
+
+        // Exibir fotos
+        function displayPhotos() {
+            photosGrid.innerHTML = '';
+            
+            if (filteredPhotos.length === 0) {
+                photosGrid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">
+                        <h3>📷 Nenhuma foto encontrada</h3>
+                        <p>Tente ajustar os filtros ou carregar uma aba diferente.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredPhotos.forEach((photo, index) => {
+                const photoCard = createPhotoCard(photo, index);
+                photosGrid.appendChild(photoCard);
+            });
+        }
+
+        // Criar card de foto
+        function createPhotoCard(photo, index) {
+            const card = document.createElement('div');
+            card.className = 'photo-card';
+            
+            const hasLocation = photo.Latitude && photo.Longitude;
+            const locationText = hasLocation ? 
+                `📍 ${parseFloat(photo.Latitude).toFixed(4)}, ${parseFloat(photo.Longitude).toFixed(4)}` : 
+                '📍 Sem localização';
+
+            card.innerHTML = `
+                <img src="${photo['URL da Imagem']}" 
+                     alt="${photo.Título || 'Foto'}" 
+                     class="photo-image"
+                     onclick="openModal('${photo['URL da Imagem']}')"
+                     onerror="this.style.display='none'; this.parentElement.innerHTML += '<div style=\\'padding: 20px; text-align: center; color: #999;\\'>❌ Erro ao carregar imagem</div>'">
+                
+                <div class="photo-info">
+                    <div class="photo-title">${photo.Título || 'Sem título'}</div>
+                    <div class="photo-meta">
+                        <div>📅 ${formatDate(photo.Data)}</div>
+                        <div>📁 ${photo['Nome do Arquivo'] || 'arquivo.jpg'}</div>
+                        <div>📏 ${photo.Largura || '?'}x${photo.Altura || '?'}</div>
+                        ${photo.Descrição ? `<div>📝 ${photo.Descrição}</div>` : ''}
+                    </div>
+                    
+                    <div class="photo-location">${locationText}</div>
+                    
+                    <div class="photo-actions">
+                        <button class="btn-small btn-view" onclick="openModal('${photo['URL da Imagem']}')">
+                            👁️ Ver
+                        </button>
+                        <button class="btn-small btn-download" onclick="downloadImage('${photo['URL da Imagem']}', '${photo['Nome do Arquivo'] || 'foto.jpg'}')">
+                            💾 Download
+                        </button>
+                        ${hasLocation ? `<button class="btn-small" onclick="openMap(${photo.Latitude}, ${photo.Longitude})">🗺️ Mapa</button>` : ''}
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Formatar data
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Data não disponível';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute: '2-digit'});
+            } catch {
+                return dateStr;
+            }
+        }
+
+        // Modal de imagem
+        function openModal(imageUrl) {
+            const modal = document.getElementById('photoModal');
+            const modalImage = document.getElementById('modalImage');
+            
+            modalImage.src = imageUrl;
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('photoModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        // Download de imagem
+        async function downloadImage(url, filename) {
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                
+                window.URL.revokeObjectURL(downloadUrl);
+            } catch (error) {
+                console.error('Erro no download:', error);
+                window.open(url, '_blank');
+            }
+        }
+
+        // Abrir localização no mapa
+        function openMap(lat, lng) {
+            const url = `https://www.google.com/maps?q=${lat},${lng}`;
+            window.open(url, '_blank');
+        }
+
+        // Filtros
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const dateFilter = document.getElementById('dateFilter').value;
+            
+            filteredPhotos = allPhotos.filter(photo => {
+                let matchesSearch = true;
+                let matchesDate = true;
+                
+                if (searchTerm) {
+                    matchesSearch = (photo.Título || '').toLowerCase().includes(searchTerm) ||
+                                   (photo.Descrição || '').toLowerCase().includes(searchTerm) ||
+                                   (photo['Nome do Arquivo'] || '').toLowerCase().includes(searchTerm);
+                }
+                
+                if (dateFilter) {
+                    const photoDate = new Date(photo.Data).toISOString().split('T')[0];
+                    matchesDate = photoDate === dateFilter;
+                }
+                
+                return matchesSearch && matchesDate;
+            });
+            
+            displayPhotos();
+            updateStats();
+        }
+
+        // Limpar filtros
+        function clearFilters() {
+            searchInput.value = '';
+            document.getElementById('dateFilter').value = '';
+            filteredPhotos = [...allPhotos];
+            displayPhotos();
+            updateStats();
+        }
+
+        // Atualizar estatísticas
+        function updateStats() {
+            const photosWithLocation = allPhotos.filter(photo => photo.Latitude && photo.Longitude).length;
+            
+            document.getElementById('totalPhotos').textContent = allPhotos.length;
+            document.getElementById('visiblePhotos').textContent = filteredPhotos.length;
+            document.getElementById('photosWithLocation').textContent = photosWithLocation;
+            
+            if (allPhotos.length > 0) {
+                statsBar.style.display = 'flex';
+            }
+        }
+
+        // Event Listeners
+        loadPhotosBtn.addEventListener('click', loadPhotos);
+        refreshBtn.addEventListener('click', () => {
+            loadWorksheets();
+            loadPhotos();
+        });
+        searchInput.addEventListener('input', applyFilters);
+        dateFilter.addEventListener('change', applyFilters);
+        clearFiltersBtn.addEventListener('click', clearFilters);
+
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Fechar modal clicando fora da imagem
+        document.getElementById('photoModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWorksheets();
+            loadPhotos();
+        });
+
+        // Tornar funções globais
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.downloadImage = downloadImage;
+        window.openMap = openMap;
+    </script>
+</body>
+</html>

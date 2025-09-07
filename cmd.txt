@@ -1,5 +1,10 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         07.09.2025   
+            22:57
+                git add html/09.2025/07/photo_viewer.html cmd.txt README.md
+                git commit -m " 07.09, 22:59 como visualizar as fotos armazenadas "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa
+
             git add html/09.2025/07/updated_html_app.html html/09.2025/ html/08.2025/30/ cmd.txt README.md
             git commit -m " 05.09, 05:24 Sistema de Autenticação para Aplicação de Dados Geoespaciais "
             git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa
