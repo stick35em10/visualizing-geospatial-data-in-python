@@ -1,4 +1,7 @@
 
+[como visualizar as fotos armazenadas](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/07/photo_viewer.html)
+
+
 [visualizar a imagem gravada_07.09_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/07/updated_html_app.html)
 
 [auth_visualizar a imagem gravada_30.08_html_client.html](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/08.2025/30/deepseek_html_20250830_83351a.html)
