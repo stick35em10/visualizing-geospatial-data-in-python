@@ -1,6 +1,6 @@
 
 
-[como visualizar as fotos armazenadas 07.08.2026](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/07/photo_viewer.html)
+[como visualizar as fotos armazenadas 07.08.2026](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/07/photo_upload_app.html)
 
 
 [como visualizar as fotos armazenadas](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/07/photo_viewer.html)
