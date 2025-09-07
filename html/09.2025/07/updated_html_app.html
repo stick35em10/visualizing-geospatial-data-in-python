@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capturar e Enviar Foto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .camera-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        #videoElement {
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background-color: #000;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        input[type="text"]:focus, textarea:focus {
+            border-color: #4CAF50;
+            outline: none;
+        }
+        
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+        
+        .server-config {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #007bff;
+        }
+        
+        .server-config h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .server-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        
+        .server-option {
+            background: #e9ecef;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .server-option:hover {
+            background: #dee2e6;
+        }
+        
+        .server-option.active {
+            background: #007bff;
+            color: white;
+            border-color: #0056b3;
+        }
+        
+        #customUrl {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .status-container {
+            margin: 20px 0;
+        }
+        
+        #status {
+            padding: 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .status-waiting {
+            background: #e3f2fd;
+            color: #1976d2;
+            border: 1px solid #bbdefb;
+        }
+        
+        .status-ready {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .status-error {
+            background: #ffebee;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .status-processing {
+            background: #fff3e0;
+            color: #f57c00;
+            border: 1px solid #ffcc02;
+        }
+        
+        .status-success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 50px;
+        }
+        
+        .preview-image {
+            max-width: 300px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        .coords-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .retry-controls {
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .info-panel {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        
+        .file-input-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .file-input-label {
+            display: inline-block;
+            background: #2196f3;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
+        }
+        
+        .file-input-label:hover {
+            background: #1976d2;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .selected-files {
+            margin: 10px 0;
+        }
+        
+        .file-item {
+            background: #f0f0f0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .remove-file {
+            color: #f44336;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 5px;
+        }
+        
+        /* Estilo para campo desabilitado */
+        input:disabled {
+            background-color: #f5f5f5;
+            color: #666;
+            cursor: not-allowed;
+            border-color: #ddd;
+        }
+        
+        .disabled-field {
+            position: relative;
+        }
+        
+        .disabled-field::after {
+            content: "🔒";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📸 Capturar e Enviar Fotos</h1>
+        
+        <div class="server-config">
+            <h3>🌐 Configuração do Servidor</h3>
+            <div class="server-options">
+                <div class="server-option active" data-url="https://visualizing-geospatial-data-in-python-3.onrender.com">
+                    Render (Produção)
+                </div>
+                <div class="server-option" data-url="http://localhost:5000">
+                    Local (Desenvolvimento)
+                </div>
+                <div class="server-option" data-url="custom">
+                    URL Personalizada
+                </div>
+            </div>
+            <input type="text" id="customUrl" placeholder="Digite a URL personalizada (sem /api/upload/photos)" style="display: none;">
+            <p><strong>URL Base:</strong> <span id="currentUrl">https://visualizing-geospatial-data-in-python-3.onrender.com</span></p>
+            <p><strong>Endpoint:</strong> <code>/api/upload/photos</code></p>
+        </div>
+        
+        <div class="form-group">
+            <label for="title">Título da Foto:</label>
+            <input type="text" id="title" placeholder="Digite um título para a foto" value="Foto com Localização">
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Descrição (opcional):</label>
+            <textarea id="description" placeholder="Digite uma descrição..."></textarea>
+        </div>
+        
+        <div class="form-group disabled-field">
+            <label for="worksheet">Aba da Planilha:</label>
+            <input type="text" id="worksheet" placeholder="Nome da aba" value="Imagens" disabled>
+            <small style="color: #666; font-style: italic;">Campo bloqueado para manter consistência</small>
+        </div>
+        
+        <div class="camera-container">
+            <video id="videoElement" autoplay playsinline></video>
+        </div>
+        
+        <div class="file-input-container">
+            <label for="fileInput" class="file-input-label">
+                📁 Selecionar Fotos ou
+            </label>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+            <div class="selected-files" id="selectedFiles"></div>
+        </div>
+        
+        <div class="controls">
+            <button id="captureBtn" disabled>📷 Tirar Foto</button>
+            <button id="uploadBtn" disabled>🚀 Enviar Fotos</button>
+            <button id="retryBtn" style="display: none;">🔄 Tentar Novamente</button>
+            <button id="testConnectionBtn">🔗 Testar Conexão</button>
+        </div>
+        
+        <div class="status-container">
+            <div id="status" class="status-waiting">🔄 Aguardando a câmara...</div>
+        </div>
+        
+        <div id="output"></div>
+        
+        <div class="info-panel">
+            <h4>ℹ️ Informações:</h4>
+            <ul>
+                <li><strong>Câmara:</strong> Permite acesso para capturar fotos</li>
+                <li><strong>Localização:</strong> Obtém coordenadas GPS precisas</li>
+                <li><strong>Envio:</strong> Dados são enviados para Google Sheets + Cloudinary</li>
+                <li><strong>Formatos:</strong> Suporta JPEG, PNG e outros formatos de imagem</li>
+                <li><strong>Múltiplas fotos:</strong> Pode enviar várias fotos de uma vez</li>
+                <li><strong>Aba Bloqueada:</strong> O campo "Aba da Planilha" está fixo em "Imagens" para consistência</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Elementos DOM
+        const video = document.getElementById('videoElement');
+        const captureBtn = document.getElementById('captureBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const retryBtn = document.getElementById('retryBtn');
+        const testConnectionBtn = document.getElementById('testConnectionBtn');
+        const statusDiv = document.getElementById('status');
+        const outputDiv = document.getElementById('output');
+        const customUrlInput = document.getElementById('customUrl');
+        const currentUrlSpan = document.getElementById('currentUrl');
+        const fileInput = document.getElementById('fileInput');
+        const selectedFilesDiv = document.getElementById('selectedFiles');
+        const titleInput = document.getElementById('title');
+        const descriptionInput = document.getElementById('description');
+        const worksheetInput = document.getElementById('worksheet');
+        
+        // Variáveis globais - URL ATUALIZADA
+        let stream = null;
+        let SERVER_BASE_URL = 'https://visualizing-geospatial-data-in-python-3.onrender.com';
+        let capturedPhotos = [];
+        let selectedFiles = [];
+        let currentCoords = null;
+        
+        // Configuração dos servidores
+        const serverOptions = document.querySelectorAll('.server-option');
+        
+        // Event listeners para configuração do servidor
+        serverOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                serverOptions.forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                
+                const url = this.dataset.url;
+                if (url === 'custom') {
+                    customUrlInput.style.display = 'block';
+                    customUrlInput.focus();
+                } else {
+                    customUrlInput.style.display = 'none';
+                    SERVER_BASE_URL = url;
+                    currentUrlSpan.textContent = url;
+                }
+            });
+        });
+        
+        // Event listener para URL personalizada
+        customUrlInput.addEventListener('input', function() {
+            SERVER_BASE_URL = this.value;
+            currentUrlSpan.textContent = this.value || 'URL personalizada não definida';
+        });
+        
+        // Event listener para seleção de arquivos
+        fileInput.addEventListener('change', function(e) {
+            selectedFiles = Array.from(e.target.files);
+            updateSelectedFilesDisplay();
+            updateUploadButton();
+        });
+        
+        function updateSelectedFilesDisplay() {
+            selectedFilesDiv.innerHTML = '';
+            selectedFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    ${file.name} (${formatFileSize(file.size)})
+                    <span class="remove-file" onclick="removeFile(${index})">✕</span>
+                `;
+                selectedFilesDiv.appendChild(fileItem);
+            });
+        }
+        
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            updateSelectedFilesDisplay();
+            updateUploadButton();
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        function updateUploadButton() {
+            uploadBtn.disabled = capturedPhotos.length === 0 && selectedFiles.length === 0;
+        }
+        
+        // Função para atualizar status
+        function updateStatus(message, type = 'waiting') {
+            statusDiv.textContent = message;
+            statusDiv.className = `status-${type}`;
+        }
+        
+        // Inicia a câmara
+        async function startCamera() {
+            try {
+                updateStatus('🔄 Iniciando câmara...', 'processing');
+                
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('Seu navegador não suporta a API de câmara.');
+                }
+                
+                const constraints = {
+                    video: {
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'environment' // Câmara traseira por padrão
+                    }
+                };
+                
+                stream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = stream;
+                
+                // Aguarda o vídeo estar pronto
+                await new Promise((resolve) => {
+                    video.onloadedmetadata = resolve;
+                });
+                
+                updateStatus('✅ Câmara pronta! Clique para tirar fotos.', 'ready');
+                captureBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Erro ao aceder à câmara:', error);
+                updateStatus('⌘ Erro ao aceder à câmara. Verifique as permissões.', 'error');
+                outputDiv.innerHTML = `
+                    <div class="status-error">
+                        <strong>Erro de Câmara:</strong> ${error.message}
+                        <br><small>Certifique-se de que permitiu o acesso à câmara.</small>
+                    </div>
+                `;
+            }
+        }
+        
+        // Obtém a geolocalização
+        function getGeolocation() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocalização não suportada neste navegador.'));
+                    return;
+                }
+                
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 60000
+                };
+                
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const coords = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy,
+                            timestamp: new Date().toISOString()
+                        };
+                        console.log('Coordenadas obtidas:', coords);
+                        currentCoords = coords;
+                        resolve(coords);
+                    },
+                    (error) => {
+                        console.error('Erro de geolocalização:', error);
+                        // Não rejeita, apenas avisa que não tem coordenadas
+                        resolve(null);
+                    },
+                    options
+                );
+            });
+        }
+        
+        // Testa a conexão com o servidor
+        async function testConnection() {
+            try {
+                updateStatus('🔗 Testando conexão com o servidor...', 'processing');
+                
+                const response = await fetch(`${SERVER_BASE_URL}/health`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const healthData = await response.json();
+                    updateStatus('✅ Conexão com o servidor OK!', 'success');
+                    outputDiv.innerHTML = `
+                        <div class="status-success">
+                            <strong>✅ Servidor Online:</strong> Conexão estabelecida com sucesso!
+                            <br><strong>Status:</strong> ${healthData.status}
+                            <br><strong>Sheets:</strong> ${healthData.details.sheets_connected ? 'Conectado' : 'Desconectado'}
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`Servidor respondeu com status ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('Erro de conexão:', error);
+                updateStatus('⌘ Erro de conexão com o servidor', 'error');
+                outputDiv.innerHTML = `
+                    <div class="status-error">
+                        <strong>⌘ Erro de Conexão:</strong> ${error.message}
+                        <br><small>Verifique se o servidor está rodando na URL: ${SERVER_BASE_URL}</small>
+                    </div>
+                `;
+            }
+        }
+        
+        // Captura foto da câmara
+        function capturePhoto() {
+            try {
+                if (!stream) {
+                    throw new Error('A câmara não está ativa.');
+                }
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                const context = canvas.getContext('2d');
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                
+                // Adiciona à lista de fotos capturadas
+                capturedPhotos.push({
+                    dataUrl: photoDataUrl,
+                    name: `foto_${new Date().toISOString().replace(/[:.]/g, '-')}.jpg`,
+                    type: 'image/jpeg'
+                });
+                
+                updateStatus(`✅ Foto capturada! Total: ${capturedPhotos.length}`, 'success');
+                updateUploadButton();
+                
+                // Mostra preview
+                outputDiv.innerHTML = `
+                    <div class="status-success">
+                        <strong>📸 Foto capturada!</strong>
+                        <p>Total de fotos: ${capturedPhotos.length}</p>
+                    </div>
+                    <img src="${photoDataUrl}" alt="Foto Capturada" class="preview-image">
+                    <button onclick="capturedPhotos = []; updateUploadButton(); outputDiv.innerHTML = ''; updateStatus('✅ Pronto para novas fotos', 'ready')">
+                        🗑️ Limpar Fotos
+                    </button>
+                `;
+                
+            } catch (error) {
+                console.error('Erro ao capturar foto:', error);
+                updateStatus('⌘ Erro ao capturar foto', 'error');
+            }
+        }
+        
+        // Prepara os arquivos para envio
+        async function prepareFilesForUpload() {
+            const files = [];
+            
+            // Adiciona fotos capturadas
+            for (const photo of capturedPhotos) {
+                const response = await fetch(photo.dataUrl);
+                const blob = await response.blob();
+                files.push(new File([blob], photo.name, { type: photo.type }));
+            }
+            
+            // Adiciona arquivos selecionados
+            for (const file of selectedFiles) {
+                files.push(file);
+            }
+            
+            return files;
+        }
+        
+        // Envia dados para o servidor
+        async function uploadPhotos() {
+            try {
+                if (capturedPhotos.length === 0 && selectedFiles.length === 0) {
+                    throw new Error('Nenhuma foto para enviar.');
+                }
+                
+                updateStatus('🗺 Obtendo localização...', 'processing');
+                uploadBtn.disabled = true;
+                
+                // Obtém coordenadas
+                const coords = await getGeolocation();
+                
+                updateStatus('📤 Preparando envio...', 'processing');
+                
+                // Prepara o FormData
+                const formData = new FormData();
+                const files = await prepareFilesForUpload();
+                
+                // Adiciona arquivos
+                files.forEach(file => {
+                    formData.append('photos', file);
+                });
+                
+                // Adiciona metadados
+                formData.append('title', titleInput.value);
+                formData.append('description', descriptionInput.value);
+                formData.append('worksheet', worksheetInput.value); // Sempre será "Imagens"
+                
+                if (coords) {
+                    formData.append('latitude', coords.latitude);
+                    formData.append('longitude', coords.longitude);
+                    formData.append('accuracy', coords.accuracy);
+                }
+                
+                updateStatus('🚀 Enviando para o servidor...', 'processing');
+                
+                // Envia para o servidor
+                const response = await fetch(`${SERVER_BASE_URL}/api/upload/photos`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('Status da resposta:', response.status);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    updateStatus('✅ Fotos enviadas com sucesso!', 'success');
+                    
+                    let outputHTML = `
+                        <div class="status-success">
+                            <h3>✅ Sucesso!</h3>
+                            <p><strong>Mensagem:</strong> ${result.message}</p>
+                            <p><strong>Planilha:</strong> ${result.spreadsheet_title}</p>
+                            <p><strong>Aba:</strong> ${result.summary.worksheet}</p>
+                            <p><strong>Total:</strong> ${result.summary.total_files} arquivo(s)</p>
+                            <p><strong>Sucesso:</strong> ${result.summary.successful}</p>
+                            <p><strong>Falhas:</strong> ${result.summary.failed}</p>
+                        </div>
+                    `;
+                    
+                    if (coords) {
+                        outputHTML += `
+                            <div class="coords-info">
+                                <strong>🗺 Localização:</strong><br>
+                                Latitude: ${coords.latitude.toFixed(6)}<br>
+                                Longitude: ${coords.longitude.toFixed(6)}<br>
+                                Precisão: ±${coords.accuracy}m
+                            </div>
+                        `;
+                    }
+                    
+                    // Mostra preview das primeiras fotos
+                    if (capturedPhotos.length > 0) {
+                        outputHTML += `<img src="${capturedPhotos[0].dataUrl}" alt="Foto" class="preview-image">`;
+                    }
+                    
+                    outputDiv.innerHTML = outputHTML;
+                    
+                    // Limpa as fotos após envio bem-sucedido
+                    capturedPhotos = [];
+                    selectedFiles = [];
+                    fileInput.value = '';
+                    selectedFilesDiv.innerHTML = '';
+                    updateUploadButton();
+                    
+                } else {
+                    const error = await response.json().catch(() => ({ error: 'Erro desconhecido do servidor' }));
+                    throw new Error(error.error || error.message || `Erro HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('Erro ao enviar fotos:', error);
+                updateStatus('⌘ Erro ao enviar fotos', 'error');
+                
+                outputDiv.innerHTML = `
+                    <div class="status-error">
+                        <h3>⌘ Erro do Servidor</h3>
+                        <p><strong>Mensagem:</strong> ${error.message}</p>
+                        <p><strong>URL do servidor:</strong> ${SERVER_BASE_URL}/api/upload/photos</p>
+                        <small>Verifique se o servidor está rodando e acessível.</small>
+                    </div>
+                `;
+                
+                retryBtn.style.display = 'inline-block';
+                uploadBtn.disabled = false;
+            }
+        }
+        
+        // Event listeners
+        captureBtn.addEventListener('click', capturePhoto);
+        uploadBtn.addEventListener('click', uploadPhotos);
+        retryBtn.addEventListener('click', function() {
+            outputDiv.innerHTML = '';
+            retryBtn.style.display = 'none';
+            updateStatus('✅ Pronto para nova tentativa', 'ready');
+        });
+        testConnectionBtn.addEventListener('click', testConnection);
+        
+        // Inicia quando a página carrega
+        document.addEventListener('DOMContentLoaded', startCamera);
+        
+        // Cleanup quando a página é fechada
+        window.addEventListener('beforeunload', function() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        });
+        
+        // Torna funções globais para acesso via HTML
+        window.removeFile = removeFile;
+    </script>
+</body>
+</html>

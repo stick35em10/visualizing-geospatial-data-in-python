@@ -1,4 +1,12 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
+        07.09.2025    
+            https://stick35em10.github.io/visualizing-geospatial-data-in-python/
+            html/08.2025/27/complete_html_client_fixed_v14.html
+            html/08.2025/28/deepseek_html_20250828_ba5af7.html
+
+            git add  html/09.2025/ html/08.2025/30/ cmd.txt README.md
+            git commit -m " 05.09, 05:24 Sistema de Autenticação para Aplicação de Dados Geoespaciais "
+            git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa
 
     Sistema de Autenticação para Aplicação de Dados Geoespaciais
         05.09.2025
