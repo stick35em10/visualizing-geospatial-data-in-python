@@ -2,6 +2,10 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
         07.09.2025   
             23:17
                 
+                git add html/09.2025/07/photo_upload_app.html cmd.txt README.md
+                git commit -m " 07.09, 22:59 como visualizar as fotos armazenadas "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa
+
                 git add html/08.2025/29/deepseek_html_20250829_4b75ce.html cmd.txt README.md
                 git commit -m " 07.09, 22:59 como visualizar as fotos armazenadas "
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa
