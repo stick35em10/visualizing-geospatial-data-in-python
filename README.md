@@ -1,4 +1,7 @@
 
+
+[mostrará apenas as colunas Data, Título e URL da Imagem 08.09.2026](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/08/deepseek_html_20250908_43714e.html)
+
 [há um erro de sintaxe no final do arquivo HTML Aínda Quando clico no testar conexão não tem algum efeito 08.08.2026](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/08/photo_upload_app_v4__.html)
 
 [Aínda Quando clico no testar conexão não tem algum efeito 08.08.2026](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/08/photo_upload_app_v4_.html)
