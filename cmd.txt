@@ -1,5 +1,11 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         08.09.2025
+            10:01
+                html/09.2025/08/photo_upload_app_v4__.html
+                git add html/09.2025/08/photo_upload_app_v4__.html cmd.txt README.md
+                git commit -m " 08.09, 08:08 Quando clico no testar conexão não tem algum efeito "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa
+
             09:31
                 html/09.2025/08/photo_upload_app_v4_.html
                 git add html/09.2025/08/photo_upload_app_v4_.html cmd.txt README.md

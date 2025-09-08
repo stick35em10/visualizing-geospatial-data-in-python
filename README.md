@@ -1,6 +1,8 @@
 
 [Aínda Quando clico no testar conexão não tem algum efeito 08.08.2026](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/08/photo_upload_app_v4_.html)
 
+[Aínda Quando clico no testar conexão não tem algum efeito 08.08.2026](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/08/photo_upload_app_v4_.html)
+
 [Aínda Quando clico no testar conexão não tem algum efeito 08.08.2026](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/08/photo_upload_app_v4.html)
 
 html/09.2025/08/photo_upload_app_v4.html
