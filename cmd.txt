@@ -1,9 +1,15 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         08.09.2025
-            12:04
+            12:[35, 04]
                 mostrar apenas Data, Título e URL da Imagem
                 mostrará apenas as colunas Data, Título e URL da Imagem
-                
+
+                html/09.2025/08/deepseek_html_20250908_43714e_V1.html
+                git add html/09.2025/08/deepseek_html_20250908_43714e_V1.html cmd.txt README.md
+                git commit -m " 08.09, 08:08 há um erro de sintaxe no final do arquivo HTML, Quando clico no testar conexão não tem algum efeito "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa
+
+
                 html/09.2025/08/deepseek_html_20250908_43714e.html
                 git add html/09.2025/08/deepseek_html_20250908_43714e.html cmd.txt README.md
                 git commit -m " 08.09, 08:08 há um erro de sintaxe no final do arquivo HTML, Quando clico no testar conexão não tem algum efeito "
