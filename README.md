@@ -1,4 +1,4 @@
-
+[Este HTML está totalmente otimizado para trabalhar com sua aplicação Flask no endereço https://visualizing-geospatial-data-in-python-4.onrender.com e inclui suporte completo para o monitoramento OpenTelemetry que você implementou 03:05 14.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/14/deepseek_html_20250914_43714e.html)
 
 [mostrará apenas as colunas Data, Título e URL da Imagem 12:35 08.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/09/deepseek_html_20250909_43714e.html)
 
