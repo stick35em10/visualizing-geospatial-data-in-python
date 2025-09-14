@@ -211,6 +211,10 @@
       <div class="panel">
         <h3>📈 Monitoramento OpenTelemetry</h3>
         <div class="form-row">
+          <label>Diagnóstico Completo:</label>
+          <button type="button" id="btnFullDebug">🐛 Debug Completo</button>
+        </div>
+        <div class="form-row">
           <label>Diagnóstico Avançado:</label>
           <button type="button" id="btnEnvCheck">🔍 Verificar Variáveis</button>
           <button type="button" id="btnCredsCheck">🔐 Testar Credenciais</button>
@@ -506,6 +510,17 @@
     */
 
     // Funções de monitoramento
+    // Adicione este event listener
+    if (els.btnFullDebug) {
+      els.btnFullDebug.addEventListener('click', async () => {
+        try {
+          const result = await makeRequest('/debug/full');
+          showMonitoringResults(result);
+        } catch (error) {
+          showMonitoringResults(`Erro no debug completo: ${error.message}`);
+        }
+      });
+    }
     async function checkHealth() {
       els.healthStatus.textContent = 'Verificando...';
       try {

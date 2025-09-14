@@ -1,5 +1,31 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
+
         14.09.2025, <> 5dias stoping
+            15:54
+                html/09.2025/14/deepseek_html_20250914_76eee9.html
+                    Principais melhorias implementadas:
+                        Sistema de abas completo - Implementei todas as 4 abas (Ver Imagens, Upload, Câmera e Monitoramento) com funcionalidades completas.
+
+                        Upload de fotos - Sistema completo para selecionar múltiplas imagens, visualizar miniaturas e enviar para o servidor.
+
+                        Captura por câmera - Funcionalidade para acessar a câmera do dispositivo, capturar fotos e enviá-las.
+
+                        Sistema de localização - Integração com a API de geolocalização para associar coordenadas às fotos.
+
+                        Monitoramento OpenTelemetry - Painel completo para verificar a saúde do servidor e métricas.
+
+                        Sistema de abas completo, Upload de fotos, Captura por câmera, Sistema de localização, Monitoramento OpenTelemetry, Visualização de imagens - Modal para visualizar as imagens em tamanho maior.
+
+                        Design responsivo - Interface adaptada para diferentes tamanhos de tela.
+
+                        Feedback visual - Sistema de status e notificações para informar o usuário sobre o estado das operações.
+
+                        O código está completo e funcional, mantendo o estilo escuro moderno do design original.
+
+                        Sistema de abas completo, Upload de fotos, Captura por câmera, Sistema de localização, Monitoramento OpenTelemetry, Visualização de imagens, Design responsivo, Feedback visual
+                        git add html/09.2025/14/deepseek_html_20250914_76eee9.html README.md cmd.txt html/09.2025/14/ app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                        git commit -m " 14.09, 14:14 Sistema de abas completo, Upload de fotos, Captura por câmera, Sistema de localização, Monitoramento OpenTelemetry, Visualização de imagens, Design responsivo, Feedback visual  16:00 14.09.2025"
+                        git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
             14:14
                 deepseek_html_20250914_43714e.html:1000 Uncaught TypeError: Cannot read properties of undefined (reading 'addEventListener')
                     at deepseek_html_202509…43714e.html:1000:21  deepseek_html_20250914_43714e.html:355  GET https://visualizing-geospatial-data-in-python-4.onrender.com/health 503 (Service Unavailable)
