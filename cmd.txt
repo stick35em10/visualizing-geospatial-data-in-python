@@ -1,7 +1,12 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         14.09.2025, <> 5dias stoping
-            03:[06,02]
+            03:[13, 06,02]
+                git add html/09.2025/14/deepseek_html_20250914_43714e.html README.md cmd.txt html/09.2025/14/ app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                git commit -m " 14.09, 3:13 Este HTML está totalmente otimizado para trabalhar com sua aplicação Flask no endereço https://visualizing-geospatial-data-in-python-4.onrender.com e inclui suporte completo para o monitoramento OpenTelemetry que você implementou2 "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
                 
+
                 git add README.md cmd.txt html/09.2025/14/ app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
                 git commit -m " 14.09, 03:06 Este HTML está totalmente otimizado para trabalhar com sua aplicação Flask no endereço https://visualizing-geospatial-data-in-python-4.onrender.com e inclui suporte completo para o monitoramento OpenTelemetry que você implementou2 "
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
