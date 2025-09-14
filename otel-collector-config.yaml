@@ -10,30 +10,51 @@ processors:
   batch:
     timeout: 1s
     send_batch_size: 1024
+  memory_limiter:
+    check_interval: 1s
+    limit_percentage: 75
+    spike_limit_percentage: 15
 
 exporters:
+  # Logging para console (Render captura stdout)
   logging:
-    loglevel: debug
+    loglevel: info
+    verbosity: basic
+
+  # Para desenvolvimento local - Jaeger
   jaeger:
     endpoint: jaeger:14250
     tls:
       insecure: true
+  # Para produção - Use um backend gratuito
+  otlphttp:
+    endpoint: "https://api.honeycomb.io/v1/traces"
+    headers:
+      "x-honeycomb-team": "${HONEYCOMB_API_KEY}"
+      "x-honeycomb-dataset": "sheets-app"
+
+  # Exportador de logs para console
+  logging/verbose:
+    loglevel: debug
+    verbosity: detailed
 
 extensions:
   health_check:
+  pprof:
+  zpages:
 
 service:
-  extensions: [health_check]
+  extensions: [health_check, pprof, zpages]
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [batch]
-      exporters: [logging, jaeger]
+      processors: [memory_limiter, batch]
+      exporters: [logging, jaeger, otlphttp]
     metrics:
       receivers: [otlp]
-      processors: [batch]
+      processors: [memory_limiter, batch]
       exporters: [logging]
     logs:
       receivers: [otlp]
       processors: [batch]
-      exporters: [logging]
+      exporters: [logging/verbose]

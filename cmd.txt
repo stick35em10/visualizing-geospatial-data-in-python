@@ -1,5 +1,21 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         14.09.2025, <> 5dias stoping
+            02:49
+                git add Dockerfile README.md app.py cmd.txt requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                git commit -m " 14.09, 03:53 01:Start OpenTelemetry and Docker Setup Guide "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
+                Esta configuração permite que você:
+
+                    ✅ Veja logs em tempo real no Render
+
+                    ✅ Tenha traces completos no Honeycomb (gratuito)
+
+                    ✅ Monitore performance e erros
+
+                    ✅ Debug remoto eficiente
+
+                    O Honeycomb é a melhor opção gratuita para visualização de traces OpenTelemetry!
             01:27
                 Start OpenTelemetry and Docker Setup Guide
                 cp app/09/deepseek_python_20250913_c5a3be.py app.py

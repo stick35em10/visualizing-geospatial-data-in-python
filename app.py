@@ -102,6 +102,25 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+@app.route('/api/test')
+def test_endpoint():
+    logger.info("Endpoint test chamado", extra={
+        "user_agent": request.headers.get('User-Agent'),
+        "client_ip": request.remote_addr,
+        "endpoint": "/api/test"
+    })
+    
+    try:
+        # Sua lógica aqui
+        logger.debug("Processando requisição")
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        logger.error("Erro no endpoint test", exc_info=True, extra={
+            "error_type": type(e).__name__,
+            "error_message": str(e)
+        })
+        return jsonify({"error": str(e)}), 500
+
 app = Flask(__name__)
 
 # Instrument Flask and Requests

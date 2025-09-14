@@ -23,7 +23,7 @@ COPY . .
 EXPOSE 5000
 
 ENV PYTHONUNBUFFERED=1
-ENV PORT=5000
+#ENV PORT=5000
 
 # Comando para iniciar a aplicação
 # Usa Gunicorn ou Waitress para produção. Para este exemplo, o Flask é suficiente.
