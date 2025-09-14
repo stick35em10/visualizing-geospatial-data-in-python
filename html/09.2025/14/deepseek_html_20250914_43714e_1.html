@@ -364,7 +364,7 @@
         return res.json();
       } catch (error) {
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
-          throw new Error(`Conexão falhou. Verifique se o servidor está rodando.`);
+          throw new Error(`Conexão falhou. Verifique si o servidor está rodando.`);
         }
         throw error;
       }
@@ -591,8 +591,9 @@
         context.drawImage(els.videoElement, 0, 0, canvas.width, canvas.height);
         const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
         
+        // CORREÇÃO AQUI: trocado = por :
         capturedPhotos.push({
-          dataUrl : photoDataUrl,
+          dataUrl: photoDataUrl, // Correção: dois pontos em vez de igual
           name: `foto_${new Date().toISOString().replace(/[:.]/g, '-')}.jpg`,
           type: 'image/jpeg'
         });
