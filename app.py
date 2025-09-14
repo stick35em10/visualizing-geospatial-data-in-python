@@ -101,6 +101,7 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+app = Flask(__name__)
 
 @app.route('/api/test')
 def test_endpoint():
@@ -121,7 +122,7 @@ def test_endpoint():
         })
         return jsonify({"error": str(e)}), 500
 
-app = Flask(__name__)
+
 
 # Instrument Flask and Requests
 FlaskInstrumentor().instrument_app(app)
