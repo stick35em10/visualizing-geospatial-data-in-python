@@ -1,5 +1,42 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         14.09.2025, <> 5dias stoping
+            14:14
+                deepseek_html_20250914_43714e.html:1000 Uncaught TypeError: Cannot read properties of undefined (reading 'addEventListener')
+                    at deepseek_html_202509…43714e.html:1000:21  deepseek_html_20250914_43714e.html:355  GET https://visualizing-geospatial-data-in-python-4.onrender.com/health 503 (Service Unavailable)
+                makeRequest @ deepseek_html_20250914_43714e.html:355
+                testConnection @ deepseek_html_20250914_43714e.html:384
+                (anonymous) @ deepseek_html_20250914_43714e.html:995
+                setTimeout
+                (anonymous) @ deepseek_html_20250914_43714e.html:993Understand this error
+                deepseek_html_20250914_43714e.html:445 Erro completo: Error: HTTP 503: {"details":{"environment_configured":true,"last_test_time":null,"sheets_connected":false},"status":"degraded","timestamp":"2025-09-14T12:01:38.933035"}
+
+                    at makeRequest (deepseek_html_20250914_43714e.html:367:17)
+                    at async testConnection (deepseek_html_20250914_43714e.html:384:30)
+                
+                Principais correções:
+                    ✅ Corrigido o erro de elementos undefined: Adicionei a função getElement() que verifica se elementos existem antes de usá-los
+
+                    ✅ Melhor tratamento de erro 503: Mensagem mais clara explicando que o servidor está rodando mas o Google Sheets não está conectado
+
+                    ✅ Event listeners seguros: Todos os event listeners agora verificam se os elementos existem
+
+                    ✅ Interface mais robusta: Melhores mensagens de erro e diagnóstico
+
+                    Para resolver o erro 503:
+                    Verifique no Render se as variáveis GOOGLE_SHEETS_CREDENTIALS e SPREADSHEET_ID estão corretas
+
+                    Confirme que a service account tem acesso à planilha
+
+                    Teste manualmente os endpoints de diagnóstico no navegador
+
+                    O erro 503 significa "Service Unavailable" mas nesse caso específico indica que o servidor Flask está rodando mas a conexão com Google Sheets falhou.
+                
+                html/09.2025/14/deepseek_html_20250914_f19e33.html
+                
+                git add  html/09.2025/14/deepseek_html_20250914_f19e33.html README.md cmd.txt html/09.2025/14/ app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                git commit -m " 14.09, 14:14 Corrigido o erro de elementos undefined, Melhor tratamento de erro 503, Event listeners seguros, Interface mais robusta e Para resolver o erro 503  14:18 14.09.2025"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
             04:17
                 git add  html/09.2025/14/deepseek_html_20250914_43714e.html README.md cmd.txt html/09.2025/14/ app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
                 git commit -m " 14.09, 4:17 ❌ Falha na conexão: HTTP 503:  "

@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📸 Upload de Fotos - Images</title>
+  <style>
+    /* ... (mantenha os estilos existentes) ... */
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📸 Upload de Fotos - Images</h1>
+    <div class="row">
+      <button id="btnTest">🔗 Testar Conexão</button>
+      <button id="btnLoad" disabled>📊 Carregar Dados</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <div class="server-info">
+      <strong>🌐 Servidor:</strong> https://visualizing-geospatial-data-in-python-4.onrender.com<br>
+      <strong>📋 Aba:</strong> Images
+      <div id="otelStatus" class="opentelemetry-status disconnected">
+        <span>📊 OpenTelemetry: Desconectado</span>
+      </div>
+    </div>
+    
+    <div id="status" class="status">Clique em <strong>Testar Conexão</strong> para começar.</div>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="data">📊 Ver Imagens</button>
+      <button class="tab" data-tab="upload">📤 Upload</button>
+      <button class="tab" data-tab="camera">📷 Câmera</button>
+      <button class="tab" data-tab="monitoring">📈 Monitoramento</button>
+    </div>
+
+    <!-- ... (mantenha o conteúdo das abas existente) ... -->
+
+    <!-- Monitoramento -->
+    <div class="tab-content" id="tab-monitoring">
+      <div class="panel">
+        <h3>📈 Monitoramento OpenTelemetry</h3>
+        
+        <div class="form-row">
+          <label>Status do Servidor:</label>
+          <button type="button" id="btnHealthCheck">🩺 Verificar Saúde</button>
+          <span id="healthStatus">-</span>
+        </div>
+        
+        <div class="form-row">
+          <label>Diagnóstico Avançado:</label>
+          <button type="button" id="btnEnvCheck">🔍 Verificar Variáveis</button>
+          <button type="button" id="btnCredsCheck">🔐 Testar Credenciais</button>
+        </div>
+        
+        <div class="form-row">
+          <label>Endpoint de Métricas:</label>
+          <button type="button" id="btnMetrics">📊 Buscar Métricas</button>
+        </div>
+        
+        <div id="monitoringResults" class="upload-results" style="display:none;margin-top:20px;">
+          <h4>📋 Resultados do Monitoramento</h4>
+          <pre id="monitoringData" style="background:#0b1020;padding:15px;border-radius:8px;overflow:auto;max-height:300px;"></pre>
+        </div>
+        
+        <div class="stats">
+          <strong>Endpoints disponíveis:</strong>
+          <ul style="font-size:12px;margin:10px 0;padding-left:20px;">
+            <li><code>/health</code> - Status do serviço</li>
+            <li><code>/debug/environment</code> - Variáveis de ambiente</li>
+            <li><code>/debug/credentials</code> - Credenciais</li>
+            <li><code>/api/sheets/data</code> - Dados da planilha</li>
+            <li><code>/api/upload/photos</code> - Upload de fotos</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal para visualizar imagens -->
+  <div id="imageModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <img id="modalImage" src="" alt="Imagem ampliada" />
+    </div>
+  </div>
+
+  <script>
+    // Configuração fixa do servidor
+    const SERVER_URL = "https://visualizing-geospatial-data-in-python-4.onrender.com";
+    const WORKSHEET_NAME = "Images";
+
+    // Estado da aplicação
+    let isConnected = false;
+    let allData = [];
+    let selectedFiles = [];
+    let capturedPhotos = [];
+    let currentLocation = null;
+    let stream = null;
+    let otelConnected = false;
+
+    // Elementos do DOM - AGORA COM VERIFICAÇÃO
+    function getElement(id) {
+      const el = document.getElementById(id);
+      if (!el) {
+        console.warn(`Elemento não encontrado: ${id}`);
+      }
+      return el;
+    }
+
+    const els = {
+      // Botões principais
+      btnTest: getElement('btnTest'),
+      btnLoad: getElement('btnLoad'),
+      btnRefresh: getElement('btnRefresh'),
+      status: getElement('status'),
+      data: getElement('data'),
+      dataStats: getElement('dataStats'),
+      search: getElement('search'),
+      entries: getElement('entries'),
+      otelStatus: getElement('otelStatus'),
+      
+      // Upload
+      uploadForm: getElement('uploadForm'),
+      photoFiles: getElement('photoFiles'),
+      filePreview: getElement('filePreview'),
+      submitUpload: getElement('submitUpload'),
+      uploadResults: getElement('uploadResults'),
+      btnLocation: getElement('btnLocation'),
+      locationStatus: getElement('locationStatus'),
+      
+      // Câmera
+      cameraForm: getElement('cameraForm'),
+      videoElement: getElement('videoElement'),
+      captureBtn: getElement('captureBtn'),
+      clearPhotosBtn: getElement('clearPhotosBtn'),
+      cameraPreview: getElement('cameraPreview'),
+      submitCamera: getElement('submitCamera'),
+      btnCameraLocation: getElement('btnCameraLocation'),
+      cameraLocationStatus: getElement('cameraLocationStatus'),
+      
+      // Monitoramento
+      btnHealthCheck: getElement('btnHealthCheck'),
+      btnEnvCheck: getElement('btnEnvCheck'),
+      btnCredsCheck: getElement('btnCredsCheck'),
+      btnMetrics: getElement('btnMetrics'),
+      healthStatus: getElement('healthStatus'),
+      monitoringResults: getElement('monitoringResults'),
+      monitoringData: getElement('monitoringData'),
+      
+      // Abas
+      tabs: document.querySelectorAll('.tab'),
+      tabContents: document.querySelectorAll('.tab-content')
+    };
+
+    // Funções utilitárias
+    function showMessage(html, kind='info', timeout=0){
+      if (els.status) {
+        els.status.className = 'status ' + (kind==='error'?'error':kind==='success'?'success':kind==='warning'?'warn':'');
+        els.status.innerHTML = html;
+        if(timeout>0){ 
+          setTimeout(()=>{ 
+            els.status.className='status'; 
+            els.status.innerHTML=''; 
+          }, timeout); 
+        }
+      }
+    }
+    
+    function showLoading(msg){ showMessage(`⏳ ${msg}`); }
+    
+    function resetConnection(){
+      isConnected = false;
+      if (els.btnLoad) els.btnLoad.disabled = true;
+      if (els.btnRefresh) els.btnRefresh.disabled = true;
+      if (els.data) els.data.innerHTML = '';
+    }
+
+    function updateOtelStatus(connected) {
+      otelConnected = connected;
+      if (els.otelStatus) {
+        if (connected) {
+          els.otelStatus.className = 'opentelemetry-status connected';
+          els.otelStatus.innerHTML = '<span>📊 OpenTelemetry: Conectado</span>';
+        } else {
+          els.otelStatus.className = 'opentelemetry-status disconnected';
+          els.otelStatus.innerHTML = '<span>📊 OpenTelemetry: Desconectado</span>';
+        }
+      }
+    }
+
+    // Requisições para o servidor
+    async function makeRequest(path, options={}){
+      const url = SERVER_URL.replace(/\/$/, '') + path;
+      try {
+        const res = await fetch(url, { 
+          mode: 'cors',
+          credentials: 'omit',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': options.body instanceof FormData ? undefined : 'application/json'
+          },
+          ...options
+        });
+        
+        if(!res.ok){
+          const txt = await res.text().catch(()=>'Network error');
+          throw new Error(`HTTP ${res.status}: ${txt}`);
+        }
+        return res.json();
+      } catch (error) {
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          throw new Error(`Conexão falhou. Verifique se o servidor está rodando.`);
+        }
+        throw error;
+      }
+    }
+
+    // Testar conexão - VERSÃO SIMPLIFICADA
+    async function testConnection(){
+      showLoading('Testando conexão...');
+      if (els.btnTest) els.btnTest.disabled = true;
+      
+      try{
+        // Teste básico de saúde primeiro
+        const healthResult = await makeRequest('/health');
+        
+        let message = '';
+        let success = false;
+        
+        if (healthResult.status === 'healthy') {
+          // Servidor saudável, testar outras funcionalidades
+          try {
+            const sheetsResult = await makeRequest('/debug/sheets');
+            const cloudResult = await makeRequest('/debug/cloudinary');
+            
+            success = sheetsResult && sheetsResult.success;
+            message = `
+              ✅ <strong>Serviço Online!</strong><br>
+              📊 Google Sheets: ${sheetsResult.success ? '✅ Conectado' : '❌ Erro'}<br>
+              ☁️ Cloudinary: ${cloudResult.cloudinary_configured ? '✅ Configurado' : '❌ Não configurado'}<br>
+              Status: ${healthResult.status}
+            `;
+            
+          } catch (sheetsError) {
+            message = `
+              ⚠️ <strong>Servidor online mas com problemas</strong><br>
+              Status: ${healthResult.status}<br>
+              Erro no Google Sheets: ${sheetsError.message}
+            `;
+          }
+        } else {
+          // Servidor com problemas
+          message = `
+            ❌ <strong>Servidor com problemas</strong><br>
+            Status: ${healthResult.status}<br>
+            Detalhes: ${JSON.stringify(healthResult.details)}
+          `;
+        }
+        
+        showMessage(message, success ? 'success' : 'error');
+        updateOtelStatus(healthResult.status === 'healthy');
+        
+        isConnected = success;
+        if (els.btnLoad) els.btnLoad.disabled = !success;
+        if (els.btnRefresh) els.btnRefresh.disabled = !success;
+
+      } catch(err) {
+        console.error('Erro completo:', err);
+        
+        let errorMessage = `❌ Falha na conexão: ${err.message}`;
+        
+        if (err.message.includes('503')) {
+          errorMessage = `
+            ❌ <strong>Servidor em modo degradado</strong><br>
+            O servidor está rodando mas o Google Sheets não está conectado.<br>
+            Verifique as credenciais e permissões no Render.
+          `;
+        } else if (err.message.includes('Failed to fetch')) {
+          errorMessage = '❌ Não foi possível conectar ao servidor. Verifique se está online.';
+        }
+        
+        showMessage(errorMessage, 'error');
+        resetConnection();
+        updateOtelStatus(false);
+      } finally {
+        if (els.btnTest) els.btnTest.disabled = false;
+      }
+    }
+
+    // Funções de monitoramento
+    async function checkHealth() {
+      if (els.healthStatus) els.healthStatus.textContent = 'Verificando...';
+      try {
+        const result = await makeRequest('/health');
+        if (els.healthStatus) {
+          els.healthStatus.innerHTML = `✅ ${result.status} - ${result.timestamp}`;
+        }
+        updateOtelStatus(result.status === 'healthy');
+        showMonitoringResults(result);
+      } catch (error) {
+        if (els.healthStatus) {
+          els.healthStatus.innerHTML = `❌ Erro: ${error.message}`;
+        }
+        updateOtelStatus(false);
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    }
+
+    async function checkEnvironment() {
+      showMonitoringResults('Verificando variáveis de ambiente...');
+      try {
+        const result = await makeRequest('/debug/environment');
+        showMonitoringResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    }
+
+    async function checkCredentials() {
+      showMonitoringResults('Verificando credenciais...');
+      try {
+        const result = await makeRequest('/debug/credentials');
+        showMonitoringResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    }
+
+    function showMonitoringResults(data) {
+      if (els.monitoringResults && els.monitoringData) {
+        els.monitoringResults.style.display = 'block';
+        els.monitoringData.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+      }
+    }
+
+    // ... (mantenha as outras funções como renderTable, startCamera, etc) ...
+
+    // Configuração de event listeners com verificação
+    function setupEventListeners() {
+      // Listeners principais
+      if (els.btnTest) els.btnTest.addEventListener('click', testConnection);
+      if (els.btnLoad) els.btnLoad.addEventListener('click', loadData);
+      if (els.btnRefresh) els.btnRefresh.addEventListener('click', loadData);
+      
+      // Listeners de monitoramento
+      if (els.btnHealthCheck) els.btnHealthCheck.addEventListener('click', checkHealth);
+      if (els.btnEnvCheck) els.btnEnvCheck.addEventListener('click', checkEnvironment);
+      if (els.btnCredsCheck) els.btnCredsCheck.addEventListener('click', checkCredentials);
+      if (els.btnMetrics) els.btnMetrics.addEventListener('click', getMetrics);
+      
+      // Outros listeners (adicionar verificações similares para todos)
+      if (els.search) els.search.addEventListener('input', handleSearch);
+      if (els.entries) els.entries.addEventListener('change', applyEntriesFilter);
+      
+      // ... (adicionar verificações para todos os outros event listeners) ...
+    }
+
+    // Inicialização
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('🔥 DOM carregado, configurando aplicação...');
+      
+      // Configurar event listeners
+      setupEventListeners();
+      
+      // Teste inicial
+      showMessage('✅ Sistema carregado! Clique em "Testar Conexão" para começar.', 'success');
+      
+      // Auto-teste após 2 segundos
+      setTimeout(() => {
+        console.log('🤖 Executando auto-teste...');
+        testConnection();
+      }, 2000);
+    });
+
+    // ... (restante do código JavaScript) ...
+  </script>
+</body>
+</html>
