@@ -1,8 +1,13 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         14.09.2025, <> 5dias stoping
+            04:17
+                git add  html/09.2025/14/deepseek_html_20250914_43714e.html README.md cmd.txt html/09.2025/14/ app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                git commit -m " 14.09, 4:17 ❌ Falha na conexão: HTTP 503:  "
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
             03:[26, 13, 06, 02]
                 
-                git add  html/09.2025/14/deepseek_html_20250914_43714e_1.html html/09.2025/14/deepseek_html_20250914_43714e.html README.md cmd.txt html/09.2025/14/ app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                git add  html/09.2025/14/deepseek_html_20250914_43714e.html README.md cmd.txt html/09.2025/14/ app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
                 git commit -m " 14.09, 3:42 Este HTML está totalmente otimizado para trabalhar com sua aplicação Flask no endereço https://visualizing-geospatial-data-in-python-4.onrender.com e inclui suporte completo para o monitoramento OpenTelemetry que você implementou2 "
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
 

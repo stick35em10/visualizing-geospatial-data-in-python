@@ -210,7 +210,12 @@
     <div class="tab-content" id="tab-monitoring">
       <div class="panel">
         <h3>📈 Monitoramento OpenTelemetry</h3>
-        
+        <div class="form-row">
+          <label>Diagnóstico Avançado:</label>
+          <button type="button" id="btnEnvCheck">🔍 Verificar Variáveis</button>
+          <button type="button" id="btnCredsCheck">🔐 Testar Credenciais</button>
+          <button type="button" id="btnSheetsTest">📊 Testar Sheets</button>
+        </div>
         <div class="form-row">
           <label>Status do Servidor:</label>
           <button type="button" id="btnHealthCheck">🩺 Verificar Saúde</button>
@@ -375,6 +380,94 @@
       showLoading('Testando conexão...');
       els.btnTest.disabled = true;
       try{
+        // Teste de saúde básico primeiro
+        const healthResult = await makeRequest('/health');
+        
+        // Teste de ambiente
+        const envResult = await makeRequest('/debug/environment');
+        
+        // Teste de credenciais
+        const credsResult = await makeRequest('/debug/credentials');
+        
+        // Teste completo apenas se o ambiente estiver OK
+        let sheetsResult = null;
+        let cloudResult = null;
+        
+        if (envResult.all_found) {
+          sheetsResult = await makeRequest('/debug/sheets');
+          cloudResult = await makeRequest('/debug/cloudinary');
+        }
+
+        const healthOK = !!(healthResult && healthResult.status === 'healthy');
+        const envOK = !!(envResult && envResult.all_found);
+        const credsOK = !!(credsResult && credsResult.success);
+        const sheetsOK = !!(sheetsResult && sheetsResult.success);
+        const cloudOK = !!(cloudResult && cloudResult.cloudinary_configured);
+
+        updateOtelStatus(healthOK);
+
+        let message = `
+          <strong>🔍 Resultado do Diagnóstico:</strong><br>
+          ✅ Serviço: ${healthOK ? 'Online' : 'Offline'}<br>
+          📋 Variáveis de ambiente: ${envOK ? '✅ Completas' : '❌ Faltando'}<br>
+          🔐 Credenciais: ${credsOK ? '✅ Válidas' : '❌ Inválidas'}<br>
+        `;
+
+        if (envOK) {
+          message += `
+            📊 Google Sheets: ${sheetsOK ? '✅ Conectado' : '❌ Falha na conexão'}<br>
+            ☁️ Cloudinary: ${cloudOK ? '✅ Configurado' : '❌ Não configurado'}<br>
+          `;
+        }
+
+        if (!envOK && envResult.missing_vars) {
+          message += `<br>❌ <strong>Variáveis faltando:</strong> ${envResult.missing_vars.join(', ')}`;
+        }
+
+        if (!credsOK && credsResult.error) {
+          message += `<br>❌ <strong>Erro nas credenciais:</strong> ${credsResult.error}`;
+        }
+
+        if (envOK && !sheetsOK && sheetsResult && sheetsResult.error) {
+          message += `<br>❌ <strong>Erro no Google Sheets:</strong> ${sheetsResult.error}`;
+        }
+
+        showMessage(message, healthOK && envOK && credsOK && sheetsOK ? 'success' : 'error');
+
+        isConnected = sheetsOK;
+        els.btnLoad.disabled = !sheetsOK;
+        els.btnRefresh.disabled = !sheetsOK;
+
+        if (sheetsOK) {
+          startCamera();
+        }
+      }catch(err){
+        console.error('Erro completo:', err);
+        
+        let errorMessage = `❌ Falha na conexão: ${err.message}`;
+        
+        // Mensagens mais específicas para erros comuns
+        if (err.message.includes('Failed to fetch')) {
+          errorMessage = '❌ Não foi possível conectar ao servidor. Verifique se o servidor está online.';
+        } else if (err.message.includes('404')) {
+          errorMessage = '❌ Endpoint não encontrado. O servidor pode estar em deploy.';
+        } else if (err.message.includes('500')) {
+          errorMessage = '❌ Erro interno do servidor. Verifique os logs do Render.';
+        }
+        
+        showMessage(errorMessage, 'error');
+        resetConnection();
+        updateOtelStatus(false);
+      }finally{
+        els.btnTest.disabled = false;
+      }
+    }
+
+    /* Testar conexão
+    async function testConnection(){
+      showLoading('Testando conexão...');
+      els.btnTest.disabled = true;
+      try{
         const healthResult = await makeRequest('/health');
         const sheetsResult = await makeRequest('/debug/full');
         const cloudResult = await makeRequest('/debug/cloudinary');
@@ -410,6 +503,7 @@
         els.btnTest.disabled = false;
       }
     }
+    */
 
     // Funções de monitoramento
     async function checkHealth() {
@@ -900,6 +994,34 @@
         console.log('🤖 Executando auto-conexão...');
         testConnection();
       }, 2000);
+    });
+
+    // No final do script, adicione:
+    els.btnEnvCheck.addEventListener('click', async () => {
+      try {
+        const result = await makeRequest('/debug/environment');
+        showMonitoringResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    });
+
+    els.btnCredsCheck.addEventListener('click', async () => {
+      try {
+        const result = await makeRequest('/debug/credentials');
+        showMonitoringResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    });
+
+    els.btnSheetsTest.addEventListener('click', async () => {
+      try {
+        const result = await makeRequest('/debug/sheets');
+        showMonitoringResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
     });
   </script>
 </body>
