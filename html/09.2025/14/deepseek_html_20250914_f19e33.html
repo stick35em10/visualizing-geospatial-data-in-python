@@ -234,6 +234,11 @@
           try {
             const sheetsResult = await makeRequest('/debug/sheets');
             const cloudResult = await makeRequest('/debug/cloudinary');
+            // Em vez de /debug/environment
+            const envResult = await makeRequest('/debug/environment');
+
+            // Em vez de /debug/credentials
+            const credsResult = await makeRequest('/debug/credentials');
             
             success = sheetsResult && sheetsResult.success;
             message = `

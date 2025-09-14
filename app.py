@@ -103,6 +103,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 app = Flask(__name__)
 
+
+
 @app.route('/api/test')
 def test_endpoint():
     logger.info("Endpoint test chamado", extra={
@@ -659,6 +661,209 @@ def health_check():
             }), 500
 
 # ... (mantenha as outras funções e rotas)
+
+# ROTAS DE DEBUG E DIAGNÓSTICO
+@app.route('/debug', methods=['GET'])
+def debug_info():
+    """Endpoint principal de debug com informações gerais"""
+    with tracer.start_as_current_span("debug_info"):
+        try:
+            # Informações básicas do sistema
+            system_info = {
+                'app_name': 'Sheets App API',
+                'version': '1.0.0',
+                'environment': os.getenv('ENVIRONMENT', 'production'),
+                'current_time': datetime.now().isoformat(),
+                'python_version': os.sys.version,
+                'status': sheets_status
+            }
+            
+            return jsonify(system_info), 200
+            
+        except Exception as e:
+            return jsonify({
+                'error': f'Erro ao coletar informações de debug: {str(e)}'
+            }), 500
+
+@app.route('/debug/environment', methods=['GET'])
+def debug_environment():
+    """Endpoint para mostrar variáveis de ambiente (sem valores sensíveis)"""
+    with tracer.start_as_current_span("debug_environment"):
+        try:
+            # Lista de variáveis sensíveis que não devem ser expostas
+            sensitive_keys = [
+                'GOOGLE_SHEETS_CREDENTIALS', 'CLOUDINARY_API_SECRET', 
+                'API_KEY', 'SECRET_KEY', 'PASSWORD', 'TOKEN', 'PRIVATE_KEY'
+            ]
+            
+            env_vars = {}
+            for key, value in os.environ.items():
+                # Ocultar valores de variáveis sensíveis
+                if any(sensitive in key.upper() for sensitive in sensitive_keys):
+                    env_vars[key] = '*** HIDDEN ***'
+                else:
+                    env_vars[key] = value
+            
+            return jsonify({
+                'environment_variables': env_vars,
+                'sensitive_keys_filtered': sensitive_keys
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'error': f'Erro ao coletar variáveis de ambiente: {str(e)}'
+            }), 500
+
+@app.route('/debug/sheets', methods=['GET'])
+def debug_sheets():
+    """Endpoint para debug específico do Google Sheets"""
+    with tracer.start_as_current_span("debug_sheets"):
+        try:
+            # Verificar variáveis de ambiente
+            env_check = check_environment_variables()
+            
+            # Verificar credenciais
+            creds_check = parse_credentials()
+            
+            # Testar conexão
+            connection_test = None
+            if env_check['all_found'] and creds_check['success']:
+                try:
+                    connection_test = test_google_sheets_connection()
+                except Exception as conn_error:
+                    connection_test = {'success': False, 'error': str(conn_error)}
+            
+            # Informações do cache
+            cache_info = {
+                'client_cached': _client_cache is not None,
+                'spreadsheet_cached': _spreadsheet_cache is not None
+            }
+            
+            return jsonify({
+                'environment_check': env_check,
+                'credentials_check': creds_check,
+                'connection_test': connection_test,
+                'cache_info': cache_info,
+                'status': sheets_status,
+                'timestamp': datetime.now().isoformat()
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'error': f'Erro no debug do Sheets: {str(e)}'
+            }), 500
+
+@app.route('/debug/credentials', methods=['GET'])
+def debug_credentials():
+    """Endpoint para verificar status das credenciais"""
+    with tracer.start_as_current_span("debug_credentials"):
+        try:
+            # Verificar se as credenciais estão presentes
+            creds_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
+            creds_present = creds_json is not None and len(creds_json.strip()) > 0
+            
+            # Verificar formato básico
+            format_valid = False
+            is_base64 = False
+            project_id = None
+            client_email = None
+            
+            if creds_present:
+                try:
+                    # Verificar se é base64
+                    test_creds = creds_json.strip()
+                    if test_creds.startswith('eyJ'):  # JWT normalmente começa com eyJ
+                        try:
+                            decoded = base64.b64decode(test_creds).decode('utf-8')
+                            is_base64 = True
+                            test_creds = decoded
+                        except:
+                            pass
+                    
+                    # Tentar fazer parse do JSON
+                    creds_dict = json.loads(test_creds)
+                    format_valid = True
+                    
+                    # Extrair informações não sensíveis
+                    project_id = creds_dict.get('project_id')
+                    client_email = creds_dict.get('client_email')
+                    
+                except (json.JSONDecodeError, UnicodeDecodeError):
+                    format_valid = False
+            
+            # Verificar Cloudinary
+            cloudinary_configured = all([
+                os.getenv('CLOUDINARY_CLOUD_NAME'),
+                os.getenv('CLOUDINARY_API_KEY'), 
+                os.getenv('CLOUDINARY_API_SECRET')
+            ])
+            
+            return jsonify({
+                'google_sheets': {
+                    'credentials_present': creds_present,
+                    'format_valid': format_valid,
+                    'is_base64_encoded': is_base64,
+                    'project_id': project_id,
+                    'client_email': client_email,
+                    'status': sheets_status
+                },
+                'cloudinary': {
+                    'configured': cloudinary_configured,
+                    'cloud_name': bool(os.getenv('CLOUDINARY_CLOUD_NAME')),
+                    'api_key': bool(os.getenv('CLOUDINARY_API_KEY')),
+                    'api_secret': bool(os.getenv('CLOUDINARY_API_SECRET'))
+                },
+                'timestamp': datetime.now().isoformat()
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'error': f'Erro ao verificar credenciais: {str(e)}'
+            }), 500
+
+@app.route('/debug/cloudinary', methods=['GET'])
+def debug_cloudinary():
+    """Endpoint para verificar configuração do Cloudinary"""
+    with tracer.start_as_current_span("debug_cloudinary"):
+        try:
+            # Verificar configuração básica
+            config_status = {
+                'cloud_name': bool(os.getenv('CLOUDINARY_CLOUD_NAME')),
+                'api_key': bool(os.getenv('CLOUDINARY_API_KEY')),
+                'api_secret': bool(os.getenv('CLOUDINARY_API_SECRET')),
+                'fully_configured': all([
+                    os.getenv('CLOUDINARY_CLOUD_NAME'),
+                    os.getenv('CLOUDINARY_API_KEY'),
+                    os.getenv('CLOUDINARY_API_SECRET')
+                ])
+            }
+            
+            # Testar conexão simples (sem fazer upload real)
+            test_result = None
+            if config_status['fully_configured']:
+                try:
+                    # Teste simples da API
+                    result = cloudinary.api.ping()
+                    test_result = {
+                        'status': result.get('status') if result else 'unknown',
+                        'success': result is not None
+                    }
+                except Exception as e:
+                    test_result = {
+                        'success': False,
+                        'error': str(e)
+                    }
+            
+            return jsonify({
+                'configuration': config_status,
+                'connection_test': test_result,
+                'timestamp': datetime.now().isoformat()
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'error': f'Erro ao verificar Cloudinary: {str(e)}'
+            }), 500
 
 if __name__ == '__main__':
     # Inicialização automática ao iniciar o servidor
