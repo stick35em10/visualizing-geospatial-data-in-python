@@ -26,7 +26,7 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
                     Agora quando você acessar https://visualizing-geospatial-data-in-python-4.onrender.com/debug/sheets e os outros endpoints, eles retornarão informações úteis em formato JSON em vez de erro "Not Found".
 
                     git add html/09.2025/14/deepseek_html_20250914_f19e33.html html/09.2025/14/deepseek_html_20250914_76eee9.html README.md cmd.txt html/09.2025/14/ app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
-                    git commit -m " 14.09, 17:33 Sistema de abas completo, Upload de fotos, Captura por câmera, Sistema de localização, Monitoramento OpenTelemetry, Visualização de imagens, Design responsivo, Feedback visual  16:00 14.09.2025"
+                    git commit -m " 14.09, 17:24 Sistema de abas completo, Upload de fotos, Captura por câmera, Sistema de localização, Monitoramento OpenTelemetry, Visualização de imagens, Design responsivo, Feedback visual  16:00 14.09.2025"
                     git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
 
             16:14
