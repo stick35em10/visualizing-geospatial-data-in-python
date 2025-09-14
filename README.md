@@ -1,5 +1,7 @@
 
 
+[mostrará apenas as colunas Data, Título e URL da Imagem 12:35 08.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/09/deepseek_html_20250909_43714e.html)
+
 [mostrará apenas as colunas Data, Título e URL da Imagem 12:35 08.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/08/deepseek_html_20250908_43714e_V1.html)
 
 [mostrará apenas as colunas Data, Título e URL da Imagem 08.09.2026](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/08/deepseek_html_20250908_43714e.html)

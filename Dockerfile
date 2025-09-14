@@ -1,9 +1,14 @@
 # Usa uma imagem base Python leve
-FROM python:3.9-slim
+#FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Define o diretório de trabalho no contêiner
 WORKDIR /app
 
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 # Copia o arquivo de dependências primeiro para aproveitar o cache do Docker
 COPY requirements_for_render.txt requirements.txt
 
@@ -16,6 +21,9 @@ COPY . .
 #Run ls /app #- ConsistentInstructionCasing: Command 'Run' should match the case of the command majority (uppercase) (line 16)
 # Expõe a porta que o Flask vai usar (5000 por padrão)
 EXPOSE 5000
+
+ENV PYTHONUNBUFFERED=1
+ENV PORT=5000
 
 # Comando para iniciar a aplicação
 # Usa Gunicorn ou Waitress para produção. Para este exemplo, o Flask é suficiente.
