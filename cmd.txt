@@ -1,6 +1,17 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         15.09.2025
-            08:12
+            08:[50, 12]
+                📋 Resumo das Principais Correções
+                    ✅ Backend: A rota /upload agora aceita tanto 'photos' quanto 'files' como nome dos campos de arquivo
+                    ✅ Frontend: A função de upload da câmera envia arquivos com ambos os nomes para compatibilidade
+                    ✅ Frontend: Corrigida a geração de URLs das imagens para evitar undefined
+                    ✅ Frontend: Melhor tratamento de erro com mensagens mais descritivas
+                    Essas correções devem resolver os problemas de 400 Bad Request e os erros de URL indefinida. 🎉
+                        git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                        git commit -m " 15.09, 08:50 Essas correções devem resolver os problemas de 400 Bad Request e os erros de URL indefinida. 🎉"
+                        git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
+
                 📋 Resumo das Alterações
                     ✅ Removida a dependência do prometheus_client
                     ✅ Adicionada rota /metrics simples

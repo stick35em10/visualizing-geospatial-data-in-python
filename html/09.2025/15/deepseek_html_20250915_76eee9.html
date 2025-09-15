@@ -809,18 +809,37 @@
       `;
       
       filteredData.forEach(item => {
+        // Corrigir URL da imagem - verificar se existe e formatar corretamente
+        let imageUrl = '';
+
+        if (item.file_path) {
+          imageUrl = item.file_path.startsWith('http') ? item.file_path : `${SERVER_URL}${item.file_path}`;
+        } else if (item.url) {
+          imageUrl = item.url;
+        }
+        
+        let thumbnailUrl = '';
+        if (item.thumbnail_path) {
+          thumbnailUrl = item.thumbnail_path.startsWith('http') ? item.thumbnail_path : `${SERVER_URL}${item.thumbnail_path}`;
+        } else {
+          thumbnailUrl = imageUrl; // Usar imagem principal se não houver thumbnail
+        }
+        
         tableHTML += `
           <tr>
             <td>${item.id || '-'}</td>
             <td>
-              <img src="${SERVER_URL}${item.thumbnail_path || item.file_path}" 
-                   alt="Thumbnail" class="thumbnail" 
-                   onclick="openModal('${SERVER_URL}${item.file_path}')">
+              ${imageUrl ? `
+                <img src="${thumbnailUrl}" 
+                    alt="Thumbnail" class="thumbnail" 
+                    onclick="openModal('${imageUrl}')">
+              ` : 'N/A'}
             </td>
-            <td>${item.filename}</td>
-            <td>${formatFileSize(item.file_size)}</td>
-            <td>${formatDate(item.upload_date)}</td>
-            <td>${item.location ? `${item.location.lat.toFixed(4)}, ${item.location.lng.toFixed(4)}` : 'N/A'}</td>
+            
+            <td>${item.filename || item.name || '-'}</td>
+            <td>${item.file_size ? formatFileSize(item.file_size) : 'N/A'}</td>
+            <td>${item.upload_date ? formatDate(item.upload_date) : 'N/A'}</td>
+             <td>${item.location ? `${item.location.lat.toFixed(4)}, ${item.location.lng.toFixed(4)}` : 'N/A'}</td>
           </tr>
         `;
       });
@@ -1085,18 +1104,31 @@
       try {
         const formData = new FormData();
         
+        // Adicionar título padrão para fotos da câmera
+        formData.append('title', 'Foto da Câmera');
+        formData.append('description', 'Capturada via câmera do dispositivo');
+
+        // Adicionar localização se disponível
+        //if (photo.location) {
+        //    formData.append('location', JSON.stringify(photo.location));
+        //  }
+        // Adicionar localização se disponível
+        if (cameraLocation) {
+          formData.append('latitude', cameraLocation.lat);
+          formData.append('longitude', cameraLocation.lng);
+        }
+
         // Converter Data URLs para arquivos e adicionar ao FormData
         for (let i = 0; i < capturedPhotos.length; i++) {
           const photo = capturedPhotos[i];
           const blob = dataURLToBlob(photo.dataURL);
           const file = new File([blob], `camera_photo_${i+1}_${Date.now()}.png`, { type: 'image/png' });
           
+          // Usar ambos os nomes para compatibilidade
+          formData.append('photos', file);
           formData.append('files', file);
           
-          // Adicionar localização se disponível
-          if (photo.location) {
-            formData.append('location', JSON.stringify(photo.location));
-          }
+          
         }
         
         const response = await fetch(`${SERVER_URL}/upload`, {
@@ -1116,7 +1148,8 @@
           // Recarregar dados
           setTimeout(loadData, 1000);
         } else {
-          throw new Error(`Status: ${response.status}`);
+          const errorText = await response.text();
+          throw new Error(`Status: ${response.status}- ${errorText}`);
         }
       } catch (error) {
         showMessage(`❌ Falha no envio: ${error.message}`, 'error');

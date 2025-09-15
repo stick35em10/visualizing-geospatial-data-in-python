@@ -515,11 +515,20 @@ def upload_photos():
             
             span.set_attribute("upload.title", title)
             span.set_attribute("upload.worksheet", worksheet_name)
-            span.set_attribute("upload.files_count", len(request.files.getlist('photos')))
+            #span.set_attribute("upload.files_count", len(request.files.getlist('photos')))
             
             # Processar arquivos
-            uploaded_files = request.files.getlist('photos')
+            # Processar arquivos - compatibilidade com ambos os nomes de campo
+            #uploaded_files = request.files.getlist('photos')
+            uploaded_files = []
+            if 'photos' in request.files:
+                uploaded_files = request.files.getlist('photos')
+            elif 'files' in request.files:
+                uploaded_files = request.files.getlist('files')
+            
             file_count = len(uploaded_files)
+            span.set_attribute("upload.files_count", file_count)
+            
             
             if file_count == 0:
                 span.set_status(trace.Status(trace.StatusCode.ERROR, "No files uploaded"))
@@ -527,6 +536,7 @@ def upload_photos():
                     'success': False,
                     'error': 'Nenhum arquivo enviado'
                 }), 400
+                
             
             log_step("UPLOAD_PHOTOS", f"Processando {file_count} arquivo(s) para a aba '{worksheet_name}'")
             
