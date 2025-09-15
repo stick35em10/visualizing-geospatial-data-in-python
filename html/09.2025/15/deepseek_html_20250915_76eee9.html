@@ -771,6 +771,7 @@
         const response = await fetch(`${SERVER_URL}/images`);
         if (response.ok) {
           imageData = await response.json();
+          console.log('Dados recebidos:', imageData); // DEBUG
 
           // 15.09 11:22, Processar URLs para garantir que são válidas
           imageData = imageData.map(item => {
@@ -784,11 +785,28 @@
 
           displayData(imageData);
           showMessage(`✅ Dados carregados: ${imageData.length} imagens encontradas`, 'success');
+
+          // Debug: verificar estrutura dos dados
+          if (imageData.length > 0) {
+            console.log('Primeiro item:', imageData[0]);
+          }
+
         } else {
           throw new Error(`Status: ${response.status}`);
         }
       } catch (error) {
         showMessage(`❌ Falha ao carregar dados: ${error.message}`, 'error');
+
+        // Tentar debug para entender a estrutura
+        try {
+          const debugResponse = await fetch(`${SERVER_URL}/debug/images`);
+          if (debugResponse.ok) {
+            const debugData = await debugResponse.json();
+            console.log('Estrutura dos dados (debug):', debugData);
+          }
+        } catch (debugError) {
+          console.error('Erro no debug:', debugError);
+        }
 
         // Carregar dados de fallback para teste
         loadFallbackData();

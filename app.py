@@ -475,13 +475,18 @@ def get_images():
             # Transformar os dados para o formato esperado pelo frontend
             formatted_data = []
             for row in data:
+                # Usar o campo correto do Google Sheets: "URL da Imagem"
+                image_url = row.get('URL da Imagem', '') or row.get('url_link', '') or row.get('link', '')
+                
                 if row.get('URL da Imagem'):  # Verificar se tem URL
                     formatted_data.append({
                         'id': row.get('ID Único', str(uuid.uuid4())[:8]),
                         'filename': row.get('Nome do Arquivo Original', ''),
                         'file_size': len(row.get('URL da Imagem', '')),  # Aproximação
-                        'upload_date': row.get('Data', ''),
+                        'upload_date': image_url, #row.get('Data', ''),
+                        
                         'url': row.get('URL da Imagem', ''),
+                        
                         'thumbnail_path': row.get('URL da Imagem', ''),  # Usar mesma URL para thumbnail
                         'file_path': row.get('URL da Imagem', ''),
                         'location': {
@@ -501,6 +506,31 @@ def get_images():
             # Retorna array vazio em vez de erro para não quebrar o frontend
             logger.error(f"Erro ao carregar imagens: {str(e)}")
             return jsonify([])
+
+@app.route('/debug/images', methods=['GET'])
+def debug_images():
+    """Endpoint para debug da estrutura de imagens"""
+    with tracer.start_as_current_span("debug_images"):
+        try:
+            client, spreadsheet = get_sheets_client()
+            worksheet = spreadsheet.worksheet('Imagens')
+            
+            # Obter cabeçalhos para verificar a estrutura
+            headers = worksheet.row_values(1)
+            
+            # Obter algumas linhas de exemplo
+            sample_data = worksheet.get_all_records()
+            
+            return jsonify({
+                'headers': headers,
+                'sample_data': sample_data[:3],  # Primeiras 3 linhas
+                'total_records': len(sample_data)
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'error': f'Erro ao debug imagens: {str(e)}'
+            }), 500
 
 #6. Adicionar Rota /upload que está sendo chamada pelo frontend
 # Problema: O frontend tenta POST para /upload mas a rota no Flask é /api/upload/photos.

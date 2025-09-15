@@ -1,5 +1,23 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         15.09.2025
+            12:52
+                7. Verifique se as imagens estão no Cloudinary:
+                    Acesse seu dashboard do Cloudinary e verifique se:
+                    As imagens foram enviadas corretamente
+                    As URLs estão acessíveis
+                    As permissões estão configuradas corretamente
+                        Essas modificações garantirão que:
+                            ✅ O backend use o campo correto "URL da Imagem" do Google Sheets
+                            ✅ O frontend consiga encontrar e exibir as URLs das imagens
+                            ✅ Você possa debuggar a estrutura dos dados facilmente
+                            ✅ As imagens sejam exibidas corretamente na interface
+
+                    Teste as mudanças e verifique o console do navegador para ver a estrutura real dos dados retornados pelo servidor.
+
+                        git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                        git commit -m " 15.09, 12:54 try solve o campo da url com o linkau da imagem é url_link peço para garantir que seja visado"
+                        git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
             11:47
                 Analisando seu código, identifiquei o problema principal: as imagens estão sendo armazenadas no Cloudinary, mas o frontend não está conseguindo acessar os URLs corretamente.
 
