@@ -1017,12 +1017,13 @@
       if (!searchTerm) {
         displayData(imageData);
         return;
-      }
+      } // if (!searchTerm)
       
-      const filteredData = imageData.filter(item => 
+      const filteredData = imageData.filter(item => {
         // Buscar nos campos: Data, Título, Descrição
-        const data = item.Data || item.upload_date || '';
+        const data = item.Data || item.upload_date || ''; // ERRO: 'const' não pode ser usado aqui
         const titulo = item.Título || item.title || '';
+
         const descricao = item.Descrição || item.description || '';
         const filename = item['Nome do Arquivo Original'] || item.filename || '';
 
@@ -1033,10 +1034,10 @@
            descricao.toLowerCase().includes(searchTerm) ||
            filename.toLowerCase().includes(searchTerm) ||
            (item.location && `${item.location.lat},${item.location.lng}`.includes(searchTerm));
-      );// filteredData
+      }); // const filteredData
       
       displayData(filteredData);
-    }
+    } // function filteredData
 
     // Manipular seleção de arquivos
     function handleFileSelect(e) {
