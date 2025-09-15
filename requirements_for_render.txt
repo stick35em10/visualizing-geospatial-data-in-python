@@ -40,3 +40,5 @@ opentelemetry-sdk==1.19.0
 opentelemetry-exporter-otlp==1.19.0
 opentelemetry-instrumentation-flask==0.40b0
 opentelemetry-instrumentation-requests==0.40b0
+
+prometheus-client==0.20.0

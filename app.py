@@ -674,6 +674,7 @@ def health_check():
             # Verificação básica de saúde
             # Verificação mais tolerante - o servidor pode estar rodando
             # mesmo sem conexão com Google Sheets
+             # Verificação tolerante - servidor sempre está rodando
             env_ok = os.getenv('GOOGLE_SHEETS_CREDENTIALS') is not None
             sheets_ok = sheets_status.get('initialized', False)
             
@@ -690,14 +691,15 @@ def health_check():
                     'sheets_connected': sheets_ok,
                     'last_test_time': sheets_status.get('last_test_time')
                 }
-            }), 200 #if status == 'healthy' else 503 ## Sempre retorna 200, o status indica a saúde
+            }), 200 # ✅ SEMPRE 200 #if status == 'healthy' else 503 ## Sempre retorna 200, o status indica a saúde
             
         except Exception as e:
+            #'status': 'unhealthy',
             return jsonify({
-                'status': 'unhealthy',
+                'status': 'degraded',
                 'error': str(e),
                 'timestamp': datetime.now().isoformat()
-            }), 200  # Mantém 200 para não quebrar o health check #500
+            }), 200  # ✅ SEMPRE 200  # Mantém 200 para não quebrar o health check #500
 
 # ... (mantenha as outras funções e rotas)
 
@@ -928,28 +930,33 @@ if __name__ == '__main__':
     with tracer.start_as_current_span("app_startup"):
         log_step("APP_STARTUP", "🚀 Iniciando Sheets App API...")
         
-        # Verificar ambiente
-        env_check = check_environment_variables()
-        
-        if env_check['all_found']:
-            log_step("APP_STARTUP", "✅ Todas as variáveis de ambiente encontradas")
+        # Verificar ambiente mas não falhar se houver problemas
+        try:
+            # Verificar ambiente
+            env_check = check_environment_variables()
             
-            # Testar conexão em background MAS não falhar se der erro
-            try:
-                test_result = test_google_sheets_connection()
-                if test_result['success']:
-                    log_step("APP_STARTUP", "🎉 Conexão com Google Sheets estabelecida com sucesso!")
-                else:
-                    log_step("APP_STARTUP", f"⚠️ Conexão falhou: {test_result.get('error', 'Erro desconhecido')}", False)
-                    # Não marcar como falha completa - servidor ainda pode funcionar
+            if env_check['all_found']:
+                log_step("APP_STARTUP", "✅ Todas as variáveis de ambiente encontradas")
+                
+                # Testar conexão em background MAS não falhar se der erro
+                try:
+                    test_result = test_google_sheets_connection()
+                    if test_result['success']:
+                        log_step("APP_STARTUP", "🎉 Conexão com Google Sheets estabelecida com sucesso!")
+                    else:
+                        log_step("APP_STARTUP", f"⚠️ Conexão falhou: {test_result.get('error', 'Erro desconhecido')}", False)
+                        # Não marcar como falha completa - servidor ainda pode funcionar
+                        sheets_status['initialized'] = False
+                except Exception as e:
+                    log_step("APP_STARTUP", f"⚠️ Erro durante inicialização: {str(e)}", False)
                     sheets_status['initialized'] = False
-            except Exception as e:
-                log_step("APP_STARTUP", f"⚠️ Erro durante inicialização: {str(e)}", False)
+            else:
+                log_step("APP_STARTUP", f"❌ Variáveis ausentes: {env_check['missing_vars']}", False)
                 sheets_status['initialized'] = False
-        else:
-            log_step("APP_STARTUP", f"❌ Variáveis ausentes: {env_check['missing_vars']}", False)
-            sheets_status['initialized'] = False
-        
+                
+        except Exception as e:
+            log_step("APP_STARTUP", f"⚠️ Erro durante inicialização: {str(e)}", False)    
+            
         # Iniciar servidor MESMO sem conexão com Sheets
         port = int(os.environ.get('PORT', 5000))
         log_step("APP_STARTUP", f"🌐 Servidor iniciado na porta {port}")

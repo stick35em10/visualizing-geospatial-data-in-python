@@ -1,5 +1,20 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         15.09.2025
+            08:12
+                📋 Resumo das Alterações
+                    ✅ Removida a dependência do prometheus_client
+                    ✅ Adicionada rota /metrics simples
+                    ✅ Corrigida rota /health para sempre retornar 200
+                    ✅ Adicionado alias /upload para a rota de upload
+                    ✅ Tornada a inicialização mais tolerante a erros
+
+                    Agora o servidor deve iniciar corretamente sem erros de importação! 🎉
+
+                        git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                        git commit -m " 15.09, 08:13 Agora o servidor deve iniciar corretamente sem erros de importação! 🎉"
+                        git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
+
             07:52
                 soluções
                     # Modificar a função health_check para ser mais tolerante
