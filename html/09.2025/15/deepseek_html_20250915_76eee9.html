@@ -775,13 +775,19 @@
 
           // 15.09 11:22, Processar URLs para garantir que são válidas
           imageData = imageData.map(item => {
+            // USAR O CAMPO CORRETO: 'URL da Imagem' em vez de 'url_link'
+            const imageUrl = item['URL da Imagem'] || item.url || item.file_path;
+            
             return {
               ...item,
-              url: ensureValidUrl(item.url),
-              file_path: ensureValidUrl(item.file_path),
-              thumbnail_path: ensureValidUrl(item.thumbnail_path)
+              url: ensureValidUrl(imageUrl), //(item.url),
+              file_path: ensureValidUrl(imageUrl), //item.file_path),
+              thumbnail_path: ensureValidUrl(imageUrl) //item.thumbnail_path)
             };
           });
+
+          // 15.09 13:31 Dentro da função loadData(), após imageData = await response.json();
+          debugDataFields(imageData);
 
           displayData(imageData);
           showMessage(`✅ Dados carregados: ${imageData.length} imagens encontradas`, 'success');
@@ -789,6 +795,7 @@
           // Debug: verificar estrutura dos dados
           if (imageData.length > 0) {
             console.log('Primeiro item:', imageData[0]);
+            console.log('Campos disponíveis:', Object.keys(imageData[0]));
           }
 
         } else {
@@ -803,6 +810,7 @@
           if (debugResponse.ok) {
             const debugData = await debugResponse.json();
             console.log('Estrutura dos dados (debug):', debugData);
+            console.log('Cabeçalhos da planilha:', debugData.headers);
           }
         } catch (debugError) {
           console.error('Erro no debug:', debugError);
@@ -858,8 +866,9 @@
       `;
       
       filteredData.forEach(item => {
-        // Garantir que temos uma URL válida
-        const imageUrl = item.url || item.file_path || '';
+        // Garantir que temos uma URL válida - priorizar o campo correto
+        // USAR O CAMPO CORRETO: 'URL da Imagem' //15.09 13:18
+        const imageUrl = item['URL da Imagem'] || item.url || item.file_path || ''; //item.url || item.file_path || item.thumbnail_path || '';
         const thumbnailUrl = item.thumbnail_path || imageUrl;
 
         // Corrigir URL da imagem - verificar se existe e formatar corretamente
@@ -879,14 +888,18 @@
           thumbnailUrl = imageUrl; // Usar imagem principal se não houver thumbnail
         }
         */
+        //15.09 13:18
+        const filename = item['Nome do Arquivo Original'] || item.filename || '-';
+        const fileSize = item.Tamanho || item.file_size || 0;
+        const uploadDate = item.Data || item.upload_date || '-';
         tableHTML += `
           <tr>
             <td>${item.id || '-'}</td>
             <td>
               ${imageUrl ? `
-                <img src="${thumbnailUrl}" 
+                <img src="${ensureValidUrl(thumbnailUrl)}" 
                     alt="Thumbnail" class="thumbnail" 
-                    onclick="openModal('${imageUrl}')">
+                    onclick="openModal('${ensureValidUrl(imageUrl)}')">
               ` : 'N/A'}
             </td>
             
@@ -896,7 +909,7 @@
             <td>${item.location ? `${item.location.lat.toFixed(4)}, ${item.location.lng.toFixed(4)}` : 'N/A'}</td>
             <td>
               ${imageUrl ? `
-                <button onclick="openModal('${imageUrl}')" style="padding:5px 10px;font-size:12px;">
+                <button onclick="openModal('${ensureValidUrl(imageUrl)}')" style="padding:5px 10px;font-size:12px;">
                   👁️ Ver
                 </button>
               ` : ''}
@@ -913,6 +926,18 @@
       dataContainer.innerHTML = tableHTML;
     }
 
+    // Função para debug - mostrar todos os campos disponíveis nos dados
+    function debugDataFields(data) {
+      if (data.length > 0) {
+        const firstItem = data[0];
+        console.log('Campos disponíveis no primeiro item:', Object.keys(firstItem));
+        
+        // Mostrar também os valores para referência
+        Object.keys(firstItem).forEach(key => {
+          console.log(`${key}:`, firstItem[key]);
+        });
+      }
+    }
     // Função para garantir URL válida
     function ensureValidUrl(url) {
       if (!url) return '';
