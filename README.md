@@ -1,4 +1,7 @@
 
+
+[O erro Identifier 'btnOtelMetrics' has already been declared ocorria porque havia duas declarações da mesma variável no código JavaScript.  17:00 15.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/15/deepseek_html_20250915_293ce8.html)
+
 [deepseek_html_20250914_f19e33.html - Versão mais simples com estrutura básica deepseek_html_20250914_76eee9.html - Versão completa com todas as funcionalidades implementadas app.py - Backend Flask com todas as rotas necessárias (incluindo as rotas de debug)  07:00 15.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/15/deepseek_html_20250915_76eee9.html)
 
 
