@@ -1,6 +1,12 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         15.09.2025
             
+            16:05
+                A API Flask está retornando o campo url e o JavaScript estava procurando por url_link
+                    git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                    git commit -m " 15.09, 16:05 A API Flask está retornando o campo url e o JavaScript estava procurando por url_link"
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
             15:[29, 07]
                 Esta correção resolve o erro de sintaxe "Unexpected token 'const'" que estava impedindo o carregamento do JavaScript
                     git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md

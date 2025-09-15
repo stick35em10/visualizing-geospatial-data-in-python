@@ -772,11 +772,14 @@
         if (response.ok) {
           imageData = await response.json();
           console.log('Dados recebidos:', imageData); // DEBUG
+          
+          // DEBUG: Verificar estrutura
+          debugDataStructure(imageData);
 
           // 15.09 11:22, Processar URLs para garantir que são válidas
           imageData = imageData.map(item => {
             // 15.09 13:57, USAR O CAMPO CORRETO: 'url_link' para a URL da imagem // USAR O CAMPO CORRETO: 'URL da Imagem' em vez de 'url_link'
-            const imageUrl = item.url_link || ''; //item['URL da Imagem'] || item.url || item.file_path;
+            const imageUrl = item.url || item.url_link || item.file_path ||  item['URL da Imagem'] || ''; //item['URL da Imagem'] || item.url || item.file_path;
             
             return {
               ...item,
@@ -871,39 +874,40 @@
       filteredData.forEach(item => {
         // Garantir que temos uma URL válida - priorizar o campo correto
         // USAR O CAMPO CORRETO: 'URL da Imagem' //15.09 13:18
+        // CORREÇÃO: Usar o campo 'url' que é retornado pela API Flask
         const imageUrl = item.url_link || item['URL da Imagem'] || item.url || item.file_path || ''; //item.url || item.file_path || item.thumbnail_path || '';
         const thumbnailUrl = item.thumbnail_path || imageUrl;
 
-            // Usar os campos corretos da planilha
-    const data = item.Data || item.upload_date || '-';
-    const titulo = item.Título || item.title || '-';
-    const descricao = item.Descrição || item.description || '-';
-    const filename = item['Nome do Arquivo Original'] || item.filename || '-';
+        // Usar os campos corretos da planilha
+        const data = item.Data || item.upload_date || '-';
+        const titulo = item.Título || item.title || '-';
+        const descricao = item.Descrição || item.description || '-';
+        const filename = item['Nome do Arquivo Original'] || item.filename || '-';
 
-    tableHTML += `
-      <tr>
-        <td>${data ? formatDate(data) : '-'}</td>
-        <td>${titulo}</td>
-        <td>
-          ${imageUrl ? `
-            <img src="${ensureValidUrl(thumbnailUrl)}" 
-                alt="Thumbnail" class="thumbnail" 
-                onclick="openModal('${ensureValidUrl(imageUrl)}')">
-          ` : 'N/A'}
-        </td>
-        <td>${filename}</td>
-        <td>${descricao.length > 50 ? descricao.substring(0, 50) + '...' : descricao}</td>
-        <td>${item.location ? `${item.location.lat.toFixed(4)}, ${item.location.lng.toFixed(4)}` : 'N/A'}</td>
-        <td>
-          ${imageUrl ? `
-            <button onclick="openModal('${ensureValidUrl(imageUrl)}')" style="padding:5px 10px;font-size:12px;">
-              👁️ Ver
-            </button>
-          ` : ''}
-        </td> 
-      </tr>
-        `;
-      });
+        tableHTML += `
+          <tr>
+            <td>${data ? formatDate(data) : '-'}</td>
+            <td>${titulo}</td>
+            <td>
+              ${imageUrl ? `
+                <img src="${ensureValidUrl(thumbnailUrl)}" 
+                    alt="Thumbnail" class="thumbnail" 
+                    onclick="openModal('${ensureValidUrl(imageUrl)}')">
+              ` : 'N/A'}
+            </td>
+            <td>${filename}</td>
+            <td>${descricao.length > 50 ? descricao.substring(0, 50) + '...' : descricao}</td>
+            <td>${item.location ? `${item.location.lat.toFixed(4)}, ${item.location.lng.toFixed(4)}` : 'N/A'}</td>
+            <td>
+              ${imageUrl ? `
+                <button onclick="openModal('${ensureValidUrl(imageUrl)}')" style="padding:5px 10px;font-size:12px;">
+                  👁️ Ver
+                </button>
+              ` : ''}
+            </td> 
+          </tr>
+            `;
+          });
 
         // Corrigir URL da imagem - verificar se existe e formatar corretamente
         /*15.09.25 11:05
@@ -960,6 +964,14 @@
       `;
       
       dataContainer.innerHTML = tableHTML;
+    }
+
+    // Adicione esta função para debug
+    function debugDataStructure(data) {
+      if (data.length > 0) {
+        console.log('Estrutura do primeiro item:', data[0]);
+        console.log('Campos disponíveis:', Object.keys(data[0]));
+      }
     }
 
     // Função para debug - mostrar todos os campos disponíveis nos dados
@@ -1037,7 +1049,7 @@
       }); // const filteredData
       
       displayData(filteredData);
-    } // function filteredData
+    } //function filteredData
 
     // Manipular seleção de arquivos
     function handleFileSelect(e) {
