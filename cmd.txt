@@ -1,6 +1,18 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         15.09.2025
-            14:41
+            
+            15:07
+                try solve O erro 'Uncaught SyntaxError: missing  after argument list' deve ser resolvido agora.
+                    git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                    git commit -m " 15.09, 15:07 try solve O erro 'Uncaught SyntaxError: missing  after argument list' deve ser resolvido agora."
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
+            14:[51, 41]
+                try solve O erro 'Uncaught SyntaxError: missing  after argument list' deve ser resolvido agora.
+                    git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                    git commit -m " 15.09, 14:44 Agora a busca funcionará pelos campos que você especificou e as imagens serão exibidas corretamente usando o campo url_link"
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
                 Agora a busca funcionará pelos campos que você especificou e as imagens serão exibidas corretamente usando o campo url_link
                 Essas alterações garantem que:
                     A busca funciona pelos campos Data, Título, Descrição e Nome do Arquivo

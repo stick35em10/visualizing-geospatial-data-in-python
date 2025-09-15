@@ -969,25 +969,26 @@
         console.log('=== ESTRUTURA DOS DADOS ===');
         console.log('Campos disponíveis no primeiro item:', Object.keys(firstItem));
         
-        // Mostrar também os valores para referência
+        // Mostrar também os valores para referência (apenas os primeiros 100 caracteres)
         Object.keys(firstItem).forEach(key => {
 
           console.log(`${key}:`, firstItem[key]);
           console.log('Campos disponíveis no primeiro item:', Object.keys(firstItem));
 
           // Mostrar também os valores para referência (apenas os primeiros 100 caracteres)
-          Object.keys(firstItem).forEach(key => {
-            const value = firstItem[key];
-            const preview = typeof value === 'string' ? 
+        
+          const value = firstItem[key];
+          const preview = typeof value === 'string' ? 
               (value.length > 100 ? value.substring(0, 100) + '...' : value) : 
               JSON.stringify(value).substring(0, 100);
             
-            console.log(`${key}:`, preview);
-          }); //Object.keys(firstItem).forEach(key =>
+          console.log(`${key}:`, preview);
+        }); //Object.keys(firstItem).forEach(key =>
+          
           console.log('===========================');
-        } // Object.keys(firstItem).forEach(key
-      }//if (data.length > 0)
-    }//debugDataFields(data)
+      } //if (data.length > 0),  Object.keys(firstItem).forEach(key
+    }//debugDataFields(data) if (data.length > 0)
+    
     
       
     // Função para garantir URL válida
