@@ -1,11 +1,26 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         15.09.2025
-            13:32
+            14:41
+                Agora a busca funcionará pelos campos que você especificou e as imagens serão exibidas corretamente usando o campo url_link
+                Essas alterações garantem que:
+                    A busca funciona pelos campos Data, Título, Descrição e Nome do Arquivo
+                    A URL da imagem é obtida do campo url_link (com fallback para outros campos)
+                    A exibição na tabela mostra os campos corretos da planilha
+                    O debug mostra claramente a estrutura dos dados recebidos
+                    Os dados de fallback usam a mesma estrutura para testes
+
+                    git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                    git commit -m " 15.09, 14:44 Agora a busca funcionará pelos campos que você especificou e as imagens serão exibidas corretamente usando o campo url_link"
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
+            13:[47, 32]
+                inicie com url_link seguindo de Data	Título	Descrição Nome do Arquivo	a busca de ser pela data, título ou descrição
+
                 as imagens devem ser exibidas corretamente na interface
                     git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
                     git commit -m " 15.09, 12:54 try solve o campo da url com o linkau da imagem é url_link peço para garantir que seja visado"
                     git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
-                    
+
             12:52
                 7. Verifique se as imagens estão no Cloudinary:
                     Acesse seu dashboard do Cloudinary e verifique se:
