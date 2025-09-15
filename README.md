@@ -1,6 +1,7 @@
+html/09.2025/15/deepseek_html_20250915_0c0ca3.html
+[funcionará exatamente como antes, mas agora com a organização adequada em arquivos separados, o que é uma prática recomendada para desenvolvimento web  19:55 15.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/15/deepseek_html_20250915_0c0ca3.html)
+
 [funcionará exatamente como antes, mas agora com a organização adequada em arquivos separados, o que é uma prática recomendada para desenvolvimento web  18:00 15.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/15/deepseek_html_20250915_721f92.html)
-
-
 
 [O erro Identifier 'btnOtelMetrics' has already been declared ocorria porque havia duas declarações da mesma variável no código JavaScript.  17:00 15.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/15/deepseek_html_20250915_293ce8.html)
 
