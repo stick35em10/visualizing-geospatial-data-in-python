@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📸 Upload de Fotos - Images</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header>
+    <h1>📸 Upload de Fotos - Images</h1>
+    <div class="row">
+      <button id="btnTest">🔗 Testar Conexão</button>
+      <button id="btnLoad" disabled>📊 Carregar Dados</button>
+      <button id="btnRefresh" style="display:none;">🔄 Atualizar</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <div class="server-info">
+      <strong>🌐 Servidor:</strong> https://visualizing-geospatial-data-in-python-4.onrender.com<br>
+      <strong>📋 Aba:</strong> Images
+      <div id="otelStatus" class="opentelemetry-status disconnected">
+        <span>📊 OpenTelemetry: Desconectado</span>
+      </div>
+    </div>
+    
+    <div id="status" class="status">Clique em <strong>Testar Conexão</strong> para começar.</div>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="data">📊 Ver Imagens</button>
+      <button class="tab" data-tab="upload">📤 Upload</button>
+      <button class="tab" data-tab="camera">📷 Câmera</button>
+      <button class="tab" data-tab="monitoring">📈 Monitoramento</button>
+    </div>
+
+    <!-- Ver Imagens -->
+    <div class="tab-content active" id="tab-data">
+      <div class="controls">
+        <div class="search-box">
+          <label for="search">🔍 Buscar:</label>
+          <input type="text" id="search" placeholder="Filtrar imagens...">
+        </div>
+        <div class="search-box">
+          <label for="entries">Exibir:</label>
+          <select id="entries">
+            <option value="10">10 entradas</option>
+            <option value="25">25 entradas</option>
+            <option value="50">50 entradas</option>
+            <option value="100">100 entradas</option>
+          </select>
+        </div>
+      </div>
+      <div id="dataStats"></div>
+      <div id="data"></div>
+    </div>
+
+    <!-- Upload -->
+    <div class="tab-content" id="tab-upload">
+      <div class="panel">
+        <h3>📤 Upload de Fotos</h3>
+        <form id="uploadForm">
+          <div class="form-row">
+            <label for="photoFiles">Selecionar Fotos:</label>
+            <input type="file" id="photoFiles" accept="image/*" multiple>
+          </div>
+          
+          <div class="form-row">
+            <label>Localização:</label>
+            <button type="button" id="btnLocation">📍 Obter Localização</button>
+            <span id="locationStatus">Não obtida</span>
+          </div>
+          
+          <div id="filePreview" class="file-preview"></div>
+          
+          <div class="form-row">
+            <button type="submit" id="submitUpload" disabled>🚀 Enviar Fotos</button>
+          </div>
+        </form>
+        
+        <div id="uploadResults" class="upload-results" style="display:none;">
+          <h4>📋 Resultados do Upload</h4>
+          <div id="uploadResultsContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Câmera -->
+    <div class="tab-content" id="tab-camera">
+      <div class="panel">
+        <h3>📷 Capturar Fotos</h3>
+        
+        <div class="video-container">
+          <video id="videoElement" autoplay playsinline></video>
+        </div>
+        
+        <div class="camera-controls">
+          <button type="button" id="captureBtn" disabled>📸 Capturar Foto</button>
+          <button type="button" id="clearPhotosBtn" disabled>🗑️ Limpar Fotos</button>
+        </div>
+        
+        <div class="form-row">
+          <label>Localização:</label>
+          <button type="button" id="btnCameraLocation">📍 Obter Localização</button>
+          <span id="cameraLocationStatus">Não obtida</span>
+        </div>
+        
+        <div id="cameraPreview" class="captured-photos"></div>
+        
+        <div class="form-row">
+          <button type="button" id="submitCamera" disabled>🚀 Enviar Fotos Capturadas</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monitoramento -->
+    <div class="tab-content" id="tab-monitoring">
+      <div class="panel">
+        <h3>📈 Monitoramento OpenTelemetry</h3>
+        
+        <div class="form-row">
+          <label>Status do Servidor:</label>
+          <button type="button" id="btnHealthCheck">🩺 Verificar Saúde</button>
+          <span id="healthStatus">-</span>
+        </div>
+        
+        <!-- Adicione estes botões na seção de monitoramento -->
+        <div class="form-row">
+            <label>Monitoramento OpenTelemetry:</label>
+            <button type="button" id="btnOtelMetrics">📊 Buscar Métricas OTEL</button>
+            <button type="button" id="btnSystemMetrics">🖥️ Métricas do Sistema</button>
+            <button type="button" id="btnAutoMetrics">🔄 Auto Atualizar</button>
+        </div>
+
+        <!-- Adicione esta seção para exibir as métricas -->
+        <div id="otelMetricsResults" class="upload-results" style="display:none;margin-top:20px;">
+            <h4>📈 Métricas OpenTelemetry</h4>
+            <div id="otelMetricsData" style="background:#0b1020;padding:15px;border-radius:8px;overflow:auto;max-height:300px;"></div>
+        </div>
+
+        <div class="form-row">
+          <label>Diagnóstico Avançado:</label>
+          <button type="button" id="btnEnvCheck">🔍 Verificar Variáveis</button>
+          <button type="button" id="btnCredsCheck">🔐 Testar Credenciais</button>
+          <button type="button" id="btnCloudinaryCheck">☁️ Verificar Cloudinary</button>
+        </div>
+        
+        <div class="form-row">
+          <label>Endpoint de Métricas:</label>
+          <button type="button" id="btnMetrics">📊 Buscar Métricas</button>
+        </div>
+        
+        <div id="monitoringResults" class="upload-results" style="display:none;margin-top:20px;">
+          <h4>📋 Resultados do Monitoramento</h4>
+          <pre id="monitoringData" style="background:#0b1020;padding:15px;border-radius:8px;overflow:auto;max-height:300px;"></pre>
+        </div>
+        
+        <div class="stats">
+          <strong>Endpoints disponíveis:</strong>
+          <ul style="font-size:12px;margin:10px 0;padding-left:20px;">
+            <li><code>/health</code> - Status do serviço</li>
+            <li><code>/debug</code> - Informações gerais</li>
+            <li><code>/debug/environment</code> - Variáveis de ambiente</li>
+            <li><code>/debug/credentials</code> - Credenciais</li>
+            <li><code>/debug/sheets</code> - Status do Google Sheets</li>
+            <li><code>/debug/cloudinary</code> - Status do Cloudinary</li>
+            <li><code>/api/upload/photos</code> - Upload de fotos</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal para visualizar imagem -->
+  <div id="imageModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <img id="modalImage" src="" alt="Visualização da imagem">
+    </div>
+  </div>
+
+  <!-- 5. Para visualização mais avançada, adicione gráficos: -->
+  <!-- Adicione esta seção para gráficos -->
+  <div id="metricsCharts" style="display: none; margin-top: 20px;">
+      <h4>📈 Gráficos de Métricas</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+              <h5>📊 Uso de CPU</h5>
+              <canvas id="cpuChart" width="400" height="200"></canvas>
+          </div>
+          <div>
+              <h5>💾 Uso de Memória</h5>
+              <canvas id="memoryChart" width="400" height="200"></canvas>
+          </div>
+      </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
