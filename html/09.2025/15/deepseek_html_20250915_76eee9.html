@@ -395,6 +395,7 @@
       }
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <header>
@@ -514,6 +515,19 @@
           <span id="healthStatus">-</span>
         </div>
         
+        <!-- Adicione estes botões na seção de monitoramento -->
+        <div class="form-row">
+            <label>Monitoramento OpenTelemetry:</label>
+            <button type="button" id="btnOtelMetrics">📊 Buscar Métricas OTEL</button>
+            <button type="button" id="btnSystemMetrics">🖥️ Métricas do Sistema</button>
+        </div>
+
+        <!-- Adicione esta seção para exibir as métricas -->
+        <div id="otelMetricsResults" class="upload-results" style="display:none;margin-top:20px;">
+            <h4>📈 Métricas OpenTelemetry</h4>
+            <div id="otelMetricsData" style="background:#0b1020;padding:15px;border-radius:8px;overflow:auto;max-height:300px;"></div>
+        </div>
+
         <div class="form-row">
           <label>Diagnóstico Avançado:</label>
           <button type="button" id="btnEnvCheck">🔍 Verificar Variáveis</button>
@@ -553,6 +567,22 @@
       <button class="modal-close">&times;</button>
       <img id="modalImage" src="" alt="Visualização da imagem">
     </div>
+  </div>
+
+  <!-- 5. Para visualização mais avançada, adicione gráficos: -->
+  <!-- Adicione esta seção para gráficos -->
+  <div id="metricsCharts" style="display: none; margin-top: 20px;">
+      <h4>📈 Gráficos de Métricas</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+              <h5>📊 Uso de CPU</h5>
+              <canvas id="cpuChart" width="400" height="200"></canvas>
+          </div>
+          <div>
+              <h5>💾 Uso de Memória</h5>
+              <canvas id="memoryChart" width="400" height="200"></canvas>
+          </div>
+      </div>
   </div>
 
   <script>
@@ -609,6 +639,87 @@
     const btnMetrics = document.getElementById('btnMetrics');
     const monitoringResults = document.getElementById('monitoringResults');
     const monitoringData = document.getElementById('monitoringData');
+
+    // 3. Adicione as funções JavaScript para buscar e exibir as métricas:
+    // Adicione estas variáveis após as outras declarações de elementos DOM
+    const btnOtelMetrics = document.getElementById('btnOtelMetrics');
+    const btnSystemMetrics = document.getElementById('btnSystemMetrics');
+    const otelMetricsResults = document.getElementById('otelMetricsResults');
+    const otelMetricsData = document.getElementById('otelMetricsData');
+
+    // Adicione estas variáveis após as outras declarações de elementos DOM
+    const btnOtelMetrics = document.getElementById('btnOtelMetrics');
+    const btnSystemMetrics = document.getElementById('btnSystemMetrics');
+    const otelMetricsResults = document.getElementById('otelMetricsResults');
+    const otelMetricsData = document.getElementById('otelMetricsData');
+
+    // Funções para monitoramento OpenTelemetry
+    async function getOtelMetrics() {
+        showMonitoringResults('Buscando métricas OpenTelemetry...');
+        try {
+            const result = await makeRequest('/otel/metrics');
+            showOtelMetricsResults(result);
+        } catch (error) {
+            showMonitoringResults(`Erro: ${error.message}`);
+        }
+    }
+
+    async function getSystemMetrics() {
+        showMonitoringResults('Buscando métricas do sistema...');
+        try {
+            // Você pode adicionar endpoints específicos para métricas do sistema
+            const healthResult = await makeRequest('/health');
+            const sheetsResult = await makeRequest('/debug/sheets');
+            
+            const systemMetrics = {
+                health: healthResult,
+                sheets: sheetsResult,
+                timestamp: new Date().toISOString()
+            };
+            
+            showOtelMetricsResults(systemMetrics);
+        } catch (error) {
+            showMonitoringResults(`Erro: ${error.message}`);
+        }
+    }
+
+    function showOtelMetricsResults(data) {
+          otelMetricsResults.style.display = 'block';
+          
+          if (data.system) {
+              // Formatar métricas do sistema
+              otelMetricsData.innerHTML = `
+                  <div style="margin-bottom: 15px;">
+                      <h5>🖥️ Sistema</h5>
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                          <div>CPU: <strong>${data.system.cpu_percent}%</strong></div>
+                          <div>Memória: <strong>${data.system.memory_percent}%</strong></div>
+                          <div>Memória Processo: <strong>${data.system.process_memory_mb.toFixed(2)} MB</strong></div>
+                          <div>CPU Processo: <strong>${data.system.process_cpu_percent}%</strong></div>
+                      </div>
+                  </div>
+                  
+                  <div style="margin-bottom: 15px;">
+                      <h5>📊 OpenTelemetry Status</h5>
+                      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                          <div>Tracing: <span style="color: ${data.otel_status.tracing_initialized ? '#4ade80' : '#f87171'}">${data.otel_status.tracing_initialized ? '✅' : '❌'}</span></div>
+                          <div>Metrics: <span style="color: ${data.otel_status.metrics_initialized ? '#4ade80' : '#f87171'}">${data.otel_status.metrics_initialized ? '✅' : '❌'}</span></div>
+                          <div>Logging: <span style="color: ${data.otel_status.logging_initialized ? '#4ade80' : '#f87171'}">${data.otel_status.logging_initialized ? '✅' : '❌'}</span></div>
+                      </div>
+                  </div>
+                  
+                  <div>
+                      <h5>🕒 Última Atualização</h5>
+                      <div>${new Date().toLocaleString()}</div>
+                  </div>
+              `;
+          } else {
+              // Dados genéricos
+              otelMetricsData.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+          }
+      }// function showOtelMetricsResults(data) {
+
+    // 3. Adicione as funções JavaScript para buscar e exibir as métricas:
 
     // Funções utilitárias
     function showMessage(html, kind='info', timeout=0){
@@ -1494,6 +1605,10 @@
       btnCredsCheck.addEventListener('click', checkCredentials);
       btnCloudinaryCheck.addEventListener('click', checkCloudinary);
       btnMetrics.addEventListener('click', getMetrics);
+
+      // Monitoramento OpenTelemetry
+      btnOtelMetrics.addEventListener('click', getOtelMetrics);
+      btnSystemMetrics.addEventListener('click', getSystemMetrics);
     }
 
     // Inicialização
@@ -1515,6 +1630,97 @@
         testConnection();
       }, 2000);
     });
+    // 15.09, 16:35 4. Adicione também uma função para atualização automática de métricas:
+    // Variável para controlar a atualização automática
+    let metricsInterval = null;
+
+    // Função para iniciar/parar atualização automática
+    function toggleAutoMetrics(enable) {
+        if (enable && !metricsInterval) {
+            metricsInterval = setInterval(getOtelMetrics, 5000); // Atualizar a cada 5 segundos
+            showMessage('🔁 Atualização automática de métricas ativada', 'success');
+        } else if (!enable && metricsInterval) {
+            clearInterval(metricsInterval);
+            metricsInterval = null;
+            showMessage('⏹️ Atualização automática desativada', 'info');
+        }
+    }
+
+    // Adicione um botão para controle automático no HTML
+    // <button type="button" id="btnAutoMetrics">🔄 Auto Atualizar</button>
+
+    // E no JavaScript:
+    const btnAutoMetrics = document.getElementById('btnAutoMetrics');
+    let autoMetricsEnabled = false;
+
+    btnAutoMetrics.addEventListener('click', () => {
+        autoMetricsEnabled = !autoMetricsEnabled;
+        toggleAutoMetrics(autoMetricsEnabled);
+        btnAutoMetrics.textContent = autoMetricsEnabled ? '⏹️ Parar Auto' : '🔄 Auto Atualizar';
+    });
+
+    // Adicione Chart.js para gráficos (inclua no HTML)
+    // 
+
+    let cpuChart = null;
+    let memoryChart = null;
+    const metricHistory = {
+        cpu: [],
+        memory: [],
+        timestamps: []
+    };
+
+    function updateMetricsCharts(metrics) {
+        const now = new Date();
+        const timeLabel = now.toLocaleTimeString();
+        
+        // Adicionar aos históricos
+        metricHistory.cpu.push(metrics.system.cpu_percent);
+        metricHistory.memory.push(metrics.system.memory_percent);
+        metricHistory.timestamps.push(timeLabel);
+        
+        // Manter apenas os últimos 20 pontos
+        if (metricHistory.cpu.length > 20) {
+            metricHistory.cpu.shift();
+            metricHistory.memory.shift();
+            metricHistory.timestamps.shift();
+        }
+        
+        // Atualizar ou criar gráficos
+        updateChart('cpuChart', metricHistory.cpu, metricHistory.timestamps, 'CPU Usage (%)', '#4ade80');
+        updateChart('memoryChart', metricHistory.memory, metricHistory.timestamps, 'Memory Usage (%)', '#3b82f6');
+    }
+
+    function updateChart(canvasId, data, labels, label, color) {
+        const ctx = document.getElementById(canvasId).getContext('2d');
+        
+        if (window[canvasId + 'Instance']) {
+            window[canvasId + 'Instance'].data.labels = labels;
+            window[canvasId + 'Instance'].data.datasets[0].data = data;
+            window[canvasId + 'Instance'].update();
+        } else {
+            window[canvasId + 'Instance'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color + '20',
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    animation: {
+                        duration: 0
+                    }
+                }
+            });
+        }
+    }
   </script>
 </body>
 </html>

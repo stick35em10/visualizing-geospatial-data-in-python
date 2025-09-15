@@ -982,6 +982,149 @@ def metrics():
     except Exception as e:
         return jsonify({'error': f'Erro ao gerar métricas: {str(e)}'}), 500
 
+### Para incluir o monitoramento OpenTelemetry no servidor Flask e visualizar as métricas no HTML, você precisa fazer várias modificações.
+
+# Adicione estas importações no início do arquivo
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
+from opentelemetry.metrics import set_meter_provider
+
+# Modifique a função init_opentelemetry para incluir métricas
+def init_opentelemetry():
+    """Initialize OpenTelemetry tracing, metrics and logging"""
+    try:
+        # Set up tracing
+        resource = Resource.create({
+            "service.name": "sheets-app-api",
+            "service.version": "1.0.0",
+            "deployment.environment": os.getenv("ENVIRONMENT", "production")
+        })
+        
+        # Tracing
+        trace.set_tracer_provider(TracerProvider(resource=resource))
+        
+        otlp_trace_exporter = OTLPSpanExporter(
+            endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318/v1/traces"),
+        )
+        
+        span_processor = BatchSpanProcessor(otlp_trace_exporter)
+        trace.get_tracer_provider().add_span_processor(span_processor)
+        
+        # Metrics
+        metric_reader = PeriodicExportingMetricReader(
+            OTLPMetricExporter(
+                endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318/v1/metrics"),
+            ),
+            export_interval_millis=5000
+        )
+        
+        meter_provider = MeterProvider(
+            resource=resource,
+            metric_readers=[metric_reader]
+        )
+        set_meter_provider(meter_provider)
+        
+        # Logging
+        logger_provider = LoggerProvider(resource=resource)
+        set_logger_provider(logger_provider)
+        
+        otlp_log_exporter = OTLPLogExporter(
+            endpoint=os.getenv("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318/v1/logs"),
+        )
+        
+        logger_provider.add_log_record_processor(BatchLogRecordProcessor(otlp_log_exporter))
+        
+        # Add OTLP handler to root logger
+        handler = LoggingHandler(level=logging.NOTSET, logger_provider=logger_provider)
+        logging.getLogger().addHandler(handler)
+        
+        logging.info("OpenTelemetry initialized successfully")
+        
+    except Exception as e:
+        logging.warning(f"OpenTelemetry initialization failed: {str(e)}")
+
+# Adicione estas métricas após as importações
+from opentelemetry.metrics import get_meter
+
+# Obter meter para métricas
+meter = get_meter(__name__)
+
+# Criar métricas
+REQUEST_COUNTER = meter.create_counter(
+    "http_requests_total",
+    description="Total HTTP requests",
+    unit="1"
+)
+
+REQUEST_DURATION = meter.create_histogram(
+    "http_request_duration_seconds",
+    description="HTTP request duration in seconds",
+    unit="s"
+)
+
+ACTIVE_REQUESTS = meter.create_up_down_counter(
+    "http_requests_active",
+    description="Active HTTP requests",
+    unit="1"
+)
+
+# Adicione um middleware para rastrear todas as requisições
+@app.before_request
+def before_request():
+    request.start_time = time.time()
+    ACTIVE_REQUESTS.add(1, {"method": request.method, "endpoint": request.path})
+
+@app.after_request
+def after_request(response):
+    duration = time.time() - request.start_time
+    REQUEST_COUNTER.add(1, {
+        "method": request.method, 
+        "endpoint": request.path,
+        "status_code": str(response.status_code)
+    })
+    REQUEST_DURATION.record(duration, {
+        "method": request.method,
+        "endpoint": request.path,
+        "status_code": str(response.status_code)
+    })
+    ACTIVE_REQUESTS.add(-1, {"method": request.method, "endpoint": request.path})
+    return response
+
+# Adicione uma rota para obter métricas do OpenTelemetry
+@app.route('/otel/metrics', methods=['GET'])
+def get_otel_metrics():
+    """Endpoint para obter métricas do OpenTelemetry"""
+    with tracer.start_as_current_span("get_otel_metrics"):
+        try:
+            # Coletar métricas básicas do sistema
+            import psutil
+            process = psutil.Process()
+            
+            metrics_data = {
+                'system': {
+                    'cpu_percent': psutil.cpu_percent(),
+                    'memory_percent': psutil.virtual_memory().percent,
+                    'process_memory_mb': process.memory_info().rss / 1024 / 1024,
+                    'process_cpu_percent': process.cpu_percent()
+                },
+                'requests': {
+                    'total_requests': REQUEST_COUNTER,
+                    'active_requests': ACTIVE_REQUESTS
+                },
+                'otel_status': {
+                    'tracing_initialized': trace.get_tracer_provider() is not None,
+                    'metrics_initialized': get_meter_provider() is not None,
+                    'logging_initialized': get_logger_provider() is not None
+                }
+            }
+            
+            return jsonify(metrics_data), 200
+            
+        except Exception as e:
+            return jsonify({'error': f'Erro ao coletar métricas: {str(e)}'}), 500
+        
+
 #3. Problema na Inicialização do Servidor
 
 if __name__ == '__main__':
