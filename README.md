@@ -1,6 +1,8 @@
 
-[Corrigido o erro de elementos undefined, Melhor tratamento de erro 503, Event listeners seguros, Interface mais robusta e Para resolver o erro 503  14:18 14.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/14/deepseek_html_20250914_76eee9.html)
+[deepseek_html_20250914_f19e33.html - Versão mais simples com estrutura básica deepseek_html_20250914_76eee9.html - Versão completa com todas as funcionalidades implementadas app.py - Backend Flask com todas as rotas necessárias (incluindo as rotas de debug)  07:00 15.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/15/deepseek_html_20250915_76eee9.html)
 
+
+[Corrigido o erro de elementos undefined, Melhor tratamento de erro 503, Event listeners seguros, Interface mais robusta e Para resolver o erro 503  14:18 14.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/14/deepseek_html_20250914_76eee9.html)
 
 [Corrigido o erro de elementos undefined, Melhor tratamento de erro 503, Event listeners seguros, Interface mais robusta e Para resolver o erro 503  14:18 14.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/14/deepseek_html_20250914_f19e33.html)
 

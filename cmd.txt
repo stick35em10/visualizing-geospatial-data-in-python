@@ -1,26 +1,26 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
+        15.09.2025
+            06:41
+                html/09.2025/15/deepseek_html_20250915_76eee9.html
+
+                git add html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                git commit -m " 15.09, 06:41 Versão mais simples com estrutura básica deepseek_html_20250914_76eee9.html - Versão completa com todas as funcionalidades implementadas app.py - Backend Flask com todas as rotas necessárias (incluindo as rotas de debug)"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
 
         14.09.2025, <> 5dias stoping
+
             17:24
                 Principais recursos adicionados:
                     /debug - Informações gerais do sistema
-
                     /debug/environment - Variáveis de ambiente (com proteção de dados sensíveis)
-
                     /debug/sheets - Status detalhado da conexão com Google Sheets
-
                     /debug/credentials - Verificação de credenciais
-
                     /debug/cloudinary - Status da configuração do Cloudinary
 
                     Estes endpoints fornecem informações valiosas para:
-
                     Diagnosticar problemas de conexão
-
                     Verificar se as variáveis de ambiente estão configuradas corretamente
-
                     Monitorar o status do serviço
-
                     Solucionar problemas sem expor informações sensíveis
 
                     Agora quando você acessar https://visualizing-geospatial-data-in-python-4.onrender.com/debug/sheets e os outros endpoints, eles retornarão informações úteis em formato JSON em vez de erro "Not Found".

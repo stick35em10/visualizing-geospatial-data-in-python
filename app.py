@@ -454,6 +454,25 @@ def upload_to_cloudinary(file_content, original_filename):
             raise Exception(f"Erro no upload para Cloudinary: {str(e)}")
 
 # ROTAS DE API
+@app.route('/images', methods=['GET'])
+def get_images():
+    """Endpoint para obter imagens da planilha"""
+    with tracer.start_as_current_span("get_images"):
+        try:
+            client, spreadsheet = get_sheets_client()
+            worksheet = spreadsheet.worksheet('Imagens')
+            
+            # Obter todos os dados da worksheet
+            data = worksheet.get_all_records()
+            
+            return jsonify(data)
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Erro ao carregar imagens: {str(e)}'
+            }), 500
+            
 @app.route('/api/upload/photos', methods=['POST', 'OPTIONS'])
 def upload_photos():
     """Endpoint completo para upload de fotos com armazenamento no Cloudinary"""
