@@ -472,7 +472,25 @@ def get_images():
             # Obter todos os dados da worksheet
             data = worksheet.get_all_records()
             
-            return jsonify(data)
+            # Transformar os dados para o formato esperado pelo frontend
+            formatted_data = []
+            for row in data:
+                if row.get('URL da Imagem'):  # Verificar se tem URL
+                    formatted_data.append({
+                        'id': row.get('ID Único', str(uuid.uuid4())[:8]),
+                        'filename': row.get('Nome do Arquivo Original', ''),
+                        'file_size': len(row.get('URL da Imagem', '')),  # Aproximação
+                        'upload_date': row.get('Data', ''),
+                        'url': row.get('URL da Imagem', ''),
+                        'thumbnail_path': row.get('URL da Imagem', ''),  # Usar mesma URL para thumbnail
+                        'file_path': row.get('URL da Imagem', ''),
+                        'location': {
+                            'lat': float(row.get('Latitude', 0)) if row.get('Latitude') else 0,
+                            'lng': float(row.get('Longitude', 0)) if row.get('Longitude') else 0
+                        } if row.get('Latitude') and row.get('Longitude') else None
+                    })
+                    
+            return jsonify(formatted_data)
             
         except Exception as e:
             #return jsonify({
@@ -481,6 +499,7 @@ def get_images():
             #}), 500
             
             # Retorna array vazio em vez de erro para não quebrar o frontend
+            logger.error(f"Erro ao carregar imagens: {str(e)}")
             return jsonify([])
 
 #6. Adicionar Rota /upload que está sendo chamada pelo frontend

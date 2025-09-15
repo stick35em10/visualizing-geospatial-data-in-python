@@ -771,6 +771,17 @@
         const response = await fetch(`${SERVER_URL}/images`);
         if (response.ok) {
           imageData = await response.json();
+
+          // 15.09 11:22, Processar URLs para garantir que são válidas
+          imageData = imageData.map(item => {
+            return {
+              ...item,
+              url: ensureValidUrl(item.url),
+              file_path: ensureValidUrl(item.file_path),
+              thumbnail_path: ensureValidUrl(item.thumbnail_path)
+            };
+          });
+
           displayData(imageData);
           showMessage(`✅ Dados carregados: ${imageData.length} imagens encontradas`, 'success');
         } else {
@@ -778,9 +789,28 @@
         }
       } catch (error) {
         showMessage(`❌ Falha ao carregar dados: ${error.message}`, 'error');
+
+        // Carregar dados de fallback para teste
+        loadFallbackData();
       }
     }
 
+    // Dados de fallback para teste
+    function loadFallbackData() {
+        imageData = [
+          {
+            id: 'test-1',
+            filename: 'imagem_teste.jpg',
+            file_size: 102400,
+            upload_date: new Date().toISOString(),
+            url: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+            thumbnail_path: 'https://res.cloudinary.com/demo/image/upload/w_100,h_100,c_fill/sample.jpg',
+            location: { lat: -23.5505, lng: -46.6333 }
+          }
+        ];
+        displayData(imageData);
+        showMessage('⚠️ Usando dados de teste - servidor pode estar offline', 'warn');
+      }
     // Exibir dados na tabela
     function displayData(data) {
       const entries = parseInt(entriesSelect.value);
@@ -803,13 +833,19 @@
               <th>Tamanho</th>
               <th>Data de Upload</th>
               <th>Localização</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
       `;
       
       filteredData.forEach(item => {
+        // Garantir que temos uma URL válida
+        const imageUrl = item.url || item.file_path || '';
+        const thumbnailUrl = item.thumbnail_path || imageUrl;
+
         // Corrigir URL da imagem - verificar se existe e formatar corretamente
+        /*15.09.25 11:05
         let imageUrl = '';
 
         if (item.file_path) {
@@ -824,7 +860,7 @@
         } else {
           thumbnailUrl = imageUrl; // Usar imagem principal se não houver thumbnail
         }
-        
+        */
         tableHTML += `
           <tr>
             <td>${item.id || '-'}</td>
@@ -839,7 +875,14 @@
             <td>${item.filename || item.name || '-'}</td>
             <td>${item.file_size ? formatFileSize(item.file_size) : 'N/A'}</td>
             <td>${item.upload_date ? formatDate(item.upload_date) : 'N/A'}</td>
-             <td>${item.location ? `${item.location.lat.toFixed(4)}, ${item.location.lng.toFixed(4)}` : 'N/A'}</td>
+            <td>${item.location ? `${item.location.lat.toFixed(4)}, ${item.location.lng.toFixed(4)}` : 'N/A'}</td>
+            <td>
+              ${imageUrl ? `
+                <button onclick="openModal('${imageUrl}')" style="padding:5px 10px;font-size:12px;">
+                  👁️ Ver
+                </button>
+              ` : ''}
+            </td> 
           </tr>
         `;
       });
@@ -850,6 +893,26 @@
       `;
       
       dataContainer.innerHTML = tableHTML;
+    }
+
+    // Função para garantir URL válida
+    function ensureValidUrl(url) {
+      if (!url) return '';
+      
+      // Se já é uma URL completa
+      if (url.startsWith('http')) return url;
+      
+      // Se é um caminho relativo, adicionar base URL
+      if (url.startsWith('/')) {
+        return `${SERVER_URL}${url}`;
+      }
+      
+      // Se não começa com http, assumir que é do Cloudinary
+      if (url.includes('cloudinary.com')) {
+        return url.startsWith('https://') ? url : `https://${url}`;
+      }
+      
+      return url;
     }
 
     // Filtrar dados

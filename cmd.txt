@@ -1,5 +1,23 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         15.09.2025
+            11:47
+                Analisando seu código, identifiquei o problema principal: as imagens estão sendo armazenadas no Cloudinary, mas o frontend não está conseguindo acessar os URLs corretamente.
+
+                Vou fornecer as soluções necessárias:
+                deepseek_html_20250915_76eee9.html, HTML 39.87KB
+                app.py, PY 39.7KB
+
+                peço para conseguir visualizar as imagens gravadas
+                Problemas Identificados:
+                Formato de dados incorreto - O endpoint /images retorna dados no formato do Google Sheets, mas o frontend espera campos específicos
+                URLs do Cloudinary - As imagens estão no Cloudinary mas não estão sendo formatadas corretamente
+                Estrutura de dados - Campos como file_path e thumbnail_path não existem nos dados retornados
+
+                Essas modificações devem resolver o problema de visualização das imagens. Se ainda houver issues, verifique os logs do servidor para ver se as imagens estão sendo armazenadas corretamente no Cloudinary.
+                        git add requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                        git commit -m " 15.09, 11:54 Essas modificações devem resolver o problema de visualização das imagens. Se ainda houver issues, verifique os logs do servidor para ver se as imagens estão sendo armazenadas corretamente no Cloudinary."
+                        git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+
             08:[50, 12]
                 📋 Resumo das Principais Correções
                     ✅ Backend: A rota /upload agora aceita tanto 'photos' quanto 'files' como nome dos campos de arquivo
