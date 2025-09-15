@@ -1,5 +1,32 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         15.09.2025
+            07:52
+                soluções
+                    # Modificar a função health_check para ser mais tolerante
+                    🚀 Implementação Recomendada
+                    Primeiro, adicione a rota /metrics no app.py
+
+                    Modifique a rota /health para sempre retornar 200
+
+                    Atualize o tratamento de erro no frontend para lidar com status "degraded"
+
+                    Adicione o alias /upload para a rota de upload
+
+                    Essas correções permitirão que:
+
+                    ✅ O servidor sempre retorne 200 para /health
+
+                    ✅ O frontend não quebre quando Sheets estiver offline
+
+                    ✅ A rota /metrics exista (mesmo que básica)
+
+                    ✅ O upload funcione através de ambas as URLs
+
+                    O servidor ficará mais resiliente e não entrará em modo "unavailable" mesmo quando serviços externos falharem.
+
+                        git add html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
+                        git commit -m " 15.09, 07:52 O servidor ficará mais resiliente e não entrará em modo 'unavailable' mesmo quando serviços externos falharem."
+                        git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
             06:41
                 html/09.2025/15/deepseek_html_20250915_76eee9.html
 

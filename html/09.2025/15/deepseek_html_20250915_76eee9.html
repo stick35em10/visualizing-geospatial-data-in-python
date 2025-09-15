@@ -670,6 +670,7 @@
     }
 
     // Testar conexão
+    // Modificar a função testConnection para lidar melhor com 503
     async function testConnection(){
       showLoading('Testando conexão...');
       btnTest.disabled = true;
@@ -681,26 +682,32 @@
         let message = '';
         let success = false;
         
-        if (healthResult.status === 'healthy') {
+        // Modificar esta lógica para aceitar status 'degraded'
+        if (healthResult.status === 'healthy' || healthResult.status === 'degraded') {
           // Servidor saudável, testar outras funcionalidades
+          // Servidor está rodando (healthy ou degraded)
           try {
             const sheetsResult = await makeRequest('/debug/sheets');
             const cloudResult = await makeRequest('/debug/cloudinary');
+
             const envResult = await makeRequest('/debug/environment');
             const credsResult = await makeRequest('/debug/credentials');
             
-            success = sheetsResult && sheetsResult.success;
+            success = true; // Considera sucesso mesmo se Sheets falhar // sheetsResult && sheetsResult.success;
             message = `
               ✅ <strong>Serviço Online!</strong><br>
-              📊 Google Sheets: ${sheetsResult.success ? '✅ Conectado' : '❌ Erro'}<br>
+              📊 Google Sheets: ${sheetsResult && sheetsResult.success ? '✅ Conectado' : '❌ Desconectado'}<br>
               ☁️ Cloudinary: ${cloudResult.configuration.fully_configured ? '✅ Configurado' : '❌ Não configurado'}<br>
               Status: ${healthResult.status}
             `;
             
           } catch (sheetsError) {
+            // Ainda mostra sucesso mas com aviso
+            success = true;
             message = `
               ⚠️ <strong>Servidor online mas com problemas</strong><br>
               Status: ${healthResult.status}<br>
+              Google Sheets: ❌ Desconectado<br>
               Erro no Google Sheets: ${sheetsError.message}
             `;
           }
@@ -728,17 +735,28 @@
         let errorMessage = `❌ Falha na conexão: ${err.message}`;
         
         if (err.message.includes('503')) {
+          // Tratar 503 como "servidor rodando mas com problemas"
           errorMessage = `
-            ❌ <strong>Servidor em modo degradado</strong><br>
-            O servidor está rodando mas o Google Sheets não está conectado.<br>
-            Verifique as credenciais e permissões no Render.
+            ⚠️ <strong>Servidor em modo degradado</strong><br>
+            O servidor está rodando mas alguns serviços podem não estar disponíveis.<br>
+            Detalhes: ${err.message}
           `;
+          // Ainda permite carregar dados básicos
+          isConnected = true;
+          btnLoad.disabled = false;
+          btnRefresh.style.display = 'inline-block';
         } else if (err.message.includes('Failed to fetch')) {
           errorMessage = '❌ Não foi possível conectar ao servidor. Verifique se está online.';
         }
         
-        showMessage(errorMessage, 'error');
-        resetConnection();
+        //showMessage(errorMessage, 'error');
+        showMessage(errorMessage, err.message.includes('503') ? 'warn' : 'error');
+
+        //resetConnection();
+        //updateOtelStatus(false);
+        if (!err.message.includes('503')) {
+          resetConnection();
+        }
         updateOtelStatus(false);
       } finally {
         btnTest.disabled = false;
