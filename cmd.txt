@@ -1,5 +1,14 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
         16.09.2025
+            14:21
+                git branch 01_03_01_Plotting_view_2_01_galp_01
+                
+                git add html/09.2025/08/deepseek_html_20250908_43714e_V1.html cmd.txt html/09.2025/16/photo_upload_fixed_v1.html
+                git commit -m " 16.09, [13:22, 12:[35, 05], 11:[36, 19], 07:11, 6:48] deepseek_html_20250915_293ce8.html, deepseek_html_20250908_43714e_V1.html e app.py peço para melhorar o html considerando a app.py"
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp
+                git checkout 01_03_01_Plotting_view_2_01_galp_01
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_galp_01
+
             13:22 12:[35, 05], 11:19, 07:11
             deepseek_html_20250915_293ce8.html, deepseek_html_20250908_43714e_V1.html e app.py peço para melhorar o html considerando a app.py
                     git add html/09.2025/16/deepseek_html_20250908_43714e_V1_copy.html html/09.2025/16/deepseek_html_20250916_b92206.html css/styles.css js/app.js html/09.2025/15/deepseek_html_20250915_293ce8.html requirements_for_render.txt html/09.2025/15/deepseek_html_20250915_76eee9.html README.md cmd.txt app.py Dockerfile requirements_for_render.txt docker-compose.yml  otel-collector-config.yaml html/09.2025/09/ README.md
