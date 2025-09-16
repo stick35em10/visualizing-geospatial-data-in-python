@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📸 Upload de Fotos - Images</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;margin:0;background:#0b1020;color:#e6ecff}
+    header{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:16px 20px;background:#0f1530;border-bottom:1px solid #1c274f;position:sticky;top:0;z-index:10}
+    h1{font-size:18px;margin:0}
+    .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    select, input, button, textarea{background:#11183a;color:#e6ecff;border:1px solid #263276;border-radius:10px;padding:10px 12px}
+    button{cursor:pointer;transition:all 0.2s}
+    button:hover:not([disabled]){background:#1a2550}
+    button[disabled]{opacity:.5;cursor:not-allowed}
+    main{padding:20px}
+    .status{margin:12px 0;padding:14px;border-radius:12px;border:1px solid #2a3a85;background:#0e1433}
+    .status.success{border-color:#1f8f55;background:#0e2a1b}
+    .status.error{border-color:#d43c3c;background:#2a0e14}
+    .status.warn{border-color:#caa53b;background:#2a230e}
+    .grid{display:grid;gap:14px}
+    .panel{padding:16px;border:1px solid #21306d;background:#0e1433;border-radius:14px}
+    .table-wrapper{overflow:auto;border-radius:12px;border:1px solid #24327b;max-height:500px}
+    table{width:100%;border-collapse:collapse;background:#0b1020}
+    thead th{position:sticky;top:0;background:#0f1638;border-bottom:1px solid #24327b;padding:12px 10px}
+    th,td{padding:8px 10px;border-bottom:1px dashed #1b244f;vertical-align:top}
+    .cell-url img{max-width:120px;max-height:90px;border-radius:10px;border:1px solid #2a3a85;cursor:pointer}
+    .controls{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+    .upload-section{background:#0e1433;border:2px dashed #263276;border-radius:12px;padding:20px;text-align:center;margin-top:20px}
+    .upload-section.dragover{border-color:#1f8f55;background:#0e2a1b}
+    .file-input{display:none}
+    .upload-button{background:#1a4b8c;color:white;padding:12px 20px;border:none;border-radius:8px;cursor:pointer;font-size:14px}
+    .upload-button:hover{background:#2260a8}
+    .form-row{display:flex;gap:10px;margin:10px 0;align-items:center}
+    .form-row label{min-width:100px;font-size:14px}
+    .form-row input, .form-row select, .form-row textarea{flex:1}
+    textarea{resize:vertical;min-height:60px}
+    .upload-results{margin-top:15px;padding:10px;border-radius:8px;background:#0b1020}
+    .file-preview{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+    .file-item{position:relative;border:1px solid #263276;border-radius:8px;padding:5px;background:#11183a}
+    .file-item img{max-width:100px;max-height:75px;border-radius:4px}
+    .file-item .remove-btn{position:absolute;top:-5px;right:-5px;background:#d43c3c;color:white;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer;font-size:12px}
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:1000}
+    .modal-content{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);max-width:90%;max-height:90%;background:#0e1433;border-radius:12px;padding:20px}
+    .modal img{max-width:100%;max-height:100%;border-radius:8px}
+    .modal-close{position:absolute;top:10px;right:15px;background:none;border:none;color:#e6ecff;font-size:24px;cursor:pointer}
+    .stats{display:flex;gap:20px;margin:10px 0;font-size:12px;color:#b0c4de}
+    
+    .camera-container{text-align:center;margin:15px 0}
+    #videoElement{width:100%;max-width:400px;border:2px solid #263276;border-radius:10px;background:#000}
+    .camera-controls{display:flex;gap:10px;justify-content:center;margin:10px 0}
+    .preview-image{max-width:300px;border-radius:10px;margin:10px 0;border:2px solid #263276}
+    
+    .tabs{display:flex;border-bottom:1px solid #263276;margin-bottom:20px}
+    .tab{background:none;border:none;color:#b0c4de;padding:10px 20px;cursor:pointer;border-bottom:2px solid transparent}
+    .tab.active{color:#e6ecff;border-bottom-color:#1a4b8c}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    
+    .server-info{background:#0e2a1b;padding:10px;border-radius:8px;margin-bottom:15px;border:1px solid #1f8f55}
+    
+    .url-display {
+      word-break: break-all;
+      font-size: 12px;
+      max-width: 300px;
+      color: #b0c4de;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📸 Upload de Fotos - Images</h1>
+    <div class="row">
+      <button id="btnTest">🔗 Testar Conexão</button>
+      <button id="btnLoad" disabled>📊 Carregar Dados</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <div class="server-info">
+      <strong>🌐 Servidor:</strong> https://visualizing-geospatial-data-in-python-3.onrender.com<br>
+      <strong>📋 Aba:</strong> Images
+    </div>
+    
+    <div id="status" class="status">Clique em <strong>Testar Conexão</strong> para começar.</div>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="data">📊 Ver Imagens</button>
+      <button class="tab" data-tab="upload">📤 Upload</button>
+      <button class="tab" data-tab="camera">📷 Câmera</button>
+    </div>
+
+    <!-- Visualizar Dados -->
+    <div class="tab-content active" id="tab-data">
+      <div class="panel">
+        <div class="controls">
+          <input id="search" placeholder="Buscar..." />
+          <select id="entries">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="all">Todas</option>
+          </select>
+          <button id="btnRefresh" disabled>🔄 Atualizar</button>
+        </div>
+        <div class="stats" id="dataStats"></div>
+        <div id="data"></div>
+      </div>
+    </div>
+
+    <!-- Upload de Fotos -->
+    <div class="tab-content" id="tab-upload">
+      <div class="panel">
+        <h3>📤 Upload de Fotos</h3>
+        <form id="uploadForm">
+          <div class="form-row">
+            <label>Título:</label>
+            <input type="text" id="photoTitle" placeholder="Título da foto" required value="Foto com Localização" />
+          </div>
+          <div class="form-row">
+            <label>Descrição:</label>
+            <textarea id="photoDescription" placeholder="Descrição opcional"></textarea>
+          </div>
+          <div class="form-row">
+            <label>Localização:</label>
+            <button type="button" id="btnLocation">📍 Obter Localização</button>
+            <span id="locationStatus"></span>
+          </div>
+          
+          <div class="upload-section" id="uploadZone">
+            <p>📁 Arraste fotos aqui ou clique para selecionar</p>
+            <input type="file" id="photoFiles" class="file-input" multiple accept="image/*" />
+            <button type="button" class="upload-button" id="selectFilesBtn">Selecionar Fotos</button>
+          </div>
+
+          <div class="file-preview" id="filePreview"></div>
+          
+          <div class="form-row" style="justify-content:center;margin-top:20px">
+            <button type="submit" class="upload-button" disabled id="submitUpload">🚀 Enviar Fotos</button>
+          </div>
+        </form>
+        
+        <div id="uploadResults" class="upload-results" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Câmera -->
+    <div class="tab-content" id="tab-camera">
+      <div class="panel">
+        <h3>📷 Capturar Foto</h3>
+        <form id="cameraForm">
+          <div class="form-row">
+            <label>Título:</label>
+            <input type="text" id="cameraTitle" placeholder="Título da foto" required value="Foto com Localização" />
+          </div>
+          <div class="form-row">
+            <label>Descrição:</label>
+            <textarea id="cameraDescription" placeholder="Descrição opcional"></textarea>
+          </div>
+          <div class="form-row">
+            <label>Localização:</label>
+            <button type="button" id="btnCameraLocation">📍 Obter Localização</button>
+            <span id="cameraLocationStatus"></span>
+          </div>
+
+          <div class="camera-container">
+            <video id="videoElement" autoplay playsinline></video>
+          </div>
+
+          <div class="camera-controls">
+            <button type="button" id="captureBtn" disabled>📷 Tirar Foto</button>
+            <button type="button" id="clearPhotosBtn" style="display:none">🗑️ Limpar Fotos</button>
+          </div>
+
+          <div id="cameraPreview"></div>
+          
+          <div class="form-row" style="justify-content:center;margin-top:20px">
+            <button type="submit" class="upload-button" disabled id="submitCamera">🚀 Enviar Fotos</button>
+          </div>
+        </form>
+        
+        <div id="cameraResults" class="upload-results" style="display:none;"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal para visualizar imagens -->
+  <div id="imageModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()">&times;</button>
+      <img id="modalImage" src="" alt="Imagem ampliada" />
+    </div>
+  </div>
+
+  <script>
+    // Configuração fixa do servidor
+    const SERVER_URL = "https://visualizing-geospatial-data-in-python-3.onrender.com";
+    const WORKSHEET_NAME = "Images";
+
+    // Estado da aplicação
+    let isConnected = false;
+    let allData = [];
+    let selectedFiles = [];
+    let capturedPhotos = [];
+    let currentLocation = null;
+    let stream = null;
+
+    // Elementos do DOM
+    const els = {
+      btnTest: document.getElementById('btnTest'),
+      btnLoad: document.getElementById('btnLoad'),
+      btnRefresh: document.getElementById('btnRefresh'),
+      status: document.getElementById('status'),
+      data: document.getElementById('data'),
+      dataStats: document.getElementById('dataStats'),
+      search: document.getElementById('search'),
+      entries: document.getElementById('entries'),
+      
+      // Upload
+      uploadForm: document.getElementById('uploadForm'),
+      photoFiles: document.getElementById('photoFiles'),
+      filePreview: document.getElementById('filePreview'),
+      submitUpload: document.getElementById('submitUpload'),
+      uploadResults: document.getElementById('uploadResults'),
+      btnLocation: document.getElementById('btnLocation'),
+      locationStatus: document.getElementById('locationStatus'),
+      
+      // Câmera
+      cameraForm: document.getElementById('cameraForm'),
+      videoElement: document.getElementById('videoElement'),
+      captureBtn: document.getElementById('captureBtn'),
+      clearPhotosBtn: document.getElementById('clearPhotosBtn'),
+      cameraPreview: document.getElementById('cameraPreview'),
+      submitCamera: document.getElementById('submitCamera'),
+      btnCameraLocation: document.getElementById('btnCameraLocation'),
+      cameraLocationStatus: document.getElementById('cameraLocationStatus'),
+      
+      // Abas
+      tabs: document.querySelectorAll('.tab'),
+      tabContents: document.querySelectorAll('.tab-content')
+    };
+
+    // Funções utilitárias
+    function showMessage(html, kind='info', timeout=0){
+      els.status.className = 'status ' + (kind==='error'?'error':kind==='success'?'success':kind==='warning'?'warn':'');
+      els.status.innerHTML = html;
+      if(timeout>0){ 
+        setTimeout(()=>{ 
+          els.status.className='status'; 
+          els.status.innerHTML=''; 
+        }, timeout); 
+      }
+    }
+    
+    function showLoading(msg){ showMessage(`⏳ ${msg}`); }
+    
+    function resetConnection(){
+      isConnected = false;
+      els.btnLoad.disabled = true;
+      els.btnRefresh.disabled = true;
+      els.data.innerHTML = '';
+    }
+
+    // Requisições para o servidor
+    async function makeRequest(path, options={}){
+      const url = SERVER_URL.replace(/\/$/, '') + path;
+      try {
+        const res = await fetch(url, { 
+          mode: 'cors',
+          credentials: 'omit',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': options.body instanceof FormData ? undefined : 'application/json'
+          },
+          ...options
+        });
+        
+        if(!res.ok){
+          const txt = await res.text().catch(()=>'Network error');
+          throw new Error(`HTTP ${res.status}: ${txt}`);
+        }
+        return res.json();
+      } catch (error) {
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          throw new Error(`Conexão falhou. Verifique se o servidor está rodando.`);
+        }
+        throw error;
+      }
+    }
+
+    // Testar conexão
+    async function testConnection(){
+      showLoading('Testando conexão...');
+      els.btnTest.disabled = true;
+      try{
+        const sheetsResult = await makeRequest('/debug/full');
+        const cloudResult = await makeRequest('/debug/cloudinary');
+
+        const sheetsOK = !!(sheetsResult && sheetsResult.success);
+        const cloudOK = !!(cloudResult && cloudResult.cloudinary_configured);
+
+        showMessage(`
+          ✅ <strong>Conexão Estabelecida</strong><br>
+          Sheets: ${sheetsOK ? '✅' : '❌'} |
+          Cloudinary: ${cloudOK ? '✅' : '❌'}<br>
+          Tempo: ${Number(sheetsResult?.duration_seconds||0).toFixed(2)}s
+        `, 'success');
+
+        isConnected = sheetsOK;
+        els.btnLoad.disabled = !sheetsOK;
+        els.btnRefresh.disabled = !sheetsOK;
+
+        if (sheetsOK) {
+          startCamera();
+        }
+      }catch(err){
+        console.error(err);
+        showMessage(`❌ Falha na conexão: ${err.message}`, 'error');
+        resetConnection();
+      }finally{
+        els.btnTest.disabled = false;
+      }
+    }
+
+    // Carregar dados da aba Images
+    async function loadData(){
+      if(!isConnected) return;
+      showLoading(`Carregando dados da aba "${WORKSHEET_NAME}"...`);
+      try{
+        const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(WORKSHEET_NAME)}`);
+        if(result.success) {
+          allData = result.data || [];
+          renderTable();
+          updateStats(result.metadata);
+          showMessage(`✅ ${allData.length} linhas carregadas da aba "${WORKSHEET_NAME}".`, 'success', 2500);
+        }
+      }catch(err){
+        showMessage(`❌ Erro ao obter dados: ${err.message}`, 'error');
+      }
+    }
+
+    function updateStats(metadata) {
+      if(!metadata) return;
+      els.dataStats.innerHTML = `
+        <span>📊 Linhas: ${metadata.total_rows}</span>
+        <span>📋 Colunas: ${metadata.total_columns}</span>
+        <span>⏰ Atualizado: ${new Date(metadata.last_update).toLocaleString()}</span>
+      `;
+    }
+
+    function renderTable(){
+      if(!allData || allData.length === 0){
+        els.data.innerHTML = `<div class="status">Nenhum dado encontrado na aba Images.</div>`;
+        return;
+      }
+      
+      // Definir as colunas que queremos mostrar (Data, Título, URL da Imagem)
+      const desiredHeaders = ['Data', 'Título', 'URL da Imagem'];
+      
+      // Filtrar apenas os cabeçalhos desejados que existem nos dados
+      const availableHeaders = Object.keys(allData[0]).filter(h => 
+        desiredHeaders.includes(h)
+      );
+      
+      let html = `
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>${availableHeaders.map(h => `<th>${h}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+      `;
+      
+      for(const row of allData){
+        html += `<tr>`;
+        for(const h of availableHeaders){
+          const cellValue = row[h] ?? '';
+          if (h === 'URL da Imagem' && typeof cellValue === 'string' && 
+              (cellValue.includes('cloudinary.com') || cellValue.includes('res.cloudinary.com'))){
+            html += `
+              <td class="cell-url">
+                <img src="${cellValue}" alt="Imagem" onclick="showImageModal('${cellValue}')">
+                <br>
+                <a href="${cellValue}" target="_blank" style="font-size:11px">Ver original</a>
+                <div class="url-display" title="${cellValue}">${cellValue}</div>
+              </td>
+            `;
+          } else if (h === 'URL da Imagem' && typeof cellValue === 'string' && cellValue.startsWith('http')){
+            html += `
+              <td class="cell-url">
+                <a href="${cellValue}" target="_blank">${cellValue}</a>
+                <div class="url-display" title="${cellValue}">${cellValue}</div>
+              </td>`;
+          } else {
+            html += `<td>${cellValue}</td>`;
+          }
+        }
+        html += `</tr>`;
+      }
+      html += `</tbody></table></div>`;
+      els.data.innerHTML = html;
+      
+      applyEntriesFilter();
+    }
+
+    function applyEntriesFilter() {
+      const val = els.entries.value;
+      const rows = Array.from(els.data.querySelectorAll('tbody tr'));
+      rows.forEach((tr,idx)=>{
+        tr.style.display = (val==='all' || idx < parseInt(val)) ? '' : 'none';
+      });
+    }
+
+    // Funções da câmera
+    async function startCamera() {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('Seu navegador não suporta a API de câmera.');
+        }
+        
+        const constraints = {
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'environment'
+          }
+        };
+        
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        els.videoElement.srcObject = stream;
+        
+        await new Promise((resolve) => {
+          els.videoElement.onloadedmetadata = resolve;
+        });
+        
+        els.captureBtn.disabled = false;
+        
+      } catch (error) {
+        console.error('Erro ao acessar a câmera:', error);
+        showMessage('❌ Erro ao acessar a câmera. Verifique as permissões.', 'error');
+      }
+    }
+
+    function capturePhoto() {
+      try {
+        if (!stream) {
+          throw new Error('A câmera não está ativa.');
+        }
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = els.videoElement.videoWidth;
+        canvas.height = els.videoElement.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(els.videoElement, 0, 0, canvas.width, canvas.height);
+        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        
+        capturedPhotos.push({
+          dataUrl: photoDataUrl,
+          name: `foto_${new Date().toISOString().replace(/[:.]/g, '-')}.jpg`,
+          type: 'image/jpeg'
+        });
+        
+        showMessage(`✅ Foto capturada! Total: ${capturedPhotos.length}`, 'success', 2000);
+        updateCameraPreview();
+        
+      } catch (error) {
+        console.error('Erro ao capturar foto:', error);
+        showMessage('❌ Erro ao capturar foto', 'error');
+      }
+    }
+
+    function updateCameraPreview() {
+      els.cameraPreview.innerHTML = '';
+      els.clearPhotosBtn.style.display = capturedPhotos.length > 0 ? 'inline-block' : 'none';
+      els.submitCamera.disabled = capturedPhotos.length === 0;
+      
+      if (capturedPhotos.length > 0) {
+        const previewHTML = `
+          <div class="status success">
+            <strong>📸 Foto capturada!</strong>
+            <p>Total de fotos: ${capturedPhotos.length}</p>
+          </div>
+          <img src="${capturedPhotos[capturedPhotos.length-1].dataUrl}" alt="Foto Capturada" class="preview-image">
+        `;
+        els.cameraPreview.innerHTML = previewHTML;
+      }
+    }
+
+    function clearPhotos() {
+      capturedPhotos = [];
+      updateCameraPreview();
+      showMessage('✅ Fotos removidas. Pronto para novas fotos.', 'success', 2000);
+    }
+
+    // Geolocalização
+    async function getLocation(locationType) {
+      const locationBtn = locationType === 'camera' ? els.btnCameraLocation : els.btnLocation;
+      const locationStatus = locationType === 'camera' ? els.cameraLocationStatus : els.locationStatus;
+      
+      locationBtn.disabled = true;
+      locationStatus.textContent = '🔍 Obtendo localização...';
+      
+      if (!navigator.geolocation) {
+        locationStatus.textContent = '❌ Geolocalização não suportada';
+        locationBtn.disabled = false;
+        return;
+      }
+
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          });
+        });
+
+        currentLocation = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        };
+
+        locationStatus.innerHTML = `✅ ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)} (±${Math.round(position.coords.accuracy)}m)`;
+      } catch (error) {
+        locationStatus.textContent = `❌ Erro: ${error.message}`;
+        currentLocation = null;
+      } finally {
+        locationBtn.disabled = false;
+      }
+    }
+
+    // Manuseio de arquivos
+    function handleFileSelect(files) {
+      selectedFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+      updateFilePreview();
+      els.submitUpload.disabled = selectedFiles.length === 0;
+    }
+
+    function updateFilePreview() {
+      els.filePreview.innerHTML = '';
+      selectedFiles.forEach((file, index) => {
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        
+        const reader = new FileReader();
+        reader.onload = e => {
+          item.innerHTML = `
+            <img src="${e.target.result}" alt="${file.name}">
+            <div style="font-size:11px;margin-top:5px">${file.name}</div>
+            <button class="remove-btn" onclick="removeFile(${index})">&times;</button>
+          `;
+        };
+        reader.readAsDataURL(file);
+        
+        els.filePreview.appendChild(item);
+      });
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      updateFilePreview();
+      els.submitUpload.disabled = selectedFiles.length === 0;
+    }
+
+    // Upload de fotos
+    async function uploadPhotos(event, isCamera = false) {
+      event.preventDefault();
+      
+      const filesToUpload = isCamera ? capturedPhotos : selectedFiles;
+      const formId = isCamera ? 'cameraForm' : 'uploadForm';
+      const submitBtn = isCamera ? els.submitCamera : els.submitUpload;
+      const resultsDiv = isCamera ? els.cameraResults : els.uploadResults;
+      
+      if (filesToUpload.length === 0) {
+        showMessage('❌ Selecione pelo menos uma foto.', 'error');
+        return;
+      }
+
+      const formData = new FormData();
+      const form = document.getElementById(formId);
+      
+      formData.append('title', form.querySelector('input[type="text"]').value);
+      formData.append('description', form.querySelector('textarea').value);
+      formData.append('worksheet', WORKSHEET_NAME);
+      
+      if (currentLocation) {
+        formData.append('latitude', currentLocation.latitude);
+        formData.append('longitude', currentLocation.longitude);
+        formData.append('accuracy', currentLocation.accuracy);
+      }
+
+      if (isCamera) {
+        for (const photo of capturedPhotos) {
+          const response = await fetch(photo.dataUrl);
+          const blob = await response.blob();
+          formData.append('photos', blob, photo.name);
+        }
+      } else {
+        selectedFiles.forEach(file => {
+          formData.append('photos', file);
+        });
+      }
+
+      showLoading(`Enviando ${filesToUpload.length} foto(s)...`);
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch(SERVER_URL + '/api/upload/photos', {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showMessage(`✅ ${result.summary.successful} foto(s) enviada(s) com sucesso!`, 'success');
+          
+          resultsDiv.style.display = 'block';
+          resultsDiv.innerHTML = `
+            <h4>✅ Upload Concluído</h4>
+            <p><strong>Planilha:</strong> ${result.spreadsheet_title}</p>
+            <p><strong>Aba:</strong> ${result.summary.worksheet}</p>
+            <p><strong>Total de arquivos:</strong> ${result.summary.total_files}</p>
+            <p><strong>Sucesso:</strong> ${result.summary.successful}</p>
+            <p><strong>Falhas:</strong> ${result.summary.failed}</p>
+          `;
+
+          // Reset form
+          if (isCamera) {
+            capturedPhotos = [];
+            updateCameraPreview();
+            els.cameraLocationStatus.textContent = '';
+          } else {
+            form.reset();
+            selectedFiles = [];
+            updateFilePreview();
+            els.locationStatus.textContent = '';
+          }
+          currentLocation = null;
+          
+          // Recarregar dados automaticamente
+          setTimeout(loadData, 1000);
+        } else {
+          showMessage(`❌ Erro no upload: ${result.error || result.message}`, 'error');
+        }
+      } catch (error) {
+        showMessage(`❌ Erro no upload: ${error.message}`, 'error');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    // Navegação por abas
+    els.tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.getAttribute('data-tab');
+        
+        els.tabs.forEach(t => t.classList.remove('active'));
+        els.tabContents.forEach(tc => tc.classList.remove('active'));
+        
+        tab.classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+      });
+    });
+
+    // Modal de imagem
+    function showImageModal(url){
+      document.getElementById('modalImage').src = url;
+      document.getElementById('imageModal').style.display = 'block';
+    }
+    
+    function closeModal(){
+      document.getElementById('imageModal').style.display = 'none';
+    }
+
+    // Event listeners
+    els.btnTest.addEventListener('click', testConnection);
+    els.btnLoad.addEventListener('click', loadData);
+    els.btnRefresh.addEventListener('click', loadData);
+    
+    els.search.addEventListener('input', () => {
+      const q = els.search.value.trim().toLowerCase();
+      if(!q){ renderTable(); return; }
+      const headers = allData.length ? Object.keys(allData[0]) : [];
+      const filtered = allData.filter(r => headers.some(h => String(r[h]??'').toLowerCase().includes(q)));
+      const backup = allData;
+      allData = filtered;
+      renderTable();
+      allData = backup;
+    });
+
+    els.entries.addEventListener('change', applyEntriesFilter);
+
+    // Upload events
+    els.btnLocation.addEventListener('click', () => getLocation('upload'));
+    els.uploadForm.addEventListener('submit', (e) => uploadPhotos(e, false));
+    
+    document.getElementById('selectFilesBtn').addEventListener('click', () => {
+      els.photoFiles.click();
+    });
+
+    els.photoFiles.addEventListener('change', e => {
+      handleFileSelect(e.target.files);
+    });
+
+    // Camera events
+    els.btnCameraLocation.addEventListener('click', () => getLocation('camera'));
+    els.captureBtn.addEventListener('click', capturePhoto);
+    els.clearPhotosBtn.addEventListener('click', clearPhotos);
+    els.cameraForm.addEventListener('submit', (e) => uploadPhotos(e, true));
+
+    // Drag and drop
+    const uploadZone = document.getElementById('uploadZone');
+    uploadZone.addEventListener('dragover', e => {
+      e.preventDefault();
+      uploadZone.classList.add('dragover');
+    });
+
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('dragover');
+    });
+
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      handleFileSelect(e.dataTransfer.files);
+    });
+
+    // Close modal on click outside
+    document.getElementById('imageModal').addEventListener('click', e => {
+      if (e.target.id === 'imageModal') closeModal();
+    });
+
+    // Cleanup when page is closed
+    window.addEventListener('beforeunload', function() {
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    });
+
+    // Auto-conectar ao carregar a página
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('🔥 DOM carregado, configurando listeners...');
+      
+      // Teste imediato para ver si tudo funciona
+      setTimeout(() => {
+        console.log('🧪 Teste básico de funcionamento...');
+        showMessage('✅ Sistema carregado! Clique em "Testar Conexão" para começar.', 'success');
+      }, 500);
+    });
+    
+    window.addEventListener('load', () => {
+      console.log('📄 Página completamente carregada');
+      setTimeout(() => {
+        console.log('🤖 Executando auto-conexão...');
+        testConnection();
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
