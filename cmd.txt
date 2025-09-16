@@ -1,10 +1,10 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
 
         16.09.2025
-            18:[37, 19]
+            18:[51, 37, 19]
                 O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador
                     git add app.py html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html cmd.txt html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
-                    git commit -m " 16.09, [18:19 16:[28,18] 13:22, 12:[35, 05], 11:[36, 19], 07:11, 6:48] O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador "
+                    git commit -m " 16.09, [18:[51, 19] 16:[28,18] 13:22, 12:[35, 05], 11:[36, 19], 07:11, 6:48] Você adicionou a rota /debug/full que o frontend está tentando acessar. Agora vou analisar o que ainda pode estar faltando. O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador "
                     git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa_to_galp_01
 
             html/09.2025/08/deepseek_html_20250908_43714e_V1.html

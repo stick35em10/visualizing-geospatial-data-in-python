@@ -481,6 +481,167 @@ def upload_to_cloudinary(file_content, original_filename):
             log_step("CLOUDINARY_UPLOAD", f"❌ Erro no upload: {str(e)}", False)
             raise Exception(f"Erro no upload para Cloudinary: {str(e)}")
 
+# 16.09, 18:44, 2. Crie funções internas para as rotas de debug:
+def debug_sheets_internal():
+    """Versão interna de debug_sheets que retorna dicionário"""
+    try:
+        # Verificar variáveis de ambiente
+        env_check = check_environment_variables()
+        
+        # Verificar credenciais
+        creds_check = parse_credentials()
+        
+        # Testar conexão
+        connection_test = None
+        if env_check['all_found'] and creds_check['success']:
+            try:
+                connection_test = test_google_sheets_connection()
+            except Exception as conn_error:
+                connection_test = {'success': False, 'error': str(conn_error)}
+        
+        # Informações do cache
+        cache_info = {
+            'client_cached': _client_cache is not None,
+            'spreadsheet_cached': _spreadsheet_cache is not None
+        }
+        
+        return {
+            'environment_check': env_check,
+            'credentials_check': creds_check,
+            'connection_test': connection_test,
+            'cache_info': cache_info,
+            'status': sheets_status
+        }
+        
+    except Exception as e:
+        return {'error': f'Erro no debug do Sheets: {str(e)}'}
+
+def debug_cloudinary_internal():
+    """Versão interna de debug_cloudinary que retorna dicionário"""
+    try:
+        # Verificar configuração básica
+        config_status = {
+            'cloud_name': bool(os.getenv('CLOUDINARY_CLOUD_NAME')),
+            'api_key': bool(os.getenv('CLOUDINARY_API_KEY')),
+            'api_secret': bool(os.getenv('CLOUDINARY_API_SECRET')),
+            'fully_configured': all([
+                os.getenv('CLOUDINARY_CLOUD_NAME'),
+                os.getenv('CLOUDINARY_API_KEY'),
+                os.getenv('CLOUDINARY_API_SECRET')
+            ])
+        }
+        
+        # Testar conexão simples (sem fazer upload real)
+        test_result = None
+        if config_status['fully_configured']:
+            try:
+                # Teste simples da API
+                result = cloudinary.api.ping()
+                test_result = {
+                    'status': result.get('status') if result else 'unknown',
+                    'success': result is not None
+                }
+            except Exception as e:
+                test_result = {
+                    'success': False,
+                    'error': str(e)
+                }
+        
+        return {
+            'configuration': config_status,
+            'connection_test': test_result
+        }
+        
+    except Exception as e:
+        return {'error': f'Erro ao verificar Cloudinary: {str(e)}'}
+
+def debug_credentials_internal():
+    """Versão interna de debug_credentials que retorna dicionário"""
+    try:
+        # Verificar se as credenciais estão presentes
+        creds_json = os.getenv('GOOGLE_SHEETS_CREDENTIALS')
+        creds_present = creds_json is not None and len(creds_json.strip()) > 0
+        
+        # Verificar formato básico
+        format_valid = False
+        is_base64 = False
+        project_id = None
+        client_email = None
+        
+        if creds_present:
+            try:
+                # Verificar se é base64
+                test_creds = creds_json.strip()
+                if test_creds.startswith('eyJ'):  # JWT normalmente começa com eyJ
+                    try:
+                        decoded = base64.b64decode(test_creds).decode('utf-8')
+                        is_base64 = True
+                        test_creds = decoded
+                    except:
+                        pass
+                
+                # Tentar fazer parse do JSON
+                creds_dict = json.loads(test_creds)
+                format_valid = True
+                
+                # Extrair informações não sensíveis
+                project_id = creds_dict.get('project_id')
+                client_email = creds_dict.get('client_email')
+                
+            except (json.JSONDecodeError, UnicodeDecodeError):
+                format_valid = False
+        
+        # Verificar Cloudinary
+        cloudinary_configured = all([
+            os.getenv('CLOUDINARY_CLOUD_NAME'),
+            os.getenv('CLOUDINARY_API_KEY'), 
+            os.getenv('CLOUDINARY_API_SECRET')
+        ])
+        
+        return {
+            'google_sheets': {
+                'credentials_present': creds_present,
+                'format_valid': format_valid,
+                'is_base64_encoded': is_base64,
+                'project_id': project_id,
+                'client_email': client_email,
+                'status': sheets_status
+            },
+            'cloudinary': {
+                'configured': cloudinary_configured,
+                'cloud_name': bool(os.getenv('CLOUDINARY_CLOUD_NAME')),
+                'api_key': bool(os.getenv('CLOUDINARY_API_KEY')),
+                'api_secret': bool(os.getenv('CLOUDINARY_API_SECRET'))
+            }
+        }
+        
+    except Exception as e:
+        return {'error': f'Erro ao verificar credenciais: {str(e)}'}
+
+def debug_environment_internal():
+    """Versão interna de debug_environment que retorna dicionário"""
+    try:
+        # Lista de variáveis sensíveis que não devem ser expostas
+        sensitive_keys = [
+            'GOOGLE_SHEETS_CREDENTIALS', 'CLOUDINARY_API_SECRET', 
+            'API_KEY', 'SECRET_KEY', 'PASSWORD', 'TOKEN', 'PRIVATE_KEY'
+        ]
+        
+        env_vars = {}
+        for key, value in os.environ.items():
+            # Ocultar valores de variáveis sensíveis
+            if any(sensitive in key.upper() for sensitive in sensitive_keys):
+                env_vars[key] = '*** HIDDEN ***'
+            else:
+                env_vars[key] = value
+        
+        return {
+            'environment_variables': env_vars,
+            'sensitive_keys_filtered': sensitive_keys
+        }
+        
+    except Exception as e:
+        return {'error': f'Erro ao coletar variáveis de ambiente: {str(e)}'}
 
 #2. Adicionar middleware manual para CORS
 """
@@ -1054,29 +1215,46 @@ def metrics():
 
 
 #3. Problema na Inicialização do Servidor
-
+#16.09.2025, 18:46 3. Atualize a rota /debug/full:
 @app.route('/debug/full', methods=['GET'])
 def debug_full():
     """Endpoint completo de debug que combina todas as informações"""
     with tracer.start_as_current_span("debug_full"):
         try:
+            """
             # Coletar informações de todas as rotas de debug
             sheets_info = debug_sheets().get_json()
             cloudinary_info = debug_cloudinary().get_json()
             credentials_info = debug_credentials().get_json()
             environment_info = debug_environment().get_json()
+            """
+            
+            # Chame as funções internas diretamente em vez das rotas
+            sheets_info = debug_sheets_internal()
+            cloudinary_info = debug_cloudinary_internal()
+            credentials_info = debug_credentials_internal()
+            environment_info = debug_environment_internal()
             
             # Calcular tempo de resposta
             start_time = datetime.now()
             
             # Testar conexão com Sheets se possível
             sheets_connection = None
+            env_check = sheets_info.get('environment_check', {})
+            
+            if env_check and env_check.get('all_found', False):
+                try:
+                    sheets_connection = test_google_sheets_connection()
+                except Exception as e:
+                    sheets_connection = {'success': False, 'error': str(e)}
+                    
+            """ 
             if sheets_info.get('environment_check', {}).get('all_found', False):
                 try:
                     sheets_connection = test_google_sheets_connection()
                 except Exception as e:
                     sheets_connection = {'success': False, 'error': str(e)}
-            
+            """
             end_time = datetime.now()
             duration = (end_time - start_time).total_seconds()
             
@@ -1090,7 +1268,7 @@ def debug_full():
                 'environment': environment_info,
                 'sheets_connection_test': sheets_connection,
                 'status': {
-                    'sheets_configured': sheets_info.get('environment_check', {}).get('all_found', False),
+                    'sheets_configured': env_check.get('all_found', False) if env_check else False,
                     'cloudinary_configured': cloudinary_info.get('configuration', {}).get('fully_configured', False),
                     'sheets_connected': sheets_connection.get('success', False) if sheets_connection else False
                 }
@@ -1118,6 +1296,46 @@ def debug_simple():
         ])
     })
 
+# 16.09, 18:51 4. Adicione a rota /api/sheets/data que o frontend também precisa:
+@app.route('/api/sheets/data', methods=['GET'])
+def get_sheets_data():
+    """Endpoint para obter dados da planilha"""
+    with tracer.start_as_current_span("get_sheets_data"):
+        try:
+            worksheet_name = request.args.get('worksheet', 'Imagens')
+            
+            if not sheets_status['initialized']:
+                # Tenta reconectar se não estiver inicializado
+                try:
+                    test_google_sheets_connection()
+                except:
+                    pass
+            
+            client, spreadsheet = get_sheets_client()
+            worksheet = spreadsheet.worksheet(worksheet_name)
+            
+            # Obter todos os dados da worksheet
+            data = worksheet.get_all_records()
+            
+            # Obter metadados
+            metadata = {
+                'total_rows': len(data),
+                'total_columns': len(data[0]) if data else 0,
+                'worksheet': worksheet_name,
+                'last_update': datetime.now().isoformat()
+            }
+            
+            return jsonify({
+                'success': True,
+                'data': data,
+                'metadata': metadata
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Erro ao obter dados: {str(e)}'
+            }), 500
 
 if __name__ == '__main__':
     # Inicialização automática ao iniciar o servidor
