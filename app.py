@@ -130,6 +130,7 @@ def test_endpoint():
 FlaskInstrumentor().instrument_app(app)
 RequestsInstrumentor().instrument()
 
+"""
 CORS(app, resources={
     r"/*": {
         "origins": [
@@ -144,6 +145,17 @@ CORS(app, resources={
         "max_age": 3600
     }
 })
+"""
+# Por esta configuração mais permissiva (para desenvolvimento):
+# from flask_cors import CORS
+
+# Configuração CORS mais permissiva
+CORS(app, origins=[
+    "https://stick35em10.github.io",
+    "http://localhost:*",
+    "http://127.0.0.1:*",
+    "https://*.github.io"
+])
 
 # Variáveis globais para status e cache
 sheets_status = {
