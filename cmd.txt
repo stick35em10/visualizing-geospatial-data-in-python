@@ -1,10 +1,29 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
 
         16.09.2025
-            18:[51, 37, 19]
+            19:41, 18:[51, 37, 19]
+                deepseek_html_20250908_43714e_V1copy.html:268  GET https://visualizing-geospatial-data-in-python-5.onrender.com/debug/full 500 (Internal Server Error)
+                makeRequest @ deepseek_html_20250908_43714e_V1copy.html:268
+                testConnection @ deepseek_html_20250908_43714e_V1copy.html:296
+                (anonymous) @ deepseek_html_20250908_43714e_V1copy.html:759
+                setTimeout
+                (anonymous) @ deepseek_html_20250908_43714e_V1copy.html:757Understand this error
+                deepseek_html_20250908_43714e_V1copy.html:317 Error: HTTP 500: {"error":"Erro no debug completo: 'tuple' object has no attribute 'get_json'","success":false,"timestamp":"2025-09-16T16:52:30.863457"}
+
+                    at makeRequest (deepseek_html_20250908_43714e_V1copy.html:280:17)
+                    at async testConnection (deepseek_html_20250908_43714e_V1copy.html:296:30)
+                testConnection @ deepseek_html_20250908_43714e_V1copy.html:317
+                await in testConnection
+                (anonymous) @ deepseek_html_20250908_43714e_V1copy.html:759
+                setTimeout
+                (anonymous) @ deepseek_html_20250908_43714e_V1copy.html:757Understand this error
+                deepseek_html_20250908_43714e_V1copy.html:609  POST https://visualizing-geospatial-data-in-python-5.onrender.com/api/upload/photos net::ERR_CONNECTION_TIMED_OUT
+
+                Este erro indica que há problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas:
+
                 O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador
-                    git add app.py html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html cmd.txt html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
-                    git commit -m " 16.09, [18:[51, 19] 16:[28,18] 13:22, 12:[35, 05], 11:[36, 19], 07:11, 6:48] Você adicionou a rota /debug/full que o frontend está tentando acessar. Agora vou analisar o que ainda pode estar faltando. O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador "
+                    git add app.py cmd.txt  html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html cmd.txt html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
+                    git commit -m " 16.09, [18:[51, 19] 16:[28,18] 13:22, 12:[35, 05], 11:[36, 19], 07:11, 6:48] problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas Este erro indica que há problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas: Você adicionou a rota /debug/full que o frontend está tentando acessar. Agora vou analisar o que ainda pode estar faltando. O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador "
                     git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa_to_galp_01
 
             html/09.2025/08/deepseek_html_20250908_43714e_V1.html
