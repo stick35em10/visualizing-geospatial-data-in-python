@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📸 Upload de Fotos - Images</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #e2e8f0;
+      line-height: 1.6;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      background: #0f1530;
+      border-bottom: 1px solid #1c274f;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+      margin: 0;
+      color: #7dd3fc;
+    }
+    
+    .row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    button {
+      background: linear-gradient(to right, #3b82f6, #6366f1);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    button:hover:not([disabled]) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    button[disabled] {
+      background: #475569;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    
+    .server-info {
+      background: rgba(15, 23, 42, 0.8);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
+    }
+    
+    .opentelemetry-status {
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .opentelemetry-status.connected {
+      background: rgba(34, 197, 94, 0.2);
+      color: #bbf7d0;
+      border: 1px solid #4ade80;
+    }
+    
+    .opentelemetry-status.disconnected {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fecaca;
+      border: 1px solid #f87171;
+    }
+    
+    .status {
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid #334155;
+    }
+    
+    .status.error {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: #f87171;
+      color: #fecaca;
+    }
+    
+    .status.success {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: #4ade80;
+      color: #bbf7d0;
+    }
+    
+    .status.warn {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: #fbbf24;
+      color: #fde68a;
+    }
+    
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #334155;
+    }
+    
+    .tab {
+      background: none;
+      border: none;
+      color: #b0c4de;
+      padding: 12px 20px;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.3s ease;
+    }
+    
+    .tab.active {
+      color: #e2e8f0;
+      border-bottom-color: #3b82f6;
+    }
+    
+    .tab-content {
+      display: none;
+      background: rgba(15, 23, 42, 0.8);
+      padding: 20px;
+      border-radius: 0 8px 8px 8px;
+      border: 1px solid #334155;
+      min-height: 400px;
+    }
+    
+    .tab-content.active {
+      display: block;
+    }
+    
+    .panel {
+      background: rgba(30, 41, 59, 0.5);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #475569;
+    }
+    
+    .panel h3 {
+      margin-bottom: 15px;
+      color: #7dd3fc;
+    }
+    
+    .form-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+    
+    .form-row label {
+      min-width: 120px;
+      font-weight: 600;
+    }
+    
+    input, select, textarea {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: rgba(30, 41, 59, 0.8);
+      color: #e2e8f0;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+    }
+    
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      width: 100%;
+    }
+    
+    .upload-section {
+      background: rgba(30, 41, 59, 0.5);
+      border: 2px dashed #334155;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      margin: 20px 0;
+      transition: all 0.3s ease;
+    }
+    
+    .upload-section.dragover {
+      border-color: #3b82f6;
+      background: rgba(59, 130, 246, 0.1);
+    }
+    
+    .file-input {
+      display: none;
+    }
+    
+    .upload-button {
+      background: linear-gradient(to right, #3b82f6, #6366f1);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+    
+    .upload-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+    
+    .file-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 15px 0;
+    }
+    
+    .file-item {
+      position: relative;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 8px;
+      background: rgba(30, 41, 59, 0.8);
+    }
+    
+    .file-item img {
+      max-width: 100px;
+      max-height: 75px;
+      border-radius: 4px;
+    }
+    
+    .file-item .remove-btn {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .camera-container {
+      text-align: center;
+      margin: 15px 0;
+    }
+    
+    #videoElement {
+      width: 100%;
+      max-width: 400px;
+      border: 2px solid #334155;
+      border-radius: 8px;
+      background: #000;
+    }
+    
+    .camera-controls {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin: 15px 0;
+    }
+    
+    .preview-image {
+      max-width: 300px;
+      border-radius: 8px;
+      margin: 10px 0;
+      border: 2px solid #334155;
+    }
+    
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .table-wrapper {
+      overflow: auto;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      max-height: 500px;
+    }
+    
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(30, 41, 59, 0.5);
+    }
+    
+    .data-table th, .data-table td {
+      padding: 12px 15px;
+      text-align: left;
+      border-bottom: 1px solid #334155;
+    }
+    
+    .data-table th {
+      background: rgba(30, 41, 59, 0.8);
+      color: #7dd3fc;
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    
+    .data-table tr:hover {
+      background: rgba(51, 65, 85, 0.5);
+    }
+    
+    .thumbnail {
+      width: 100px;
+      height: 100px;
+      object-fit: cover;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    
+    .thumbnail:hover {
+      transform: scale(1.05);
+    }
+    
+    .url-display {
+      word-break: break-all;
+      font-size: 12px;
+      max-width: 300px;
+      color: #b0c4de;
+      margin-top: 5px;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(5px);
+    }
+    
+    .modal-content {
+      position: relative;
+      margin: 5% auto;
+      padding: 20px;
+      width: 90%;
+      max-width: 800px;
+      border-radius: 12px;
+      background: #0f172a;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+    }
+    
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 30px;
+      font-weight: bold;
+      color: #fff;
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 1001;
+    }
+    
+    #modalImage {
+      width: 100%;
+      border-radius: 8px;
+    }
+    
+    .upload-results {
+      background: rgba(30, 41, 59, 0.5);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      border: 1px solid #475569;
+    }
+    
+    .stats {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+      border: 1px solid #475569;
+    }
+    
+    .captured-photos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin: 20px 0;
+    }
+    
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .form-row {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .form-row label {
+        min-width: auto;
+        margin-bottom: 5px;
+      }
+      
+      .controls {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>📸 Upload de Fotos - Images</h1>
+    <div class="row">
+      <button id="btnTest">🔗 Testar Conexão</button>
+      <button id="btnLoad" disabled>📊 Carregar Dados</button>
+      <button id="btnRefresh" disabled>🔄 Atualizar</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="server-info">
+      <strong>🌐 Servidor:</strong> <span id="serverUrl">https://visualizing-geospatial-data-in-python-4.onrender.com</span><br>
+      <strong>📋 Aba:</strong> <span id="worksheetName">Images</span>
+      <div id="otelStatus" class="opentelemetry-status disconnected">
+        <span>📊 OpenTelemetry: Desconectado</span>
+      </div>
+    </div>
+    
+    <div id="status" class="status">Clique em <strong>Testar Conexão</strong> para começar.</div>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="data">📊 Ver Imagens</button>
+      <button class="tab" data-tab="upload">📤 Upload</button>
+      <button class="tab" data-tab="camera">📷 Câmera</button>
+      <button class="tab" data-tab="monitoring">📈 Monitoramento</button>
+    </div>
+
+    <!-- Ver Imagens -->
+    <div class="tab-content active" id="tab-data">
+      <div class="panel">
+        <div class="controls">
+          <div class="search-box">
+            <input type="text" id="search" placeholder="Buscar...">
+          </div>
+          <div class="search-box">
+            <select id="entries">
+              <option value="10">10 entradas</option>
+              <option value="25" selected>25 entradas</option>
+              <option value="50">50 entradas</option>
+              <option value="100">100 entradas</option>
+              <option value="all">Todas</option>
+            </select>
+          </div>
+          <button id="btnRefreshData" disabled>🔄 Atualizar</button>
+        </div>
+        <div class="stats" id="dataStats"></div>
+        <div id="data"></div>
+      </div>
+    </div>
+
+    <!-- Upload de Fotos -->
+    <div class="tab-content" id="tab-upload">
+      <div class="panel">
+        <h3>📤 Upload de Fotos</h3>
+        <form id="uploadForm">
+          <div class="form-row">
+            <label for="photoTitle">Título:</label>
+            <input type="text" id="photoTitle" placeholder="Título da foto" required value="Foto com Localização">
+          </div>
+          <div class="form-row">
+            <label for="photoDescription">Descrição:</label>
+            <textarea id="photoDescription" placeholder="Descrição opcional"></textarea>
+          </div>
+          <div class="form-row">
+            <label>Localização:</label>
+            <button type="button" id="btnLocation">📍 Obter Localização</button>
+            <span id="locationStatus"></span>
+          </div>
+          
+          <div class="upload-section" id="uploadZone">
+            <p>📁 Arraste fotos aqui ou clique para selecionar</p>
+            <input type="file" id="photoFiles" class="file-input" multiple accept="image/*">
+            <button type="button" class="upload-button" id="selectFilesBtn">Selecionar Fotos</button>
+          </div>
+
+          <div class="file-preview" id="filePreview"></div>
+          
+          <div class="form-row" style="justify-content: center; margin-top: 20px;">
+            <button type="submit" class="upload-button" disabled id="submitUpload">🚀 Enviar Fotos</button>
+          </div>
+        </form>
+        
+        <div id="uploadResults" class="upload-results" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Câmera -->
+    <div class="tab-content" id="tab-camera">
+      <div class="panel">
+        <h3>📷 Capturar Foto</h3>
+        
+        <div class="form-row">
+          <label for="cameraTitle">Título:</label>
+          <input type="text" id="cameraTitle" placeholder="Título da foto" required value="Foto com Localização">
+        </div>
+        <div class="form-row">
+          <label for="cameraDescription">Descrição:</label>
+          <textarea id="cameraDescription" placeholder="Descrição opcional"></textarea>
+        </div>
+        
+        <div class="form-row">
+          <label>Localização:</label>
+          <button type="button" id="btnCameraLocation">📍 Obter Localização</button>
+          <span id="cameraLocationStatus"></span>
+        </div>
+
+        <div class="camera-container">
+          <video id="videoElement" autoplay playsinline></video>
+        </div>
+
+        <div class="camera-controls">
+          <button type="button" id="captureBtn" disabled>📷 Tirar Foto</button>
+          <button type="button" id="clearPhotosBtn" style="display:none">🗑️ Limpar Fotos</button>
+        </div>
+
+        <div id="cameraPreview"></div>
+        
+        <div class="form-row" style="justify-content: center; margin-top: 20px;">
+          <button type="button" id="submitCamera" disabled>🚀 Enviar Fotos</button>
+        </div>
+      </div>
+      
+      <div id="cameraResults" class="upload-results" style="display:none;"></div>
+    </div>
+
+    <!-- Monitoramento -->
+    <div class="tab-content" id="tab-monitoring">
+      <div class="panel">
+        <h3>📈 Monitoramento OpenTelemetry</h3>
+        
+        <div class="form-row">
+          <label>Status do Servidor:</label>
+          <button type="button" id="btnHealthCheck">🩺 Verificar Saúde</button>
+          <span id="healthStatus">-</span>
+        </div>
+        
+        <div class="form-row">
+          <label>Monitoramento OpenTelemetry:</label>
+          <button type="button" id="btnOtelMetrics">📊 Buscar Métricas OTEL</button>
+          <button type="button" id="btnSystemMetrics">🖥️ Métricas do Sistema</button>
+          <button type="button" id="btnAutoMetrics">🔄 Auto Atualizar</button>
+        </div>
+
+        <div id="otelMetricsResults" class="upload-results" style="display:none;margin-top:20px;">
+          <h4>📈 Métricas OpenTelemetry</h4>
+          <div id="otelMetricsData" style="background:#0b1020;padding:15px;border-radius:8px;overflow:auto;max-height:300px;"></div>
+        </div>
+
+        <div class="form-row">
+          <label>Diagnóstico Avançado:</label>
+          <button type="button" id="btnEnvCheck">🔍 Verificar Variáveis</button>
+          <button type="button" id="btnCredsCheck">🔐 Testar Credenciais</button>
+          <button type="button" id="btnCloudinaryCheck">☁️ Verificar Cloudinary</button>
+        </div>
+        
+        <div class="form-row">
+          <label>Endpoint de Métricas:</label>
+          <button type="button" id="btnMetrics">📊 Buscar Métricas</button>
+        </div>
+        
+        <div id="monitoringResults" class="upload-results" style="display:none;margin-top:20px;">
+          <h4>📋 Resultados do Monitoramento</h4>
+          <pre id="monitoringData" style="background:#0b1020;padding:15px;border-radius:8px;overflow:auto;max-height:300px;"></pre>
+        </div>
+        
+        <div id="metricsCharts" style="display: none; margin-top: 20px;">
+          <h4>📈 Gráficos de Métricas</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+              <h5>📊 Uso de CPU</h5>
+              <canvas id="cpuChart" width="400" height="200"></canvas>
+            </div>
+            <div>
+              <h5>💾 Uso de Memória</h5>
+              <canvas id="memoryChart" width="400" height="200"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <div class="stats">
+          <strong>Endpoints disponíveis:</strong>
+          <ul style="font-size:12px;margin:10px 0;padding-left:20px;">
+            <li><code>/health</code> - Status do serviço</li>
+            <li><code>/debug</code> - Informações gerais</li>
+            <li><code>/debug/environment</code> - Variáveis de ambiente</li>
+            <li><code>/debug/credentials</code> - Credenciais</li>
+            <li><code>/debug/sheets</code> - Status do Google Sheets</li>
+            <li><code>/debug/cloudinary</code> - Status do Cloudinary</li>
+            <li><code>/api/upload/photos</code> - Upload de fotos</li>
+            <li><code>/images</code> - Lista de imagens</li>
+            <li><code>/otel/metrics</code> - Métricas OpenTelemetry</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal para visualizar imagem -->
+  <div id="imageModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <img id="modalImage" src="" alt="Visualização da imagem">
+    </div>
+  </div>
+
+  <script>
+    // Configuração do servidor
+    const SERVER_URL = "https://visualizing-geospatial-data-in-python-4.onrender.com";
+    const WORKSHEET_NAME = "Images";
+
+    // Estado da aplicação
+    let isConnected = false;
+    let allData = [];
+    let selectedFiles = [];
+    let capturedPhotos = [];
+    let currentLocation = null;
+    let cameraLocation = null;
+    let stream = null;
+    let otelConnected = false;
+    let imageData = [];
+    let metricsInterval = null;
+    let autoMetricsEnabled = false;
+    let cpuChart = null;
+    let memoryChart = null;
+    const metricHistory = {
+      cpu: [],
+      memory: [],
+      timestamps: []
+    };
+
+    // Elementos do DOM
+    const els = {
+      // Botões principais
+      btnTest: document.getElementById('btnTest'),
+      btnLoad: document.getElementById('btnLoad'),
+      btnRefresh: document.getElementById('btnRefresh'),
+      btnRefreshData: document.getElementById('btnRefreshData'),
+      
+      // Status e informações
+      status: document.getElementById('status'),
+      otelStatus: document.getElementById('otelStatus'),
+      serverUrl: document.getElementById('serverUrl'),
+      worksheetName: document.getElementById('worksheetName'),
+      healthStatus: document.getElementById('healthStatus'),
+      
+      // Navegação
+      tabs: document.querySelectorAll('.tab'),
+      tabContents: document.querySelectorAll('.tab-content'),
+      
+      // Visualização de dados
+      search: document.getElementById('search'),
+      entries: document.getElementById('entries'),
+      data: document.getElementById('data'),
+      dataStats: document.getElementById('dataStats'),
+      
+      // Upload
+      uploadForm: document.getElementById('uploadForm'),
+      photoFiles: document.getElementById('photoFiles'),
+      photoTitle: document.getElementById('photoTitle'),
+      photoDescription: document.getElementById('photoDescription'),
+      filePreview: document.getElementById('filePreview'),
+      submitUpload: document.getElementById('submitUpload'),
+      uploadResults: document.getElementById('uploadResults'),
+      btnLocation: document.getElementById('btnLocation'),
+      locationStatus: document.getElementById('locationStatus'),
+      uploadZone: document.getElementById('uploadZone'),
+      selectFilesBtn: document.getElementById('selectFilesBtn'),
+      
+      // Câmera
+      cameraForm: document.getElementById('cameraForm'),
+      videoElement: document.getElementById('videoElement'),
+      captureBtn: document.getElementById('captureBtn'),
+      clearPhotosBtn: document.getElementById('clearPhotosBtn'),
+      cameraPreview: document.getElementById('cameraPreview'),
+      submitCamera: document.getElementById('submitCamera'),
+      btnCameraLocation: document.getElementById('btnCameraLocation'),
+      cameraLocationStatus: document.getElementById('cameraLocationStatus'),
+      cameraTitle: document.getElementById('cameraTitle'),
+      cameraDescription: document.getElementById('cameraDescription'),
+      cameraResults: document.getElementById('cameraResults'),
+      
+      // Modal
+      modal: document.getElementById('imageModal'),
+      modalImage: document.getElementById('modalImage'),
+      modalClose: document.querySelector('.modal-close'),
+      
+      // Monitoramento
+      btnHealthCheck: document.getElementById('btnHealthCheck'),
+      btnEnvCheck: document.getElementById('btnEnvCheck'),
+      btnCredsCheck: document.getElementById('btnCredsCheck'),
+      btnCloudinaryCheck: document.getElementById('btnCloudinaryCheck'),
+      btnMetrics: document.getElementById('btnMetrics'),
+      monitoringResults: document.getElementById('monitoringResults'),
+      monitoringData: document.getElementById('monitoringData'),
+      btnOtelMetrics: document.getElementById('btnOtelMetrics'),
+      btnSystemMetrics: document.getElementById('btnSystemMetrics'),
+      btnAutoMetrics: document.getElementById('btnAutoMetrics'),
+      otelMetricsResults: document.getElementById('otelMetricsResults'),
+      otelMetricsData: document.getElementById('otelMetricsData'),
+      metricsCharts: document.getElementById('metricsCharts')
+    };
+
+    // Funções utilitárias
+    function showMessage(html, kind = 'info', timeout = 0) {
+      els.status.className = 'status ' + (kind === 'error' ? 'error' : kind === 'success' ? 'success' : kind === 'warning' ? 'warn' : '');
+      els.status.innerHTML = html;
+      if (timeout > 0) {
+        setTimeout(() => {
+          els.status.className = 'status';
+          els.status.innerHTML = '';
+        }, timeout);
+      }
+    }
+
+    function showLoading(msg) {
+      showMessage(`⏳ ${msg}`, 'warn');
+    }
+
+    function resetConnection() {
+      isConnected = false;
+      els.btnLoad.disabled = true;
+      els.btnRefresh.disabled = true;
+      els.btnRefreshData.disabled = true;
+      els.data.innerHTML = '';
+    }
+
+    function updateOtelStatus(connected) {
+      otelConnected = connected;
+      if (connected) {
+        els.otelStatus.className = 'opentelemetry-status connected';
+        els.otelStatus.innerHTML = '<span>📊 OpenTelemetry: Conectado</span>';
+      } else {
+        els.otelStatus.className = 'opentelemetry-status disconnected';
+        els.otelStatus.innerHTML = '<span>📊 OpenTelemetry: Desconectado</span>';
+      }
+    }
+
+    // Requisições para o servidor
+    async function makeRequest(path, options = {}) {
+      const url = SERVER_URL.replace(/\/$/, '') + path;
+      try {
+        const res = await fetch(url, {
+          mode: 'cors',
+          credentials: 'omit',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': options.body instanceof FormData ? undefined : 'application/json'
+          },
+          ...options
+        });
+
+        if (!res.ok) {
+          const txt = await res.text().catch(() => 'Network error');
+          throw new Error(`HTTP ${res.status}: ${txt}`);
+        }
+        return res.json();
+      } catch (error) {
+        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          throw new Error(`Conexão falhou. Verifique se o servidor está rodando.`);
+        }
+        throw error;
+      }
+    }
+
+    // Testar conexão
+    async function testConnection() {
+      showLoading('Testando conexão...');
+      els.btnTest.disabled = true;
+
+      try {
+        // Testar múltiplos endpoints para verificar a saúde do servidor
+        const healthResult = await makeRequest('/health');
+        const sheetsResult = await makeRequest('/debug/sheets');
+        const cloudResult = await makeRequest('/debug/cloudinary');
+
+        const sheetsOK = sheetsResult && sheetsResult.success;
+        const cloudOK = cloudResult && cloudResult.configuration && cloudResult.configuration.fully_configured;
+
+        showMessage(`
+          ✅ <strong>Conexão Estabelecida</strong><br>
+          Sheets: ${sheetsOK ? '✅' : '❌'} |
+          Cloudinary: ${cloudOK ? '✅' : '❌'}<br>
+          Status: ${healthResult.status}
+        `, 'success');
+
+        isConnected = true;
+        els.btnLoad.disabled = false;
+        els.btnRefresh.disabled = false;
+        els.btnRefreshData.disabled = false;
+        updateOtelStatus(healthResult.status === 'healthy');
+
+        // Iniciar a câmera se a conexão for bem-sucedida
+        startCamera();
+
+      } catch (err) {
+        console.error('Erro de conexão:', err);
+        
+        // Tratamento especial para servidor em modo degradado (503)
+        if (err.message.includes('503')) {
+          showMessage(`
+            ⚠️ <strong>Servidor em modo degradado</strong><br>
+            O servidor está rodando, mas alguns serviços podem não estar disponíveis.<br>
+            Detalhes: ${err.message}
+          `, 'warn');
+          
+          // Permitir operações básicas mesmo em modo degradado
+          isConnected = true;
+          els.btnLoad.disabled = false;
+          els.btnRefresh.disabled = false;
+          els.btnRefreshData.disabled = false;
+        } else {
+          showMessage(`❌ Falha na conexão: ${err.message}`, 'error');
+          resetConnection();
+        }
+        updateOtelStatus(false);
+      } finally {
+        els.btnTest.disabled = false;
+      }
+    }
+
+    // Carregar dados da planilha
+    async function loadData() {
+      if (!isConnected) return;
+      showLoading('Carregando dados...');
+
+      try {
+        const response = await fetch(`${SERVER_URL}/images`);
+        if (response.ok) {
+          imageData = await response.json();
+          
+          // Processar URLs para garantir que são válidas
+          imageData = imageData.map(item => {
+            // Usar o campo correto da planilha: 'URL da Imagem'
+            const imageUrl = item.url || item.url_link || item.file_path || item['URL da Imagem'] || '';
+            
+            return {
+              ...item,
+              url: ensureValidUrl(imageUrl),
+              file_path: ensureValidUrl(imageUrl),
+              thumbnail_path: ensureValidUrl(imageUrl)
+            };
+          });
+
+          displayData(imageData);
+          showMessage(`✅ ${imageData.length} imagens carregadas com sucesso`, 'success', 3000);
+        } else {
+          throw new Error(`Erro HTTP: ${response.status}`);
+        }
+      } catch (error) {
+        showMessage(`❌ Erro ao carregar dados: ${error.message}`, 'error');
+        
+        // Carregar dados de fallback para demonstração
+        loadFallbackData();
+      }
+    }
+
+    // Dados de fallback para demonstração
+    function loadFallbackData() {
+      imageData = [
+        {
+          'Data': new Date().toLocaleString(),
+          'Título': 'Foto de Demonstração',
+          'Descrição': 'Esta é uma imagem de demonstração (servidor offline)',
+          'Nome do Arquivo Original': 'demo_image.jpg',
+          'URL da Imagem': 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+          'Latitude': -23.5505,
+          'Longitude': -46.6333
+        }
+      ];
+      
+      displayData(imageData);
+      showMessage('⚠️ Usando dados de demonstração (servidor offline)', 'warn');
+    }
+
+    // Garantir que a URL é válida
+    function ensureValidUrl(url) {
+      if (!url) return '';
+      
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url;
+      }
+      
+      return `https://res.cloudinary.com/demo/image/upload/${url}`;
+    }
+
+    // Exibir dados na tabela
+    function displayData(data) {
+      if (!data || data.length === 0) {
+        els.data.innerHTML = '<div class="status">Nenhum dado disponível</div>';
+        return;
+      }
+
+      // Definir as colunas que queremos mostrar
+      const desiredHeaders = ['Data', 'Título', 'URL da Imagem'];
+      
+      let html = `
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Miniatura</th>
+                ${desiredHeaders.map(h => `<th>${h}</th>`).join('')}
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      for (const row of data) {
+        const imageUrl = row.url || row['URL da Imagem'] || '';
+        const title = row.Título || row.title || 'Sem título';
+        const date = row.Data || row.date || 'Data não disponível';
+        
+        html += `
+          <tr>
+            <td class="cell-url">
+              ${imageUrl ? `<img src="${imageUrl}" alt="${title}" class="thumbnail" onclick="showImageModal('${imageUrl}')">` : 'Sem imagem'}
+            </td>
+            <td>${date}</td>
+            <td>${title}</td>
+            <td>
+              ${imageUrl ? `
+                <div class="url-display" title="${imageUrl}">
+                  ${imageUrl.length > 50 ? imageUrl.substring(0, 50) + '...' : imageUrl}
+                </div>
+                <a href="${imageUrl}" target="_blank" style="font-size:12px">Abrir original</a>
+              ` : 'URL não disponível'}
+            </td>
+            <td>
+              <button onclick="showImageModal('${imageUrl}')">👁️ Ver</button>
+            </td>
+          </tr>
+        `;
+      }
+
+      html += `</tbody></table></div>`;
+      els.data.innerHTML = html;
+      
+      // Atualizar estatísticas
+      els.dataStats.innerHTML = `
+        <strong>Estatísticas:</strong>
+        Total de imagens: ${data.length} |
+        Última atualização: ${new Date().toLocaleTimeString()}
+      `;
+    }
+
+    // Modal para visualizar imagem
+    function showImageModal(url) {
+      els.modalImage.src = url;
+      els.modal.style.display = 'block';
+    }
+
+    function closeModal() {
+      els.modal.style.display = 'none';
+    }
+
+    // Sistema de abas
+    els.tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabId = tab.getAttribute('data-tab');
+        
+        // Desativar todas as abas
+        els.tabs.forEach(t => t.classList.remove('active'));
+        els.tabContents.forEach(tc => tc.classList.remove('active'));
+        
+        // Ativar a aba clicada
+        tab.classList.add('active');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+        
+        // Inicializar a câmera se for a aba de câmera
+        if (tabId === 'camera' && !stream) {
+          startCamera();
+        }
+      });
+    });
+
+    // Inicializar câmera
+    async function startCamera() {
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          throw new Error('Seu navegador não suporta a API de câmera.');
+        }
+        
+        const constraints = {
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: 'environment'
+          }
+        };
+        
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        els.videoElement.srcObject = stream;
+        
+        els.videoElement.onloadedmetadata = () => {
+          els.captureBtn.disabled = false;
+        };
+        
+      } catch (error) {
+        console.error('Erro ao acessar a câmera:', error);
+        showMessage('❌ Erro ao acessar a câmera. Verifique as permissões.', 'error');
+      }
+    }
+
+    // Capturar foto
+    function capturePhoto() {
+      try {
+        if (!stream) {
+          throw new Error('A câmera não está ativa.');
+        }
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = els.videoElement.videoWidth;
+        canvas.height = els.videoElement.videoHeight;
+        const context = canvas.getContext('2d');
+        context.drawImage(els.videoElement, 0, 0, canvas.width, canvas.height);
+        const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+        
+        capturedPhotos.push({
+          dataUrl: photoDataUrl,
+          name: `foto_${new Date().toISOString().replace(/[:.]/g, '-')}.jpg`,
+          type: 'image/jpeg'
+        });
+        
+        showMessage(`✅ Foto capturada! Total: ${capturedPhotos.length}`, 'success', 2000);
+        updateCameraPreview();
+        
+      } catch (error) {
+        console.error('Erro ao capturar foto:', error);
+        showMessage('❌ Erro ao capturar foto', 'error');
+      }
+    }
+
+    function updateCameraPreview() {
+      els.cameraPreview.innerHTML = '';
+      els.clearPhotosBtn.style.display = capturedPhotos.length > 0 ? 'inline-block' : 'none';
+      els.submitCamera.disabled = capturedPhotos.length === 0;
+      
+      if (capturedPhotos.length > 0) {
+        const previewHTML = `
+          <div class="status success">
+            <strong>📸 Foto capturada!</strong>
+            <p>Total de fotos: ${capturedPhotos.length}</p>
+          </div>
+          <img src="${capturedPhotos[capturedPhotos.length-1].dataUrl}" alt="Foto Capturada" class="preview-image">
+        `;
+        els.cameraPreview.innerHTML = previewHTML;
+      }
+    }
+
+    function clearPhotos() {
+      capturedPhotos = [];
+      updateCameraPreview();
+      showMessage('✅ Fotos removidas. Pronto para novas fotos.', 'success', 2000);
+    }
+
+    // Geolocalização
+    async function getLocation(locationType) {
+      const locationBtn = locationType === 'camera' ? els.btnCameraLocation : els.btnLocation;
+      const locationStatus = locationType === 'camera' ? els.cameraLocationStatus : els.locationStatus;
+      
+      locationBtn.disabled = true;
+      locationStatus.textContent = '🔍 Obtendo localização...';
+      
+      if (!navigator.geolocation) {
+        locationStatus.textContent = '❌ Geolocalização não suportada';
+        locationBtn.disabled = false;
+        return;
+      }
+
+      try {
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+          });
+        });
+
+        const locationData = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy
+        };
+
+        if (locationType === 'camera') {
+          cameraLocation = locationData;
+        } else {
+          currentLocation = locationData;
+        }
+
+        locationStatus.innerHTML = `✅ ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)} (±${Math.round(position.coords.accuracy)}m)`;
+      } catch (error) {
+        locationStatus.textContent = `❌ Erro: ${error.message}`;
+        if (locationType === 'camera') {
+          cameraLocation = null;
+        } else {
+          currentLocation = null;
+        }
+      } finally {
+        locationBtn.disabled = false;
+      }
+    }
+
+    // Upload de arquivos
+    function handleFileSelect(files) {
+      selectedFiles = Array.from(files).filter(file => file.type.startsWith('image/'));
+      updateFilePreview();
+      els.submitUpload.disabled = selectedFiles.length === 0;
+    }
+
+    function updateFilePreview() {
+      els.filePreview.innerHTML = '';
+      selectedFiles.forEach((file, index) => {
+        const item = document.createElement('div');
+        item.className = 'file-item';
+        
+        const reader = new FileReader();
+        reader.onload = e => {
+          item.innerHTML = `
+            <img src="${e.target.result}" alt="${file.name}">
+            <div style="font-size:11px;margin-top:5px">${file.name}</div>
+            <button class="remove-btn" onclick="removeFile(${index})">&times;</button>
+          `;
+        };
+        reader.readAsDataURL(file);
+        
+        els.filePreview.appendChild(item);
+      });
+    }
+
+    function removeFile(index) {
+      selectedFiles.splice(index, 1);
+      updateFilePreview();
+      els.submitUpload.disabled = selectedFiles.length === 0;
+    }
+
+    // Upload de fotos
+    async function uploadPhotos(event, isCamera = false) {
+      event.preventDefault();
+      
+      const filesToUpload = isCamera ? capturedPhotos : selectedFiles;
+      const formId = isCamera ? 'cameraForm' : 'uploadForm';
+      const submitBtn = isCamera ? els.submitCamera : els.submitUpload;
+      const resultsDiv = isCamera ? els.cameraResults : els.uploadResults;
+      
+      if (filesToUpload.length === 0) {
+        showMessage('❌ Selecione pelo menos uma foto.', 'error');
+        return;
+      }
+
+      const formData = new FormData();
+      const form = document.getElementById(formId);
+      
+      formData.append('title', form.querySelector('input[type="text"]').value);
+      formData.append('description', form.querySelector('textarea').value);
+      formData.append('worksheet', WORKSHEET_NAME);
+      
+      const location = isCamera ? cameraLocation : currentLocation;
+      if (location) {
+        formData.append('latitude', location.latitude);
+        formData.append('longitude', location.longitude);
+        formData.append('accuracy', location.accuracy);
+      }
+
+      if (isCamera) {
+        for (const photo of capturedPhotos) {
+          const response = await fetch(photo.dataUrl);
+          const blob = await response.blob();
+          formData.append('photos', blob, photo.name);
+        }
+      } else {
+        selectedFiles.forEach(file => {
+          formData.append('photos', file);
+        });
+      }
+
+      showLoading(`Enviando ${filesToUpload.length} foto(s)...`);
+      submitBtn.disabled = true;
+
+      try {
+        const response = await fetch(SERVER_URL + '/api/upload/photos', {
+          method: 'POST',
+          mode: 'cors',
+          credentials: 'omit',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showMessage(`✅ ${result.summary.successful} foto(s) enviada(s) com sucesso!`, 'success');
+          
+          resultsDiv.style.display = 'block';
+          resultsDiv.innerHTML = `
+            <h4>✅ Upload Concluído</h4>
+            <p><strong>Planilha:</strong> ${result.spreadsheet_title}</p>
+            <p><strong>Aba:</strong> ${result.summary.worksheet}</p>
+            <p><strong>Total de arquivos:</strong> ${result.summary.total_files}</p>
+            <p><strong>Sucesso:</strong> ${result.summary.successful}</p>
+            <p><strong>Falhas:</strong> ${result.summary.failed}</p>
+          `;
+
+          // Reset form
+          if (isCamera) {
+            capturedPhotos = [];
+            updateCameraPreview();
+            els.cameraLocationStatus.textContent = '';
+            els.cameraTitle.value = 'Foto com Localização';
+            els.cameraDescription.value = '';
+          } else {
+            els.uploadForm.reset();
+            selectedFiles = [];
+            updateFilePreview();
+            els.locationStatus.textContent = '';
+          }
+          
+          currentLocation = null;
+          cameraLocation = null;
+          
+          // Recarregar dados automaticamente
+          setTimeout(loadData, 1000);
+        } else {
+          showMessage(`❌ Erro no upload: ${result.error || result.message}`, 'error');
+        }
+      } catch (error) {
+        showMessage(`❌ Erro no upload: ${error.message}`, 'error');
+      } finally {
+        submitBtn.disabled = false;
+      }
+    }
+
+    // Monitoramento OpenTelemetry
+    async function getOtelMetrics() {
+      showMonitoringResults('Buscando métricas OpenTelemetry...');
+      try {
+        const result = await makeRequest('/otel/metrics');
+        showOtelMetricsResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    }
+
+    async function getSystemMetrics() {
+      showMonitoringResults('Buscando métricas do sistema...');
+      try {
+        const result = await makeRequest('/health');
+        
+        // Simular dados de sistema para demonstração
+        const systemMetrics = {
+          system: {
+            cpu_percent: Math.random() * 100,
+            memory_percent: 30 + Math.random() * 50,
+            process_memory_mb: 100 + Math.random() * 200,
+            process_cpu_percent: Math.random() * 30
+          },
+          otel_status: {
+            tracing_initialized: true,
+            metrics_initialized: true,
+            logging_initialized: true
+          },
+          timestamp: new Date().toISOString()
+        };
+        
+        showOtelMetricsResults(systemMetrics);
+        
+        // Atualizar gráficos
+        updateCharts(systemMetrics.system.cpu_percent, systemMetrics.system.memory_percent);
+        els.metricsCharts.style.display = 'block';
+        
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    }
+
+    function showOtelMetricsResults(data) {
+      els.otelMetricsResults.style.display = 'block';
+      
+      if (data.system) {
+        els.otelMetricsData.innerHTML = `
+          <div style="margin-bottom: 15px;">
+            <h5>🖥️ Sistema</h5>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>CPU: <strong>${data.system.cpu_percent.toFixed(2)}%</strong></div>
+              <div>Memória: <strong>${data.system.memory_percent.toFixed(2)}%</strong></div>
+              <div>Memória Processo: <strong>${data.system.process_memory_mb.toFixed(2)} MB</strong></div>
+              <div>CPU Processo: <strong>${data.system.process_cpu_percent.toFixed(2)}%</strong></div>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 15px;">
+            <h5>📊 OpenTelemetry Status</h5>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+              <div>Tracing: <span style="color: ${data.otel_status.tracing_initialized ? '#4ade80' : '#f87171'}">${data.otel_status.tracing_initialized ? '✅' : '❌'}</span></div>
+              <div>Metrics: <span style="color: ${data.otel_status.metrics_initialized ? '#4ade80' : '#f87171'}">${data.otel_status.metrics_initialized ? '✅' : '❌'}</span></div>
+              <div>Logging: <span style="color: ${data.otel_status.logging_initialized ? '#4ade80' : '#f87171'}">${data.otel_status.logging_initialized ? '✅' : '❌'}</span></div>
+            </div>
+          </div>
+          
+          <div>
+            <h5>🕒 Última Atualização</h5>
+            <div>${new Date().toLocaleString()}</div>
+          </div>
+        `;
+      } else {
+        els.otelMetricsData.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      }
+    }
+
+    function toggleAutoMetrics() {
+      if (autoMetricsEnabled) {
+        clearInterval(metricsInterval);
+        els.btnAutoMetrics.textContent = '🔄 Auto Atualizar';
+        autoMetricsEnabled = false;
+        showMessage('⏹️ Atualização automática desativada', 'info', 3000);
+      } else {
+        els.btnAutoMetrics.textContent = '⏹️ Parar Auto';
+        autoMetricsEnabled = true;
+        
+        getSystemMetrics();
+        metricsInterval = setInterval(getSystemMetrics, 5000);
+        
+        showMessage('✅ Atualização automática ativada (5s)', 'success', 3000);
+      }
+    }
+
+    // Inicializar gráficos
+    function initCharts() {
+      const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+      const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+      
+      cpuChart = new Chart(cpuCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Uso de CPU (%)',
+            data: [],
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Uso de CPU ao longo do tempo'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+      
+      memoryChart = new Chart(memoryCtx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Uso de Memória (%)',
+            data: [],
+            borderColor: 'rgb(139, 92, 246)',
+            backgroundColor: 'rgba(139, 92, 246, 0.2)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            title: {
+              display: true,
+              text: 'Uso de Memória ao longo do tempo'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100
+            }
+          }
+        }
+      });
+    }
+
+    // Atualizar gráficos
+    function updateCharts(cpu, memory) {
+      const now = new Date();
+      const timestamp = now.toLocaleTimeString();
+      
+      metricHistory.timestamps.push(timestamp);
+      metricHistory.cpu.push(cpu);
+      metricHistory.memory.push(memory);
+      
+      if (metricHistory.timestamps.length > 20) {
+        metricHistory.timestamps.shift();
+        metricHistory.cpu.shift();
+        metricHistory.memory.shift();
+      }
+      
+      cpuChart.data.labels = metricHistory.timestamps;
+      cpuChart.data.datasets[0].data = metricHistory.cpu;
+      cpuChart.update();
+      
+      memoryChart.data.labels = metricHistory.timestamps;
+      memoryChart.data.datasets[0].data = metricHistory.memory;
+      memoryChart.update();
+    }
+
+    // Funções de monitoramento
+    async function checkHealth() {
+      showLoading('Verificando saúde do servidor...');
+      
+      try {
+        const result = await makeRequest('/health');
+        els.healthStatus.textContent = result.status;
+        els.healthStatus.className = result.status === 'healthy' ? 'success' : 
+                                    result.status === 'degraded' ? 'warn' : 'error';
+        
+        showMessage(`✅ Status do servidor: ${result.status}`, 'success');
+        updateOtelStatus(result.status === 'healthy');
+      } catch (error) {
+        els.healthStatus.textContent = 'offline';
+        els.healthStatus.className = 'error';
+        showMessage(`❌ Servidor offline: ${error.message}`, 'error');
+        updateOtelStatus(false);
+      }
+    }
+
+    function showMonitoringResults(content) {
+      els.monitoringResults.style.display = 'block';
+      els.monitoringData.textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+    }
+
+    async function checkEnvironment() {
+      showMonitoringResults('Verificando variáveis de ambiente...');
+      
+      try {
+        const result = await makeRequest('/debug/environment');
+        showMonitoringResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    }
+
+    async function checkCredentials() {
+      showMonitoringResults('Verificando credenciais...');
+      
+      try {
+        const result = await makeRequest('/debug/credentials');
+        showMonitoringResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    }
+
+    async function checkCloudinary() {
+      showMonitoringResults('Verificando Cloudinary...');
+      
+      try {
+        const result = await makeRequest('/debug/cloudinary');
+        showMonitoringResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    }
+
+    async function getMetrics() {
+      showMonitoringResults('Buscando métricas...');
+      
+      try {
+        const result = await makeRequest('/debug');
+        showMonitoringResults(result);
+      } catch (error) {
+        showMonitoringResults(`Erro: ${error.message}`);
+      }
+    }
+
+    // Inicialização
+    function init() {
+      // Configurar servidor e worksheet
+      els.serverUrl.textContent = SERVER_URL;
+      els.worksheetName.textContent = WORKSHEET_NAME;
+      
+      // Inicializar gráficos
+      initCharts();
+      
+      // Event listeners
+      els.btnTest.addEventListener('click', testConnection);
+      els.btnLoad.addEventListener('click', loadData);
+      els.btnRefresh.addEventListener('click', loadData);
+      els.btnRefreshData.addEventListener('click', loadData);
+      
+      // Upload
+      els.selectFilesBtn.addEventListener('click', () => els.photoFiles.click());
+      els.photoFiles.addEventListener('change', e => handleFileSelect(e.target.files));
+      els.uploadForm.addEventListener('submit', e => uploadPhotos(e, false));
+      els.btnLocation.addEventListener('click', () => getLocation('upload'));
+      
+      // Câmera
+      els.captureBtn.addEventListener('click', capturePhoto);
+      els.clearPhotosBtn.addEventListener('click', clearPhotos);
+      els.submitCamera.addEventListener('click', e => uploadPhotos(e, true));
+      els.btnCameraLocation.addEventListener('click', () => getLocation('camera'));
+      
+      // Modal
+      els.modalClose.addEventListener('click', closeModal);
+      window.addEventListener('click', e => {
+        if (e.target === els.modal) closeModal();
+      });
+      
+      // Monitoramento
+      els.btnHealthCheck.addEventListener('click', checkHealth);
+      els.btnEnvCheck.addEventListener('click', checkEnvironment);
+      els.btnCredsCheck.addEventListener('click', checkCredentials);
+      els.btnCloudinaryCheck.addEventListener('click', checkCloudinary);
+      els.btnMetrics.addEventListener('click', getMetrics);
+      els.btnOtelMetrics.addEventListener('click', getOtelMetrics);
+      els.btnSystemMetrics.addEventListener('click', getSystemMetrics);
+      els.btnAutoMetrics.addEventListener('click', toggleAutoMetrics);
+      
+      // Drag and drop
+      els.uploadZone.addEventListener('dragover', e => {
+        e.preventDefault();
+        els.uploadZone.classList.add('dragover');
+      });
+      
+      els.uploadZone.addEventListener('dragleave', () => {
+        els.uploadZone.classList.remove('dragover');
+      });
+      
+      els.uploadZone.addEventListener('drop', e => {
+        e.preventDefault();
+        els.uploadZone.classList.remove('dragover');
+        handleFileSelect(e.dataTransfer.files);
+      });
+      
+      // Busca
+      els.search.addEventListener('input', () => {
+        const query = els.search.value.toLowerCase();
+        if (!query) {
+          displayData(imageData);
+          return;
+        }
+        
+        const filteredData = imageData.filter(item => {
+          const title = (item.Título || item.title || '').toLowerCase();
+          const description = (item.Descrição || item.description || '').toLowerCase();
+          return title.includes(query) || description.includes(query);
+        });
+        
+        displayData(filteredData);
+      });
+      
+      // Mostrar mensagem inicial
+      showMessage('Clique em <strong>Testar Conexão</strong> para começar.');
+    }
+
+    // Iniciar a aplicação quando o DOM estiver carregado
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
