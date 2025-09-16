@@ -1,916 +1,543 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizar Fotos com URLs</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Ubuntu, Arial, sans-serif;
-            background: #0b1020;
-            color: #e6ecff;
-            line-height: 1.6;
-        }
-
-        header {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            background: #0f1530;
-            border-bottom: 1px solid #1c274f;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        h1 {
-            font-size: 18px;
-            margin: 0;
-            color: #7dd3fc;
-        }
-
-        .row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-        }
-
-        button, select, input[type="file"] + label {
-            background: #11183a;
-            color: #e6ecff;
-            border: 1px solid #263276;
-            border-radius: 10px;
-            padding: 10px 12px;
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-
-        button:hover:not([disabled]), select:hover, input[type="file"] + label:hover {
-            background: #1a2550;
-        }
-
-        button[disabled] {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        input, textarea {
-            background: #11183a;
-            color: #e6ecff;
-            border: 1px solid #263276;
-            border-radius: 10px;
-            padding: 10px 12px;
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
-        }
-
-        main {
-            padding: 20px;
-        }
-
-        .server-info {
-            background: #0e2a1b;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #1f8f55;
-            font-size: 14px;
-        }
-
-        .status {
-            margin: 12px 0;
-            padding: 14px;
-            border-radius: 12px;
-            border: 1px solid #2a3a85;
-            background: #0e1433;
-            text-align: center;
-        }
-
-        .status.success {
-            border-color: #1f8f55;
-            background: #0e2a1b;
-        }
-
-        .status.error {
-            border-color: #d43c3c;
-            background: #2a0e14;
-        }
-
-        .status.warn {
-            border-color: #caa53b;
-            background: #2a230e;
-        }
-
-        .tabs {
-            display: flex;
-            border-bottom: 1px solid #263276;
-            margin-bottom: 20px;
-        }
-
-        .tab {
-            background: none;
-            border: none;
-            color: #b0c4de;
-            padding: 10px 20px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            font-size: 14px;
-        }
-
-        .tab.active {
-            color: #e6ecff;
-            border-bottom-color: #1a4b8c;
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
-
-        .panel {
-            padding: 16px;
-            border: 1px solid #21306d;
-            background: #0e1433;
-            border-radius: 14px;
-        }
-
-        .controls {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-
-        .form-row {
-            display: flex;
-            gap: 10px;
-            margin: 10px 0;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .form-row label {
-            min-width: 100px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .form-row input, .form-row select, .form-row textarea {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .file-upload-section {
-            background: #0e1433;
-            border: 2px dashed #263276;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            margin: 20px 0;
-            transition: all 0.3s ease;
-        }
-
-        .file-upload-section.dragover {
-            border-color: #1f8f55;
-            background: #0e2a1b;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .file-input-label {
-            display: inline-block;
-            background: #1a4b8c;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-
-        .file-input-label:hover {
-            background: #2260a8;
-        }
-
-        .uploaded-files-list {
-            margin-top: 20px;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .uploaded-file-item {
-            background: rgba(17, 24, 58, 0.8);
-            border: 1px solid #263276;
-            border-radius: 8px;
-            padding: 10px 15px;
-            margin: 5px 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s ease;
-        }
-
-        .uploaded-file-item:hover {
-            background: #1a2550;
-            border-color: #4facfe;
-        }
-
-        .file-name {
-            font-weight: 500;
-            color: #e6ecff;
-        }
-
-        .file-size {
-            color: #b0c4de;
-            font-size: 12px;
-        }
-
-        .remove-file {
-            color: #d43c3c;
-            cursor: pointer;
-            font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 3px;
-            transition: background 0.2s ease;
-        }
-
-        .remove-file:hover {
-            background: #d43c3c;
-            color: white;
-        }
-
-        .table-wrapper {
-            overflow: auto;
-            border-radius: 12px;
-            border: 1px solid #24327b;
-            max-height: 600px;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #0b1020;
-        }
-
-        .data-table thead th {
-            position: sticky;
-            top: 0;
-            background: #0f1638;
-            border-bottom: 1px solid #24327b;
-            padding: 12px 10px;
-            text-align: left;
-            color: #7dd3fc;
-            font-weight: 600;
-        }
-
-        .data-table th, .data-table td {
-            padding: 12px 10px;
-            border-bottom: 1px dashed #1b244f;
-            vertical-align: top;
-        }
-
-        .data-table tr:hover {
-            background: rgba(51, 65, 85, 0.3);
-        }
-
-        .cell-url {
-            max-width: 400px;
-        }
-
-        .cell-url img {
-            max-width: 120px;
-            max-height: 90px;
-            border-radius: 10px;
-            border: 1px solid #2a3a85;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .cell-url img:hover {
-            transform: scale(1.05);
-        }
-
-        .url-display {
-            word-break: break-all;
-            font-size: 11px;
-            max-width: 350px;
-            color: #7dd3fc;
-            margin-top: 5px;
-            padding: 5px;
-            background: rgba(17, 24, 58, 0.5);
-            border-radius: 4px;
-            border: 1px solid #263276;
-        }
-
-        .url-actions {
-            margin-top: 8px;
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .url-actions button {
-            font-size: 11px;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .copy-btn {
-            background: #1f8f55;
-            border-color: #1f8f55;
-        }
-
-        .copy-btn:hover {
-            background: #2a9f62;
-        }
-
-        .view-btn {
-            background: #1a4b8c;
-            border-color: #1a4b8c;
-        }
-
-        .view-btn:hover {
-            background: #2260a8;
-        }
-
-        .stats {
-            display: flex;
-            gap: 20px;
-            margin: 10px 0;
-            font-size: 12px;
-            color: #b0c4de;
-            padding: 10px;
-            background: rgba(17, 24, 58, 0.5);
-            border-radius: 8px;
-            border: 1px solid #263276;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(5px);
-        }
-
-        .modal-content {
-            position: relative;
-            margin: 5% auto;
-            padding: 20px;
-            width: 90%;
-            max-width: 800px;
-            border-radius: 12px;
-            background: #0f1530;
-            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
-            text-align: center;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 30px;
-            font-weight: bold;
-            color: #e6ecff;
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .modal-close:hover {
-            color: #7dd3fc;
-        }
-
-        #modalImage {
-            max-width: 100%;
-            max-height: 70vh;
-            border-radius: 8px;
-            border: 2px solid #263276;
-        }
-
-        .modal-url {
-            margin-top: 15px;
-            padding: 10px;
-            background: rgba(17, 24, 58, 0.8);
-            border-radius: 8px;
-            border: 1px solid #263276;
-            word-break: break-all;
-            font-size: 12px;
-            color: #7dd3fc;
-        }
-
-        .loading-spinner {
-            border: 4px solid #263276;
-            border-top: 4px solid #7dd3fc;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .controls {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            
-            .form-row {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .form-row label {
-                min-width: auto;
-                margin-bottom: 5px;
-            }
-            
-            .url-actions {
-                justify-content: center;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>📸 Upload & Visualização de Imagens</title>
+  <style>
+    /* Estilos limpos e escuros (inspirado no deepseek) */
+    :root { --bg:#0b1020; --panel:#0e1433; --accent:#1a4b8c; --muted:#b0c4de; --card-border:#24327b; }
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;background:var(--bg);color:#e6ecff}
+    header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:#0f1530;border-bottom:1px solid #1c274f;position:sticky;top:0;z-index:10}
+    header h1{margin:0;font-size:18px}
+    .row{display:flex;gap:10px;align-items:center}
+    button,input,select,textarea{background:#11183a;color:#e6ecff;border:1px solid #263276;border-radius:10px;padding:8px 10px}
+    button{cursor:pointer}
+    main{padding:20px;max-width:1100px;margin:0 auto}
+    .status{margin:12px 0;padding:14px;border-radius:12px;border:1px solid var(--card-border);background:var(--panel)}
+    .grid{display:grid;gap:14px}
+    .panel{padding:16px;border:1px solid var(--card-border);background:var(--panel);border-radius:12px}
+    .controls{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
+    .table-wrapper{overflow:auto;border-radius:12px;border:1px solid var(--card-border);max-height:480px}
+    table{width:100%;border-collapse:collapse;background:transparent}
+    thead th{position:sticky;top:0;background:#0f1638;border-bottom:1px solid var(--card-border);padding:10px}
+    th,td{padding:8px 10px;border-bottom:1px dashed #1b244f;vertical-align:top;font-size:13px}
+    .cell-url img{max-width:120px;max-height:90px;border-radius:8px;border:1px solid #2a3a85;cursor:pointer}
+    .upload-section{background:transparent;border:2px dashed #263276;border-radius:12px;padding:18px;text-align:center;margin-top:12px}
+    .file-input{display:none}
+    .upload-button{background:var(--accent);color:white;padding:10px 16px;border:none;border-radius:8px;cursor:pointer}
+    .upload-button[disabled]{opacity:.5;cursor:not-allowed}
+    .file-preview{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+    .file-item{position:relative;border:1px solid #263276;border-radius:8px;padding:6px;background:#11183a}
+    .file-item img{max-width:110px;max-height:80px;border-radius:6px}
+    .remove-btn{position:absolute;top:-6px;right:-6px;background:#d43c3c;color:white;border:none;border-radius:50%;width:20px;height:20px;cursor:pointer}
+    .tabs{display:flex;border-bottom:1px solid #263276;margin-bottom:16px}
+    .tab{background:none;border:none;color:var(--muted);padding:10px 16px;cursor:pointer;border-bottom:2px solid transparent}
+    .tab.active{color:#e6ecff;border-bottom-color:var(--accent)}
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+    .camera-container{text-align:center;margin:12px 0}
+    #videoElement{width:100%;max-width:420px;border-radius:10px;border:2px solid #263276;background:#000}
+    .preview-image{max-width:300px;border-radius:10px;margin:10px 0;border:2px solid #263276}
+    .url-display { word-break: break-all; font-size:12px; color:var(--muted); max-width:320px }
+    .small{font-size:12px;color:var(--muted)}
+    footer{padding:12px;text-align:center;color:var(--muted);font-size:13px}
+    /* responsividade */
+    @media (max-width:720px){ .controls{flex-direction:column;align-items:stretch} }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>📸 Visualizar Fotos com URLs</h1>
-        <div class="row">
-            <button id="btnLoadData">🔄 Carregar do Servidor</button>
-            <button id="btnParseFiles" disabled>📊 Analisar Arquivos</button>
-            <button id="btnClearAll">🗑️ Limpar Tudo</button>
-        </div>
-    </header>
+  <header>
+    <h1>📸 Imagens — Visualizar & Enviar</h1>
+    <div class="row">
+      <button id="btnTest">🔎 Testar</button>
+      <button id="btnLoad" disabled>📥 Carregar</button>
+      <button id="btnRefresh" disabled>🔄 Atualizar</button>
+    </div>
+  </header>
 
-    <main>
-        <div class="server-info">
-            <strong>🌐 Servidor:</strong> <span id="serverUrl">https://visualizing-geospatial-data-in-python-3.onrender.com</span><br>
-            <strong>📋 Aba:</strong> <span id="worksheetName">Imagens</span>
-        </div>
-        
-        <div id="status" class="status">
-            Selecione uma fonte de dados: servidor ou arquivos locais.
-        </div>
-        
-        <div class="tabs">
-            <button class="tab active" data-tab="server">🌐 Dados do Servidor</button>
-            <button class="tab" data-tab="local">📁 Arquivos Locais</button>
-        </div>
-
-        <!-- Dados do Servidor -->
-        <div class="tab-content active" id="tab-server">
-            <div class="panel">
-                <h3>📊 Imagens da Planilha</h3>
-                
-                <div class="form-row">
-                    <label>Servidor:</label>
-                    <select id="serverSelect">
-                        <option value="https://visualizing-geospatial-data-in-python-3.onrender.com">Render v3</option>
-                        <option value="https://visualizing-geospatial-data-in-python-4.onrender.com">Render v4</option>
-                        <option value="http://localhost:5000">Local</option>
-                    </select>
-                    <button id="btnTestConnection">🔗 Testar</button>
-                </div>
-
-                <div class="form-row">
-                    <label>Worksheet:</label>
-                    <select id="worksheetSelect">
-                        <option value="Images">Images</option>
-                        <option value="Imagens">Imagens</option>
-                    </select>
-                </div>
-
-                <div class="controls">
-                    <input id="searchServer" placeholder="Buscar nas imagens..." />
-                    <select id="entriesServer">
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="all">Todas</option>
-                    </select>
-                    <button id="btnRefreshServer">🔄 Atualizar</button>
-                </div>
-                
-                <div class="stats" id="serverStats"></div>
-                <div id="serverData"></div>
-            </div>
-        </div>
-
-        <!-- Arquivos Locais -->
-        <div class="tab-content" id="tab-local">
-            <div class="panel">
-                <h3>📁 Upload de Arquivos</h3>
-                
-                <div class="file-upload-section" id="dropZone">
-                    <div style="font-size: 2rem; margin-bottom: 15px;">📄</div>
-                    <h4>Carregar Arquivos CSV ou Excel</h4>
-                    <p>Arraste e solte arquivos CSV, Excel ou Google Sheets exportados aqui</p>
-                    
-                    <input type="file" id="fileInput" class="file-input" accept=".csv,.xlsx,.xls" multiple>
-                    <label for="fileInput" class="file-input-label">
-                        📄 Selecionar Arquivos
-                    </label>
-                    
-                    <div class="uploaded-files-list" id="uploadedFilesList"></div>
-                </div>
-
-                <div class="controls">
-                    <input id="searchLocal" placeholder="Buscar nas imagens..." />
-                    <select id="entriesLocal">
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
-                        <option value="all">Todas</option>
-                    </select>
-                    <button id="btnClearFiles">🗑️ Limpar Arquivos</button>
-                </div>
-                
-                <div class="stats" id="localStats"></div>
-                <div id="localData"></div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Modal para visualizar imagem -->
-    <div id="imageModal" class="modal">
-        <div class="modal-content">
-            <button class="modal-close">&times;</button>
-            <img id="modalImage" src="" alt="Visualização da imagem">
-            <div class="modal-url" id="modalUrl"></div>
-        </div>
+  <main>
+    <div class="panel small" id="serverInfo">
+      <strong>Servidor:</strong> <span id="serverUrl">https://visualizing-geospatial-data-in-python-4.onrender.com</span> &nbsp; • &nbsp;
+      <strong>Aba:</strong> <span id="worksheetName">Images</span>
     </div>
 
-    <!-- Bibliotecas para parsing -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    
-    <script>
-        // Configuração
-        let SERVER_URL = "https://visualizing-geospatial-data-in-python-3.onrender.com";
-        let WORKSHEET_NAME = "Imagens";
-        
-        // Estado da aplicação
-        let serverData = [];
-        let localData = [];
-        let uploadedFiles = [];
-        let currentTab = 'server';
-        
-        // Elementos DOM
-        const elements = {
-            // Botões principais
-            btnLoadData: document.getElementById('btnLoadData'),
-            btnParseFiles: document.getElementById('btnParseFiles'),
-            btnClearAll: document.getElementById('btnClearAll'),
-            btnTestConnection: document.getElementById('btnTestConnection'),
-            btnRefreshServer: document.getElementById('btnRefreshServer'),
-            btnClearFiles: document.getElementById('btnClearFiles'),
-            
-            // Status e informações
-            status: document.getElementById('status'),
-            serverUrl: document.getElementById('serverUrl'),
-            worksheetName: document.getElementById('worksheetName'),
-            
-            // Seletores
-            serverSelect: document.getElementById('serverSelect'),
-            worksheetSelect: document.getElementById('worksheetSelect'),
-            
-            // Navegação
-            tabs: document.querySelectorAll('.tab'),
-            tabContents: document.querySelectorAll('.tab-content'),
-            
-            // Dados do servidor
-            searchServer: document.getElementById('searchServer'),
-            entriesServer: document.getElementById('entriesServer'),
-            serverStats: document.getElementById('serverStats'),
-            serverData: document.getElementById('serverData'),
-            
-            // Arquivos locais
-            fileInput: document.getElementById('fileInput'),
-            dropZone: document.getElementById('dropZone'),
-            uploadedFilesList: document.getElementById('uploadedFilesList'),
-            searchLocal: document.getElementById('searchLocal'),
-            entriesLocal: document.getElementById('entriesLocal'),
-            localStats: document.getElementById('localStats'),
-            localData: document.getElementById('localData'),
-            
-            // Modal
-            modal: document.getElementById('imageModal'),
-            modalImage: document.getElementById('modalImage'),
-            modalUrl: document.getElementById('modalUrl'),
-            modalClose: document.querySelector('.modal-close')
+    <div id="status" class="status">Clique em <strong>Testar</strong> para checar o servidor.</div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="gallery">📷 Galeria</button>
+      <button class="tab" data-tab="upload">📤 Upload</button>
+      <button class="tab" data-tab="camera">📸 Câmera</button>
+      <button class="tab" data-tab="debug">⚙️ Debug</button>
+    </div>
+
+    <!-- GALERIA -->
+    <div id="tab-gallery" class="tab-content active">
+      <div class="panel">
+        <div class="controls">
+          <input id="search" placeholder="Buscar (URL, título, etc.)" style="flex:1" />
+          <select id="entries">
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="all">Todas</option>
+          </select>
+          <div id="dataStats" class="small"></div>
+        </div>
+
+        <div id="gallery" class="table-wrapper panel" style="padding:12px">
+          <!-- grid de imagens será injetado aqui -->
+          <div id="imagesGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- UPLOAD -->
+    <div id="tab-upload" class="tab-content">
+      <div class="panel">
+        <h3>Enviar Fotos</h3>
+        <form id="uploadForm">
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <input type="text" id="photoTitle" placeholder="Título" value="Foto com Localização" style="flex:1" required />
+            <input type="text" id="photoDesc" placeholder="Descrição (opcional)" style="flex:2" />
+          </div>
+
+          <div style="margin-top:10px">
+            <button type="button" id="btnLocation" class="upload-button">📍 Obter Localização</button>
+            <span id="locationStatus" class="small" style="margin-left:8px"></span>
+          </div>
+
+          <div class="upload-section" id="uploadZone" style="margin-top:12px">
+            <p>Arraste ou selecione imagens</p>
+            <input id="photoFiles" type="file" accept="image/*" multiple class="file-input" />
+            <div style="margin-top:8px">
+              <button type="button" id="selectFilesBtn" class="upload-button">Selecionar Fotos</button>
+              <button type="submit" id="submitUpload" class="upload-button" disabled>🚀 Enviar</button>
+            </div>
+          </div>
+
+          <div class="file-preview" id="filePreview"></div>
+        </form>
+
+        <div id="uploadResults" class="panel" style="margin-top:12px;display:none"></div>
+      </div>
+    </div>
+
+    <!-- CAMERA -->
+    <div id="tab-camera" class="tab-content">
+      <div class="panel">
+        <h3>Capturar com Câmera</h3>
+        <div style="display:flex;gap:10px;align-items:center">
+          <input id="cameraTitle" placeholder="Título" value="Foto com Localização" style="flex:1" />
+          <button id="btnCameraLocation" class="upload-button">📍 Local</button>
+        </div>
+
+        <div class="camera-container">
+          <video id="videoElement" autoplay playsinline></video>
+        </div>
+
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+          <button id="captureBtn" class="upload-button" disabled>📷 Capturar</button>
+          <button id="clearPhotosBtn" class="upload-button" style="display:none">🗑️ Limpar</button>
+          <button id="submitCamera" class="upload-button" disabled>🚀 Enviar Capturas</button>
+        </div>
+
+        <div id="cameraPreview" style="text-align:center;margin-top:12px"></div>
+        <div id="cameraResults" class="panel" style="margin-top:12px;display:none"></div>
+      </div>
+    </div>
+
+    <!-- DEBUG -->
+    <div id="tab-debug" class="tab-content">
+      <div class="panel">
+        <h3>Debug & Health</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button id="btnDebug" class="upload-button">Obter /debug</button>
+          <button id="btnDebugCloud" class="upload-button">Obter /debug/cloudinary</button>
+          <button id="btnHealth" class="upload-button">Obter /health</button>
+        </div>
+
+        <pre id="debugOutput" style="white-space:pre-wrap;margin-top:12px;background:#071022;padding:12px;border-radius:8px;max-height:320px;overflow:auto"></pre>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Modal simples para ver imagem em grande -->
+  <div id="imageModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:999;align-items:center;justify-content:center">
+    <div style="max-width:92%;max-height:92%;position:relative">
+      <button onclick="closeModal()" style="position:absolute;right:8px;top:8px;background:#222;border:none;color:#fff;padding:6px 10px;border-radius:6px;cursor:pointer">Fechar</button>
+      <img id="modalImage" src="" alt="imagem" style="max-width:100%;max-height:100%;border-radius:8px;display:block;margin:0 auto" />
+    </div>
+  </div>
+
+  <footer>Adaptado para <code>/images</code> e <code>/api/upload/photos</code> — total compatibilidade com o app.py enviado. :contentReference[oaicite:2]{index=2}</footer>
+
+  <script>
+    // === Configurações principais ===
+    const SERVER_URL = "https://visualizing-geospatial-data-in-python-4.onrender.com";
+    const WORKSHEET = "Images";
+
+    // Estado
+    let isConnected = false;
+    let allImages = [];
+    let selectedFiles = [];
+    let capturedPhotos = [];
+    let currentLocation = null;
+    let stream = null;
+
+    // DOM
+    const els = {
+      btnTest: document.getElementById('btnTest'),
+      btnLoad: document.getElementById('btnLoad'),
+      btnRefresh: document.getElementById('btnRefresh'),
+      status: document.getElementById('status'),
+      imagesGrid: document.getElementById('imagesGrid'),
+      filePreview: document.getElementById('filePreview'),
+      photoFiles: document.getElementById('photoFiles'),
+      selectFilesBtn: document.getElementById('selectFilesBtn'),
+      submitUpload: document.getElementById('submitUpload'),
+      btnLocation: document.getElementById('btnLocation'),
+      locationStatus: document.getElementById('locationStatus'),
+      search: document.getElementById('search'),
+      entries: document.getElementById('entries'),
+      dataStats: document.getElementById('dataStats'),
+      videoElement: document.getElementById('videoElement'),
+      captureBtn: document.getElementById('captureBtn'),
+      clearPhotosBtn: document.getElementById('clearPhotosBtn'),
+      cameraPreview: document.getElementById('cameraPreview'),
+      submitCamera: document.getElementById('submitCamera'),
+      btnCameraLocation: document.getElementById('btnCameraLocation'),
+      debugOutput: document.getElementById('debugOutput'),
+      btnDebug: document.getElementById('btnDebug'),
+      btnDebugCloud: document.getElementById('btnDebugCloud'),
+      btnHealth: document.getElementById('btnHealth')
+    };
+
+    // Utilitários UI
+    function showMessage(msg, kind='info', timeout=0){
+      els.status.className = 'status';
+      if(kind==='error') els.status.style.borderColor = '#d43c3c';
+      else if(kind==='success') els.status.style.borderColor = '#1f8f55';
+      else els.status.style.borderColor = '';
+      els.status.innerHTML = msg;
+      if(timeout>0) setTimeout(()=>{ els.status.innerHTML = ''; }, timeout);
+    }
+
+    // fetch wrapper
+    async function request(path, options = {}) {
+      const url = SERVER_URL.replace(/\/$/, '') + path;
+      const cfg = { mode:'cors', credentials:'omit', headers:{} , ...options };
+      if(cfg.body && !(cfg.body instanceof FormData)) cfg.headers['Content-Type'] = 'application/json';
+      try {
+        const res = await fetch(url, cfg);
+        if(!res.ok){
+          const txt = await res.text().catch(()=>res.statusText);
+          throw new Error(`HTTP ${res.status}: ${txt}`);
+        }
+        // try parse json, otherwise return text
+        const ct = res.headers.get('content-type')||'';
+        if(ct.includes('application/json')) return res.json();
+        return res.text();
+      } catch (err) {
+        throw err;
+      }
+    }
+
+    // Testar servidor (usa /debug e /debug/cloudinary)
+    async function testServer(){
+      showMessage('⏳ Testando servidor...');
+      els.btnTest.disabled = true;
+      try {
+        const dbg = await request('/debug');
+        const cloud = await request('/debug/cloudinary');
+        showMessage(`✅ Servidor respondeu. debug OK. Cloudinary: ${cloud.configuration?.fully_configured ? '✅' : '❌'}`, 'success', 3000);
+        isConnected = true;
+        els.btnLoad.disabled = false;
+        els.btnRefresh.disabled = false;
+        // tentar iniciar câmera (se permitido)
+        startCamera().catch(()=>{});
+      } catch (err) {
+        console.error(err);
+        showMessage(`❌ Erro ao testar: ${err.message}`, 'error');
+        isConnected = false;
+        els.btnLoad.disabled = true;
+        els.btnRefresh.disabled = true;
+      } finally {
+        els.btnTest.disabled = false;
+      }
+    }
+
+    // Carregar imagens (/images)
+    async function loadImages(){
+      if(!isConnected) { showMessage('❌ Primeiro teste o servidor.'); return; }
+      showMessage('⏳ Carregando imagens...');
+      try {
+        const imgs = await request('/images');
+        // app.py retorna array formatado: id, filename, file_size, upload_date (às vezes), url, thumbnail_path, location
+        allImages = Array.isArray(imgs) ? imgs : [];
+        renderImages(allImages);
+        updateStats();
+        showMessage(`✅ ${allImages.length} imagens carregadas.`, 'success', 2000);
+      } catch (err) {
+        showMessage(`❌ Erro ao carregar imagens: ${err.message}`, 'error');
+        allImages = [];
+        renderImages([]);
+      }
+    }
+
+    function updateStats(){
+      const total = allImages.length;
+      els.dataStats.innerHTML = `📷 Imagens: ${total}`;
+    }
+
+    // Render grid de imagens
+    function renderImages(list){
+      els.imagesGrid.innerHTML = '';
+      if(!list || list.length===0){
+        els.imagesGrid.innerHTML = '<div class="status">Nenhuma imagem encontrada.</div>';
+        return;
+      }
+      const q = els.search.value.trim().toLowerCase();
+      const filtered = q ? list.filter(it => JSON.stringify(it).toLowerCase().includes(q)) : list;
+      const limit = els.entries.value === 'all' ? filtered.length : parseInt(els.entries.value);
+      filtered.slice(0, limit).forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'panel';
+        div.style.textAlign = 'center';
+        const thumb = item.thumbnail_path || item.url || item.file_path || '';
+        div.innerHTML = `
+          <div style="height:110px;display:flex;align-items:center;justify-content:center;overflow:hidden">
+            <img src="${escapeHtml(thumb)}" alt="${escapeHtml(item.filename||'')}" style="max-width:100%;max-height:100%;cursor:pointer" onclick="openModal('${escapeHtml(thumb)}')" />
+          </div>
+          <div style="text-align:left;margin-top:8px">
+            <div style="font-size:13px;font-weight:600">${escapeHtml(item.filename || item.id || '')}</div>
+            <div class="small">Tamanho: ${item.file_size || '-'} • ID: ${item.id || '-'}</div>
+            ${item.location ? `<div class="small">Lat:${item.location.lat.toFixed(6)} Lng:${item.location.lng.toFixed(6)}</div>` : ''}
+            <div class="url-display">${escapeHtml(item.url||'')}</div>
+            <div style="margin-top:6px"><a href="${escapeHtml(item.url||'')}" target="_blank" class="small">Abrir original</a></div>
+          </div>
+        `;
+        els.imagesGrid.appendChild(div);
+      });
+    }
+
+    // Escapar string para inserir em HTML
+    function escapeHtml(s){
+      if(!s && s !== 0) return '';
+      return String(s).replace(/[&<>"']/g, function(m){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]); });
+    }
+
+    // Modal
+    function openModal(url){
+      document.getElementById('modalImage').src = url;
+      document.getElementById('imageModal').style.display = 'flex';
+    }
+    function closeModal(){ document.getElementById('imageModal').style.display = 'none'; }
+
+    // Arquivos: seleção e preview
+    function handleFileSelect(files){
+      selectedFiles = Array.from(files).filter(f => f.type && f.type.startsWith('image/'));
+      renderFilePreview();
+      els.submitUpload.disabled = selectedFiles.length === 0;
+    }
+    function renderFilePreview(){
+      els.filePreview.innerHTML = '';
+      selectedFiles.forEach((f,i) => {
+        const div = document.createElement('div');
+        div.className = 'file-item';
+        const reader = new FileReader();
+        reader.onload = e => {
+          div.innerHTML = `<img src="${e.target.result}" alt="${escapeHtml(f.name)}"><div style="font-size:12px;margin-top:6px">${escapeHtml(f.name)}</div>
+            <button class="remove-btn" onclick="removeFile(${i})">&times;</button>`;
         };
+        reader.readAsDataURL(f);
+        els.filePreview.appendChild(div);
+      });
+    }
+    function removeFile(idx){ selectedFiles.splice(idx,1); renderFilePreview(); els.submitUpload.disabled = selectedFiles.length===0; }
 
-        // Funções utilitárias
-        function showStatus(message, type = 'info', timeout = 0) {
-            elements.status.className = `status ${type}`;
-            elements.status.innerHTML = message;
-            
-            if (timeout > 0) {
-                setTimeout(() => {
-                    elements.status.className = 'status';
-                    elements.status.innerHTML = '';
-                }, timeout);
-            }
+    // Upload (POST /api/upload/photos) - app.py aceita campo 'photos' como arquivos e campos: title, description, worksheet, latitude, longitude, accuracy
+    async function uploadSelected(e){
+      e.preventDefault();
+      if(selectedFiles.length === 0){ showMessage('❌ Selecione imagens antes de enviar.','error'); return; }
+      const form = new FormData();
+      form.append('title', document.getElementById('photoTitle').value || '');
+      form.append('description', document.getElementById('photoDesc').value || '');
+      form.append('worksheet', WORKSHEET);
+      if(currentLocation){
+        form.append('latitude', currentLocation.latitude);
+        form.append('longitude', currentLocation.longitude);
+        form.append('accuracy', currentLocation.accuracy);
+      }
+      selectedFiles.forEach(f => form.append('photos', f, f.name));
+      els.submitUpload.disabled = true;
+      showMessage('⏳ Enviando imagens...');
+      try {
+        const res = await fetch(SERVER_URL.replace(/\/$/,'') + '/api/upload/photos', { method:'POST', body: form });
+        const json = await res.json();
+        if(json.success){
+          showMessage(`✅ ${json.summary.successful} enviados com sucesso.`, 'success', 3000);
+          document.getElementById('uploadResults').style.display = 'block';
+          document.getElementById('uploadResults').innerText = JSON.stringify(json.summary, null, 2);
+          // limpar
+          selectedFiles = []; renderFilePreview();
+          els.submitUpload.disabled = true;
+          // recarregar imagens
+          setTimeout(loadImages, 1200);
+        } else {
+          showMessage('❌ Erro no upload: ' + (json.error || json.message || 'erro desconhecido'), 'error');
         }
+      } catch (err){
+        showMessage('❌ Upload falhou: ' + err.message, 'error');
+      } finally {
+        els.submitUpload.disabled = false;
+      }
+    }
 
-        function showLoading(message) {
-            showStatus(`
-                <div class="loading-spinner"></div>
-                ${message}
-            `, 'info');
+    // Camera
+    async function startCamera(){
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) throw new Error('Câmera não suportada');
+        const constraints = { video: { facingMode: 'environment', width:{ideal:1280}, height:{ideal:720} } };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+        els.videoElement.srcObject = stream;
+        await new Promise(res => els.videoElement.onloadedmetadata = res);
+        els.captureBtn.disabled = false;
+      } catch (err){
+        console.warn('Camera start error', err);
+        // não tratar como bloqueador
+      }
+    }
+    function capturePhoto(){
+      if(!stream) { showMessage('❌ Câmera não iniciada','error'); return; }
+      const canvas = document.createElement('canvas');
+      canvas.width = els.videoElement.videoWidth;
+      canvas.height = els.videoElement.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(els.videoElement,0,0,canvas.width,canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+      const name = `capture_${new Date().toISOString().replace(/[:.]/g,'-')}.jpg`;
+      capturedPhotos.push({ dataUrl, name, type:'image/jpeg' });
+      updateCameraPreview();
+      showMessage('✅ Foto capturada', 'success', 1500);
+    }
+    function updateCameraPreview(){
+      els.cameraPreview.innerHTML = '';
+      if(capturedPhotos.length === 0) { els.clearPhotosBtn.style.display = 'none'; els.submitCamera.disabled = true; return; }
+      els.clearPhotosBtn.style.display = 'inline-block';
+      els.submitCamera.disabled = false;
+      const img = document.createElement('img');
+      img.src = capturedPhotos[capturedPhotos.length-1].dataUrl;
+      img.className = 'preview-image';
+      els.cameraPreview.appendChild(img);
+    }
+    function clearCaptures(){ capturedPhotos = []; updateCameraPreview(); showMessage('✅ Capturas limpas','success',1000); }
+
+    // Enviar capturas (converte dataURL para blob)
+    async function uploadCaptures(e){
+      e.preventDefault();
+      if(capturedPhotos.length === 0) return showMessage('❌ Nenhuma captura para enviar','error');
+      const form = new FormData();
+      form.append('title', document.getElementById('cameraTitle').value || '');
+      form.append('worksheet', WORKSHEET);
+      if(currentLocation){
+        form.append('latitude', currentLocation.latitude);
+        form.append('longitude', currentLocation.longitude);
+        form.append('accuracy', currentLocation.accuracy);
+      }
+      for(const p of capturedPhotos){
+        const res = await fetch(p.dataUrl);
+        const blob = await res.blob();
+        form.append('photos', blob, p.name);
+      }
+      els.submitCamera.disabled = true;
+      showMessage('⏳ Enviando capturas...');
+      try {
+        const res = await fetch(SERVER_URL.replace(/\/$/,'') + '/api/upload/photos',{ method:'POST', body: form });
+        const json = await res.json();
+        if(json.success){
+          showMessage(`✅ ${json.summary.successful} capturas enviadas`, 'success', 2500);
+          capturedPhotos = []; updateCameraPreview();
+          setTimeout(loadImages, 1200);
+        } else {
+          showMessage('❌ Erro: ' + (json.error || json.message || ''), 'error');
         }
+      } catch (err){
+        showMessage('❌ Falha: ' + err.message, 'error');
+      } finally {
+        els.submitCamera.disabled = false;
+      }
+    }
 
-        function formatFileSize(bytes) {
-            if (bytes === 0) return '0 Bytes';
-            const k = 1024;
-            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-            const i = Math.floor(Math.log(bytes) / Math.log(k));
-            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-        }
+    // Geolocalização
+    async function getLocation(kind='upload'){
+      const btn = kind === 'camera' ? els.btnCameraLocation : els.btnLocation;
+      const statusEl = kind === 'camera' ? document.getElementById('cameraLocationStatus') : els.locationStatus;
+      btn.disabled = true; statusEl && (statusEl.textContent = '🔍 Obtendo...');
+      if(!navigator.geolocation){ statusEl && (statusEl.textContent = '❌ Não suportado'); btn.disabled = false; return; }
+      try {
+        const pos = await new Promise((res,rej) => navigator.geolocation.getCurrentPosition(res, rej, { enableHighAccuracy:true, timeout:10000, maximumAge:60000 }));
+        currentLocation = { latitude: pos.coords.latitude, longitude: pos.coords.longitude, accuracy: pos.coords.accuracy };
+        statusEl && (statusEl.textContent = `✅ ${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)} (±${Math.round(currentLocation.accuracy)}m)`);
+      } catch (err){ statusEl && (statusEl.textContent = '❌ ' + err.message); currentLocation = null; }
+      btn.disabled = false;
+    }
 
-        // Sistema de abas
-        function switchTab(tabName) {
-            currentTab = tabName;
-            
-            // Atualizar botões das abas
-            elements.tabs.forEach(tab => {
-                tab.classList.toggle('active', tab.getAttribute('data-tab') === tabName);
-            });
-            
-            // Atualizar conteúdo das abas
-            elements.tabContents.forEach(content => {
-                content.classList.toggle('active', content.id === `tab-${tabName}`);
-            });
-        }
+    // Debug: /debug, /debug/cloudinary, /health
+    async function getDebug(path){
+      try {
+        const res = await request(path);
+        els.debugOutput.innerText = JSON.stringify(res, null, 2);
+      } catch (err) {
+        els.debugOutput.innerText = `Erro: ${err.message}`;
+      }
+    }
 
-        // Requisições para o servidor
-        async function makeRequest(path, options = {}) {
-            const url = SERVER_URL.replace(/\/$/, '') + path;
-            
-            try {
-                const response = await fetch(url, {
-                    mode: 'cors',
-                    credentials: 'omit',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': options.body instanceof FormData ? undefined : 'application/json'
-                    },
-                    ...options
-                });
+    // Event listeners
+    els.btnTest.addEventListener('click', testServer);
+    els.btnLoad.addEventListener('click', loadImages);
+    els.btnRefresh.addEventListener('click', loadImages);
+    els.search.addEventListener('input', () => renderImages(allImages));
+    els.entries.addEventListener('change', () => renderImages(allImages));
+    els.selectFilesBtn.addEventListener('click', () => document.getElementById('photoFiles').click());
+    els.photoFiles.addEventListener('change', e => handleFileSelect(e.target.files));
+    document.getElementById('uploadForm').addEventListener('submit', uploadSelected);
+    els.btnLocation.addEventListener('click', () => getLocation('upload'));
+    els.btnCameraLocation.addEventListener('click', () => getLocation('camera'));
+    els.captureBtn.addEventListener('click', capturePhoto);
+    els.clearPhotosBtn.addEventListener('click', clearCaptures);
+    els.submitCamera.addEventListener('click', uploadCaptures);
+    els.btnDebug.addEventListener('click', () => getDebug('/debug'));
+    els.btnDebugCloud.addEventListener('click', () => getDebug('/debug/cloudinary'));
+    els.btnHealth.addEventListener('click', () => getDebug('/health'));
 
-                if (!response.ok) {
-                    const text = await response.text().catch(() => 'Network error');
-                    throw new Error(`HTTP ${response.status}: ${text}`);
-                }
-                
-                return response.json();
-            } catch (error) {
-                if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    throw new Error('Conexão falhou. Verifique se o servidor está rodando.');
-                }
-                throw error;
-            }
-        }
+    // Tabs
+    document.querySelectorAll('.tab').forEach(t => {
+      t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(x=>x.classList.remove('active'));
+        t.classList.add('active');
+        document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+      });
+    });
 
-        // Testar conexão com servidor
-        async function testConnection() {
-            showLoading('Testando conexão com o servidor...');
-            
-            try {
-                const healthResult = await makeRequest('/health');
-                const debugResult = await makeRequest('/debug/sheets');
-                
-                const sheetsOK = debugResult && debugResult.connection_test && debugResult.connection_test.success;
-                
-                showStatus(`
-                    ✅ <strong>Servidor conectado</strong><br>
-                    Status: ${healthResult.status}<br>
-                    Sheets: ${sheetsOK ? '✅ Conectado' : '❌ Erro'}
-                `, 'success');
+    // Inicialização leve
+    window.addEventListener('DOMContentLoaded', ()=>{
+      document.getElementById('serverUrl').textContent = SERVER_URL;
+      document.getElementById('worksheetName').textContent = WORKSHEET;
+      showMessage('✅ Interface carregada. Clique em Testar.', 'success', 1600);
+    });
 
-                return true;
-            } catch (error) {
-                showStatus(`❌ Erro de conexão: ${error.message}`, 'error');
-                return false;
-            }
-        }
+    // Limpar stream quando sair
+    window.addEventListener('beforeunload', ()=>{
+      if(stream) stream.getTracks().forEach(track => track.stop());
+    });
 
-        // Carregar dados do servidor
-        async function loadServerData() {
-            showLoading('Carregando dados do servidor...');
-            
-            try {
-                const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(WORKSHEET_NAME)}`);
-                
-                if (result.success) {
-                    serverData = result.data || [];
-                    displayServerData(serverData);
-                    updateServerStats(result.metadata);
-                    showStatus(`✅ ${serverData.length} registros carregados do servidor`, 'success', 3000);
-                } else {
-                    throw new Error(result.error || 'Erro desconhecido');
-                }
-            } catch (error) {
-                showStatus(`❌ Erro ao carregar dados: ${error.message}`, 'error');
-                serverData = [];
-                displayServerData([]);
-            }
-        }
+    // Expor funções para modal (global)
+    window.openModal = openModal;
+    window.closeModal = closeModal;
 
-        // Exibir dados do servidor
-        function displayServerData(data) {
-            if (!data || data.length === 0) {
-                elements.serverData.innerHTML = '<div class="status">Nenhum dado encontrado</div>';
-                return;
-            }
-
-            const imageData = data.filter(row => row['URL da Imagem'] && row['URL da Imagem'].trim());
-            
-            if (imageData.length === 0) {
-                elements.serverData.innerHTML = '<div class="status warn">Nenhuma imagem com URL encontrada</div>';
-                return;
-            }
-
-            let html = `
-                <div class="table-wrapper">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Imagem</th>
-                                <th>Data</th>
-                                <th>Título</th>
-                                <th>URL da Imagem</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-            `;
-
-            imageData.forEach(row => {
-                const imageUrl = row['URL da Imagem'] || '';
-                const title = row['Título'] || 'Sem título';
-                const date = row['Data'] || 'Data não disponível';
-                
-                html += `
-                    <tr>
-                        <td class="cell-url">
-                            <img src="${imageUrl}" alt="${title}" onclick="showImageModal('${imageUrl}')">
-                        </td>
-                        <td>${date}</td>
-                        <td>${title}</td>
-                        <td class="cell-url">
-                            <div class="url-display">${imageUrl}</div>
-                            <div class="url-actions">
-                                <button class="copy-btn" onclick="copyToClipboard('${imageUrl}')">📋 Copiar</button>
-                                <button class="view-btn" onclick="showImageModal('${imageUrl}')">👁️ Ver</button>
-                                <button class="view-btn" onclick="window.open('${imageUrl}', '_blank')">🔗 Abrir</button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-            });
-
-            html += '</tbody></table></div>';
-            elements.serverData.innerHTML = html;
-        }
-
-        function updateServerStats(metadata) {
-            if (!metadata) {
-                elements.serverStats.innerHTML = '<span>📊 Estatísticas não disponíveis</span>';
-                return;
-            }
-            
-            const imageCount = serverData.filter(row => row['URL da Imagem']).length;
-            
-            elements.serverStats.innerHTML = `
-                <span>📊 Total: ${metadata.total_rows} registros</span>
-                <span>🖼️ Com imagens: ${imageCount}</span>
-                <span>📋 Colunas: ${metadata.total_columns}</span>
-                <span>⏰ Atualizado: ${new Date(metadata.last_update).toLocaleString()}</span>
-            `;
-        }
-
-        // Upload e análise de arquivos
-        function handleFileSelect(files) {
-            const validFiles = Array.from(files).filter(file => {
-                return file.type === 'text/csv' || 
-                       file.type === 'application/vnd.ms-excel' || 
-                       file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-            });
-            
-            validFiles.forEach(file => {
-                if (!uploadedFiles.some(f => f.name === file.name)) {
-                    uploadedFiles.push(file);
-                }
-            });
-            
-            updateUploadedFilesList();
-            elements.btnParseFiles.disabled = uploadedFiles.length === 0;
-        }
-
-        function updateUploadedFilesList() {
-            if (uploadedFiles.length === 0) {
-                elements.uploadedFilesList.innerHTML = '';
-                return;
-            }
-            
-            elements.uploadedFilesList.innerHTML = uploadedFiles.map((file, index) => `
-                <div class="uploaded-file-item">
-                    <div>
-                        <div class="file-name">${file.name}</div>
-                        <div class="file-size">${formatFileSize(file.size)}</div>
-                    </div>
-                    <div class="remove-file" onclick="removeUploadedFile(${index})">✕</div>
-                </div>
-            `).join('');
-        }
-
-        function removeUploadedFile(index) {
-            uploadedFiles.splice(index, 1);
-            updateUploadedFilesList();
-            elements.btnParseFiles.disabled = uploadedFiles.length === 0;
-        }
-
-        function clearUploadedFiles() {
-            uploadedFiles = [];
-            localData = [];
-            elements.fileInput.value = '';
-            updateUploadedFilesList();
-            elements.btnParseFiles.disabled = true;
-            displayLocalData([]);
-            showStatus('Arquivos removidos', 'success', 2000);
-        }
-
-        async function parseUploadedFiles() {
-            showLoading('Analisando arquivos carregados...');
-            
-            try {
-                let allData = [];
-                
-                for (const file of uploadedFiles) {
-                    const data = await parseFile(file);
-                    if (data && data.length > 0) {
-                        allData = allData.concat(data);
-                    }
-                }
-                
-                // Filtrar apenas dados com URLs de imagem
-                localData = allData.filter(row => {
-                    const urlField = row['URL da Imagem'] || row['url'] || row['link'] || '';
-                    return urlField && urlField.toString().trim() && 
-                           (urlField.includes('http') || urlField.includes('cloudinary'));
-                });
-                
-                displayLocalData(localData);
-                updateLocalStats();
-                
-                if (localData.length === 0) {
-                    showStatus('❌ Nenhuma imagem com URL válida encontrada nos arquivos', 'error');
-                } else {
-                    showStatus(`✅ ${localData.length} imagem(ns) encontrada(s) nos arquivos`, 'success', 3000);
-                }
-                
-            } catch (error) {
-                showStatus(`❌ Erro ao analisar arquivos: ${error.message}`, 'error');
-            }
-        }
-
-        async function parseFile(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        const data =
+  </script>
+</body>
+</html>
