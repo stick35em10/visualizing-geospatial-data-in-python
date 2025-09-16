@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📸 Upload de Fotos - Images</title>
+  <style>
+    /* Estilos mantidos iguais (omitted for brevity) */
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>📸 Upload de Fotos - Images</h1>
+    <div class="row">
+      <button id="btnTest">🔗 Testar Conexão</button>
+      <button id="btnLoad" disabled>📊 Carregar Dados</button>
+      <button id="btnRefresh" style="display:none;">🔄 Atualizar</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <div class="server-info">
+      <strong>🌐 Servidor:</strong> https://visualizing-geospatial-data-in-python-4.onrender.com<br>
+      <strong>📋 Aba:</strong> Images
+      <div id="otelStatus" class="opentelemetry-status disconnected">
+        <span>📊 OpenTelemetry: Desconectado</span>
+      </div>
+    </div>
+    
+    <div id="status" class="status">Clique em <strong>Testar Conexão</strong> para começar.</div>
+    
+    <div class="tabs">
+      <button class="tab active" data-tab="data">📊 Ver Imagens</button>
+      <button class="tab" data-tab="upload">📤 Upload</button>
+      <button class="tab" data-tab="camera">📷 Câmera</button>
+      <button class="tab" data-tab="monitoring">📈 Monitoramento</button>
+    </div>
+
+    <!-- Ver Imagens -->
+    <div class="tab-content active" id="tab-data">
+      <div class="controls">
+        <div class="search-box">
+          <label for="search">🔍 Buscar:</label>
+          <input type="text" id="search" placeholder="Filtrar imagens...">
+        </div>
+        <div class="search-box">
+          <label for="entries">Exibir:</label>
+          <select id="entries">
+            <option value="10">10 entradas</option>
+            <option value="25">25 entradas</option>
+            <option value="50">50 entradas</option>
+            <option value="100">100 entradas</option>
+          </select>
+        </div>
+      </div>
+      <div id="dataStats"></div>
+      <div id="data"></div>
+    </div>
+
+    <!-- Upload -->
+    <div class="tab-content" id="tab-upload">
+      <div class="panel">
+        <h3>📤 Upload de Fotos</h3>
+        <form id="uploadForm">
+          <div class="form-row">
+            <label for="photoTitle">Título:</label>
+            <input type="text" id="photoTitle" placeholder="Título da foto" value="Foto com Localização">
+          </div>
+          <div class="form-row">
+            <label for="photoDescription">Descrição:</label>
+            <textarea id="photoDescription" placeholder="Descrição opcional"></textarea>
+          </div>
+          <div class="form-row">
+            <label for="photoFiles">Selecionar Fotos:</label>
+            <input type="file" id="photoFiles" accept="image/*" multiple>
+          </div>
+          
+          <div class="form-row">
+            <label>Localização:</label>
+            <button type="button" id="btnLocation">📍 Obter Localização</button>
+            <span id="locationStatus">Não obtida</span>
+          </div>
+          
+          <div id="filePreview" class="file-preview"></div>
+          
+          <div class="form-row">
+            <button type="submit" id="submitUpload" disabled>🚀 Enviar Fotos</button>
+          </div>
+        </form>
+        
+        <div id="uploadResults" class="upload-results" style="display:none;">
+          <h4>📋 Resultados do Upload</h4>
+          <div id="uploadResultsContent"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Câmera -->
+    <div class="tab-content" id="tab-camera">
+      <div class="panel">
+        <h3>📷 Capturar Fotos</h3>
+        
+        <div class="form-row">
+          <label for="cameraTitle">Título:</label>
+          <input type="text" id="cameraTitle" placeholder="Título da foto" value="Foto com Localização">
+        </div>
+        <div class="form-row">
+          <label for="cameraDescription">Descrição:</label>
+          <textarea id="cameraDescription" placeholder="Descrição opcional"></textarea>
+        </div>
+        
+        <div class="video-container">
+          <video id="videoElement" autoplay playsinline></video>
+        </div>
+        
+        <div class="camera-controls">
+          <button type="button" id="captureBtn" disabled>📸 Capturar Foto</button>
+          <button type="button" id="clearPhotosBtn" disabled>🗑️ Limpar Fotos</button>
+        </div>
+        
+        <div class="form-row">
+          <label>Localização:</label>
+          <button type="button" id="btnCameraLocation">📍 Obter Localização</button>
+          <span id="cameraLocationStatus">Não obtida</span>
+        </div>
+        
+        <div id="cameraPreview" class="captured-photos"></div>
+        
+        <div class="form-row">
+          <button type="button" id="submitCamera" disabled>🚀 Enviar Fotos Capturadas</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monitoramento -->
+    <div class="tab-content" id="tab-monitoring">
+      <div class="panel">
+        <h3>📈 Monitoramento OpenTelemetry</h3>
+        
+        <div class="form-row">
+          <label>Status do Servidor:</label>
+          <button type="button" id="btnHealthCheck">🩺 Verificar Saúde</button>
+          <span id="healthStatus">-</span>
+        </div>
+        
+        <div class="form-row">
+            <label>Monitoramento OpenTelemetry:</label>
+            <button type="button" id="btnOtelMetrics">📊 Buscar Métricas OTEL</button>
+            <button type="button" id="btnSystemMetrics">🖥️ Métricas do Sistema</button>
+            <button type="button" id="btnAutoMetrics">🔄 Auto Atualizar</button>
+        </div>
+
+        <div id="otelMetricsResults" class="upload-results" style="display:none;margin-top:20px;">
+            <h4>📈 Métricas OpenTelemetry</h4>
+            <div id="otelMetricsData" style="background:#0b1020;padding:15px;border-radius:8px;overflow:auto;max-height:300px;"></div>
+        </div>
+
+        <div class="form-row">
+          <label>Diagnóstico Avançado:</label>
+          <button type="button" id="btnEnvCheck">🔍 Verificar Variáveis</button>
+          <button type="button" id="btnCredsCheck">🔐 Testar Credenciais</button>
+          <button type="button" id="btnCloudinaryCheck">☁️ Verificar Cloudinary</button>
+        </div>
+        
+        <div class="form-row">
+          <label>Endpoint de Métricas:</label>
+          <button type="button" id="btnMetrics">📊 Buscar Métricas</button>
+        </div>
+        
+        <div id="monitoringResults" class="upload-results" style="display:none;margin-top:20px;">
+          <h4>📋 Resultados do Monitoramento</h4>
+          <pre id="monitoringData" style="background:#0b1020;padding:15px;border-radius:8px;overflow:auto;max-height:300px;"></pre>
+        </div>
+        
+        <div class="stats">
+          <strong>Endpoints disponíveis:</strong>
+          <ul style="font-size:12px;margin:10px 0;padding-left:20px;">
+            <li><code>/health</code> - Status do serviço</li>
+            <li><code>/debug</code> - Informações gerais</li>
+            <li><code>/debug/environment</code> - Variáveis de ambiente</li>
+            <li><code>/debug/credentials</code> - Credenciais</li>
+            <li><code>/debug/sheets</code> - Status do Google Sheets</li>
+            <li><code>/debug/cloudinary</code> - Status do Cloudinary</li>
+            <li><code>/api/upload/photos</code> - Upload de fotos</li>
+            <li><code>/images</code> - Lista de imagens</li>
+            <li><code>/otel/metrics</code> - Métricas OpenTelemetry</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal para visualizar imagem -->
+  <div id="imageModal" class="modal">
+    <div class="modal-content">
+      <button class="modal-close">&times;</button>
+      <img id="modalImage" src="" alt="Visualização da imagem">
+    </div>
+  </div>
+
+  <!-- Gráficos de Métricas -->
+  <div id="metricsCharts" style="display: none; margin-top: 20px;">
+      <h4>📈 Gráficos de Métricas</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+              <h5>📊 Uso de CPU</h5>
+              <canvas id="cpuChart" width="400" height="200"></canvas>
+          </div>
+          <div>
+              <h5>💾 Uso de Memória</h5>
+              <canvas id="memoryChart" width="400" height="200"></canvas>
+          </div>
+      </div>
+  </div>
+
+  <script>
+    // Configuração fixa do servidor
+    const SERVER_URL = "https://visualizing-geospatial-data-in-python-4.onrender.com";
+    const WORKSHEET_NAME = "Images";
+
+    // Estado da aplicação
+    let isConnected = false;
+    let allData = [];
+    let selectedFiles = [];
+    let capturedPhotos = [];
+    let currentLocation = null;
+    let cameraLocation = null;
+    let stream = null;
+    let otelConnected = false;
+    let imageData = [];
+    let metricsInterval = null;
+    let autoMetricsEnabled = false;
+    let cpuChart = null;
+    let memoryChart = null;
+    const metricHistory = {
+        cpu: [],
+        memory: [],
+        timestamps: []
+    };
+
+    // Elementos do DOM
+    const btnTest = document.getElementById('btnTest');
+    const btnLoad = document.getElementById('btnLoad');
+    const btnRefresh = document.getElementById('btnRefresh');
+    const statusEl = document.getElementById('status');
+    const otelStatus = document.getElementById('otelStatus');
+    const tabs = document.querySelectorAll('.tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    const searchInput = document.getElementById('search');
+    const entriesSelect = document.getElementById('entries');
+    const dataContainer = document.getElementById('data');
+    const dataStats = document.getElementById('dataStats');
+    const uploadForm = document.getElementById('uploadForm');
+    const photoFiles = document.getElementById('photoFiles');
+    const photoTitle = document.getElementById('photoTitle');
+    const photoDescription = document.getElementById('photoDescription');
+    const btnLocation = document.getElementById('btnLocation');
+    const locationStatus = document.getElementById('locationStatus');
+    const filePreview = document.getElementById('filePreview');
+    const submitUpload = document.getElementById('submitUpload');
+    const uploadResults = document.getElementById('uploadResults');
+    const uploadResultsContent = document.getElementById('uploadResultsContent');
+    const videoElement = document.getElementById('videoElement');
+    const captureBtn = document.getElementById('captureBtn');
+    const clearPhotosBtn = document.getElementById('clearPhotosBtn');
+    const cameraTitle = document.getElementById('cameraTitle');
+    const cameraDescription = document.getElementById('cameraDescription');
+    const btnCameraLocation = document.getElementById('btnCameraLocation');
+    const cameraLocationStatus = document.getElementById('cameraLocationStatus');
+    const cameraPreview = document.getElementById('cameraPreview');
+    const submitCamera = document.getElementById('submitCamera');
+    const modal = document.getElementById('imageModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalClose = document.querySelector('.modal-close');
+    const btnHealthCheck = document.getElementById('btnHealthCheck');
+    const healthStatus = document.getElementById('healthStatus');
+    const btnEnvCheck = document.getElementById('btnEnvCheck');
+    const btnCredsCheck = document.getElementById('btnCredsCheck');
+    const btnCloudinaryCheck = document.getElementById('btnCloudinaryCheck');
+    const btnMetrics = document.getElementById('btnMetrics');
+    const monitoringResults = document.getElementById('monitoringResults');
+    const monitoringData = document.getElementById('monitoringData');
+    const btnOtelMetrics = document.getElementById('btnOtelMetrics');
+    const btnSystemMetrics = document.getElementById('btnSystemMetrics');
+    const btnAutoMetrics = document.getElementById('btnAutoMetrics');
+    const otelMetricsResults = document.getElementById('otelMetricsResults');
+    const otelMetricsData = document.getElementById('otelMetricsData');
+
+    // Funções para monitoramento OpenTelemetry
+    async function getOtelMetrics() {
+        showMonitoringResults('Buscando métricas OpenTelemetry...');
+        try {
+            const result = await makeRequest('/otel/metrics');
+            showOtelMetricsResults(result);
+        } catch (error) {
+            showMonitoringResults(`Erro: ${error.message}`);
+        }
+    }
+
+    async function getSystemMetrics() {
+        showMonitoringResults('Buscando métricas do sistema...');
+        try {
+            const result = await makeRequest('/otel/metrics');
+            showOtelMetricsResults(result);
+            
+            // Atualizar gráficos se os dados estiverem disponíveis
+            if (result.system) {
+                updateCharts(result.system.cpu_percent, result.system.memory_percent);
+                metricsCharts.style.display = 'block';
+            }
+        } catch (error) {
+            showMonitoringResults(`Erro: ${error.message}`);
+        }
+    }
+
+    function showOtelMetricsResults(data) {
+        otelMetricsResults.style.display = 'block';
+        
+        if (data.system) {
+            // Formatar métricas do sistema
+            otelMetricsData.innerHTML = `
+                <div style="margin-bottom: 15px;">
+                    <h5>🖥️ Sistema</h5>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>CPU: <strong>${data.system.cpu_percent}%</strong></div>
+                        <div>Memória: <strong>${data.system.memory_percent}%</strong></div>
+                        <div>Memória Processo: <strong>${data.system.process_memory_mb.toFixed(2)} MB</strong></div>
+                        <div>CPU Processo: <strong>${data.system.process_cpu_percent}%</strong></div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 15px;">
+                    <h5>📊 OpenTelemetry Status</h5>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                        <div>Tracing: <span style="color: ${data.otel_status.tracing_initialized ? '#4ade80' : '#f87171'}">${data.otel_status.tracing_initialized ? '✅' : '❌'}</span></div>
+                        <div>Metrics: <span style="color: ${data.otel_status.metrics_initialized ? '#4ade80' : '#f87171'}">${data.otel_status.metrics_initialized ? '✅' : '❌'}</span></div>
+                        <div>Logging: <span style="color: ${data.otel_status.logging_initialized ? '#4ade80' : '#f87171'}">${data.otel_status.logging_initialized ? '✅' : '❌'}</span></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h5>🕒 Última Atualização</h5>
+                    <div>${new Date().toLocaleString()}</div>
+                </div>
+            `;
+        } else {
+            // Dados genéricos
+            otelMetricsData.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+        }
+    }
+
+    // Funções utilitárias
+    function showMessage(html, kind='info', timeout=0){
+        statusEl.className = 'status ' + (kind==='error'?'error':kind==='success'?'success':kind==='warning'?'warn':'');
+        statusEl.innerHTML = html;
+        if(timeout>0){ 
+            setTimeout(()=>{ 
+                statusEl.className='status'; 
+                statusEl.innerHTML=''; 
+            }, timeout); 
+        }
+    }
+    
+    function showLoading(msg){ showMessage(`⏳ ${msg}`, 'warn'); }
+    
+    function resetConnection(){
+        isConnected = false;
+        btnLoad.disabled = true;
+        btnRefresh.style.display = 'none';
+        dataContainer.innerHTML = '';
+    }
+
+    function updateOtelStatus(connected) {
+        otelConnected = connected;
+        if (connected) {
+            otelStatus.className = 'opentelemetry-status connected';
+            otelStatus.innerHTML = '<span>📊 OpenTelemetry: Conectado</span>';
+        } else {
+            otelStatus.className = 'opentelemetry-status disconnected';
+            otelStatus.innerHTML = '<span>📊 OpenTelemetry: Desconectado</span>';
+        }
+    }
+
+    // Requisições para o servidor
+    async function makeRequest(path, options={}){
+        const url = SERVER_URL.replace(/\/$/, '') + path;
+        try {
+            const res = await fetch(url, { 
+                mode: 'cors',
+                credentials: 'omit',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': options.body instanceof FormData ? undefined : 'application/json'
+                },
+                ...options
+            });
+            
+            if(!res.ok){
+                const txt = await res.text().catch(()=>'Network error');
+                throw new Error(`HTTP ${res.status}: ${txt}`);
+            }
+            return res.json();
+        } catch (error) {
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                throw new Error(`Conexão falhou. Verifique se o servidor está rodando.`);
+            }
+            throw error;
+        }
+    }
+
+    // Testar conexão
+    async function testConnection(){
+        showLoading('Testando conexão...');
+        btnTest.disabled = true;
+        
+        try{
+            // Teste básico de saúde primeiro
+            const healthResult = await makeRequest('/health');
+            
+            let message = '';
+            let success = false;
+            
+            // Modificar esta lógica para aceitar status 'degraded'
+            if (healthResult.status === 'healthy' || healthResult.status === 'degraded') {
+                // Servidor saudável, testar outras funcionalidades
+                try {
+                    const sheetsResult = await makeRequest('/debug/sheets');
+                    const cloudResult = await makeRequest('/debug/cloudinary');
+
+                    const envResult = await makeRequest('/debug/environment');
+                    const credsResult = await makeRequest('/debug/credentials');
+                    
+                    success = true;
+                    message = `
+                        ✅ <strong>Serviço Online!</strong><br>
+                        📊 Google Sheets: ${sheetsResult && sheetsResult.success ? '✅ Conectado' : '❌ Desconectado'}<br>
+                        ☁️ Cloudinary: ${cloudResult.configuration.fully_configured ? '✅ Configurado' : '❌ Não configurado'}<br>
+                        Status: ${healthResult.status}
+                    `;
+                    
+                } catch (sheetsError) {
+                    // Ainda mostra sucesso mas com aviso
+                    success = true;
+                    message = `
+                        ⚠️ <strong>Servidor online mas com problemas</strong><br>
+                        Status: ${healthResult.status}<br>
+                        Google Sheets: ❌ Desconectado<br>
+                        Erro no Google Sheets: ${sheetsError.message}
+                    `;
+                }
+            } else {
+                // Servidor com problemas
+                message = `
+                    ❌ <strong>Servidor com problemas</strong><br>
+                    Status: ${healthResult.status}<br>
+                    Detalhes: ${JSON.stringify(healthResult.details)}
+                `;
+            }
+            
+            showMessage(message, success ? 'success' : 'error');
+            updateOtelStatus(healthResult.status === 'healthy');
+            
+            isConnected = success;
+            btnLoad.disabled = !success;
+            if (success) {
+                btnRefresh.style.display = 'inline-block';
+            }
+
+        } catch(err) {
+            console.error('Erro completo:', err);
+            
+            let errorMessage = `❌ Falha na conexão: ${err.message}`;
+            
+            if (err.message.includes('503')) {
+                // Tratar 503 como "servidor rodando mas com problemas"
+                errorMessage = `
+                    ⚠️ <strong>Servidor em modo degradado</strong><br>
+                    O servidor está rodando mas alguns serviços podem não estar disponíveis.<br>
+                    Detalhes: ${err.message}
+                `;
+                // Ainda permite carregar dados básicos
+                isConnected = true;
+                btnLoad.disabled = false;
+                btnRefresh.style.display = 'inline-block';
+            } else if (err.message.includes('Failed to fetch')) {
+                errorMessage = '❌ Não foi possível conectar ao servidor. Verifique si está online.';
+            }
+            
+            showMessage(errorMessage, err.message.includes('503') ? 'warn' : 'error');
+
+            if (!err.message.includes('503')) {
+                resetConnection();
+            }
+            updateOtelStatus(false);
+        } finally {
+            btnTest.disabled = false;
+        }
+    }
+
+    // Carregar dados do servidor
+    async function loadData() {
+        showLoading('Carregando dados...');
+        
+        try {
+            const response = await fetch(`${SERVER_URL}/images`);
+            if (response.ok) {
+                imageData = await response.json();
+                console.log('Dados recebidos:', imageData);
+                
+                // Processar URLs para garantir que são válidas
+                imageData = imageData.map(item => {
+                    // Usar o campo correto: 'URL da Imagem' para a URL da imagem
+                    const imageUrl = item.url || item.url_link || item.file_path || item['URL da Imagem'] || '';
+                    
+                    return {
+                        ...item,
+                        url: ensureValidUrl(imageUrl),
+                        file_path: ensureValidUrl(imageUrl),
+                        thumbnail_path: ensureValidUrl(imageUrl)
+                    };
+                });
+
+                displayData(imageData);
+                showMessage(`✅ Dados carregados: ${imageData.length} imagens encontradas`, 'success');
+
+            } else {
+                throw new Error(`Status: ${response.status}`);
+            }
+        } catch (error) {
+            showMessage(`❌ Falha ao carregar dados: ${error.message}`, 'error');
+            
+            // Tentar debug para entender a estrutura
+            try {
+                const debugResponse = await fetch(`${SERVER_URL}/debug/images`);
+                if (debugResponse.ok) {
+                    const debugData = await debugResponse.json();
+                    console.log('Estrutura dos dados (debug):', debugData);
+                    console.log('Cabeçalhos da planilha:', debugData.headers);
+                }
+            } catch (debugError) {
+                console.error('Erro no debug:', debugError);
+            }
+
+            // Carregar dados de fallback para teste
+            loadFallbackData();
+        }
+    }
+
+    // Dados de fallback para teste
+    function loadFallbackData() {
+        imageData = [
+            {
+                'Data': '2024-09-15 10:30:00',
+                'Título': 'Foto de Teste',
+                'Descrição': 'Esta é uma foto de teste para demonstração',
+                'Nome do Arquivo Original': 'imagem_teste.jpg',
+                'url_link': 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+                'Latitude': -23.5505,
+                'Longitude': -46.6333,
+                'URL da Imagem': 'https://res.cloudinary.com/demo/image/upload/sample.jpg'
+            },
+            {
+                'Data': '2024-09-15 11:45:00',
+                'Título': 'Outra Foto',
+                'Descrição': 'Segunda imagem de teste',
+                'Nome do Arquivo Original': 'outra_imagem.jpg',
+                'url_link': 'https://picsum.photos/400/300',
+                'Latitude': -23.5510,
+                'Longitude': -46.6340,
+                'URL da Imagem': 'https://picsum.photos/400/300'
+            }
+        ];
+        
+        displayData(imageData);
+        showMessage('⚠️ Usando dados de demonstração (servidor offline)', 'warn');
+    }
+
+    // Função para garantir que a URL é válida
+    function ensureValidUrl(url) {
+        if (!url) return '';
+        
+        // Se já começa com http, retorna como está
+        if (url.startsWith('http://') || url.startsWith('https://')) {
+            return url;
+        }
+        
+        // Se for um caminho relativo ou nome de arquivo, tenta construir uma URL
+        return `https://res.cloudinary.com/demo/image/upload/${url}`;
+    }
+
+    // Exibir dados na tabela
+    function displayData(data) {
+        if (!data || data.length === 0) {
+            dataContainer.innerHTML = '<p>Nenhum dado disponível</p>';
+            return;
+        }
+        
+        const table = document.createElement('table');
+        table.className = 'data-table';
+        
+        // Cabeçalho
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        
+        const headers = ['Miniatura', 'Título', 'Descrição', 'Data', 'Localização', 'Ações'];
+        headers.forEach(headerText => {
+            const th = document.createElement('th');
+            th.textContent = headerText;
+            headerRow.appendChild(th);
+        });
+        
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
+        
+        // Corpo
+        const tbody = document.createElement('tbody');
+        
+        data.forEach(item => {
+            const row = document.createElement('tr');
+            
+            // Usar o campo correto: 'URL da Imagem' para a URL da imagem
+            const imageUrl = item.url || item.url_link || item.file_path || item.thumbnail_path || item['URL da Imagem'] || '';
+            const title = item.title || item.titulo || item.Título || 'Sem título';
+            const description = item.description || item.descricao || item.Descrição || 'Sem descrição';
+            const date = item.date || item.data || item.Data || 'Data não disponível';
+            const location = item.location || item.localizacao || 
+                            (item.latitude && item.longitude ? `${item.latitude}, ${item.longitude}` : 'Local não disponível');
+            
+            // Célula da miniatura
+            const imgCell = document.createElement('td');
+            if (imageUrl) {
+                const img = document.createElement('img');
+                img.src = imageUrl;
+                img.alt = title;
+                img.className = 'thumbnail';
+                img.onclick = () => openModal(imageUrl);
+                imgCell.appendChild(img);
+            } else {
+                imgCell.textContent = 'Sem imagem';
+            }
+            row.appendChild(imgCell);
+            
+            // Célula do título
+            const titleCell = document.createElement('td');
+            titleCell.textContent = title;
+            row.appendChild(titleCell);
+            
+            // Célula da descrição
+            const descCell = document.createElement('td');
+            descCell.textContent = description;
+            row.appendChild(descCell);
+            
+            // Célula da data
+            const dateCell = document.createElement('td');
+            dateCell.textContent = date;
+            row.appendChild(dateCell);
+            
+            // Célula da localização
+            const locCell = document.createElement('td');
+            locCell.textContent = location;
+            row.appendChild(locCell);
+            
+            // Célula de ações
+            const actionsCell = document.createElement('td');
+            const viewBtn = document.createElement('button');
+            viewBtn.textContent = '👁️ Ver';
+            viewBtn.onclick = () => openModal(imageUrl);
+            actionsCell.appendChild(viewBtn);
+            row.appendChild(actionsCell);
+            
+            tbody.appendChild(row);
+        });
+        
+        table.appendChild(tbody);
+        dataContainer.innerHTML = '';
+        dataContainer.appendChild(table);
+        
+        // Estatísticas
+        dataStats.innerHTML = `<p>Exibindo ${data.length} de ${data.length} imagens</p>`;
+    }
+
+    // Modal para visualizar imagem
+    function openModal(imageUrl) {
+        modalImage.src = imageUrl;
+        modal.style.display = 'block';
+    }
+
+    // Upload de fotos
+    photoFiles.addEventListener('change', function(e) {
+        selectedFiles = Array.from(e.target.files);
+        filePreview.innerHTML = '';
+        
+        if (selectedFiles.length === 0) {
+            submitUpload.disabled = true;
+            return;
+        }
+        
+        selectedFiles.forEach((file, index) => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.alt = file.name;
+                
+                const removeBtn = document.createElement('button');
+                removeBtn.className = 'remove-btn';
+                removeBtn.textContent = '×';
+                removeBtn.onclick = () => {
+                    selectedFiles.splice(index, 1);
+                    previewItem.remove();
+                    submitUpload.disabled = selectedFiles.length === 0;
+                };
+                
+                previewItem.appendChild(img);
+                previewItem.appendChild(removeBtn);
+                filePreview.appendChild(previewItem);
+            };
+            reader.readAsDataURL(file);
+        });
+        
+        submitUpload.disabled = false;
+    });
+
+    // Obter localização
+    btnLocation.addEventListener('click', function() {
+        if (navigator.geolocation) {
+            showMessage('⏳ Obtendo localização...', 'warn');
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    currentLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    locationStatus.textContent = `${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}`;
+                    showMessage('✅ Localização obtida com sucesso', 'success', 3000);
+                },
+                error => {
+                    let errorMsg = '❌ Falha ao obter localização: ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg += 'Permissão negada';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg += 'Localização indisponível';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg += 'Tempo esgotado';
+                            break;
+                        default:
+                            errorMsg += 'Erro desconhecido';
+                    }
+                    showMessage(errorMsg, 'error', 5000);
+                },
+                { timeout: 10000 }
+            );
+        } else {
+            showMessage('❌ Geolocalização não é suportada neste navegador', 'error');
+        }
+    });
+
+    // Enviar formulário de upload
+    uploadForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        if (selectedFiles.length === 0) {
+            showMessage('❌ Selecione pelo menos uma foto para enviar', 'error');
+            return;
+        }
+        
+        showLoading('Enviando fotos...');
+        submitUpload.disabled = true;
+        
+        try {
+            const formData = new FormData();
+            selectedFiles.forEach(file => {
+                formData.append('photos', file);
+            });
+            
+            // Adicionar título e descrição
+            formData.append('title', photoTitle.value);
+            formData.append('description', photoDescription.value);
+            
+            if (currentLocation) {
+                formData.append('latitude', currentLocation.latitude);
+                formData.append('longitude', currentLocation.longitude);
+            }
+            
+            const response = await fetch(`${SERVER_URL}/api/upload/photos`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                showMessage('✅ Fotos enviadas com sucesso!', 'success');
+                
+                // Mostrar resultados
+                uploadResults.style.display = 'block';
+                uploadResultsContent.innerHTML = `
+                    <p>✅ ${result.successful_uploads || result.summary?.successful || result.length} foto(s) enviada(s) com sucesso</p>
+                    ${result.errors && result.errors.length > 0 ? 
+                    `<p>❌ ${result.errors.length} erro(s):<br>${result.errors.join('<br>')}</p>` : ''}
+                    ${result.summary && result.summary.failed > 0 ? 
+                    `<p>❌ ${result.summary.failed} falha(s)</p>` : ''}
+                `;
+                
+                // Limpar formulário
+                selectedFiles = [];
+                filePreview.innerHTML = '';
+                photoFiles.value = '';
+                photoTitle.value = 'Foto com Localização';
+                photoDescription.value = '';
+                currentLocation = null;
+                locationStatus.textContent = 'Não obtida';
+                submitUpload.disabled = true;
+                
+                // Recarregar dados
+                setTimeout(loadData, 2000);
+            } else {
+                throw new Error(`Erro no servidor: ${response.status}`);
+            }
+        } catch (error) {
+            showMessage(`❌ Falha no upload: ${error.message}`, 'error');
+            submitUpload.disabled = false;
+        }
+    });
+
+    // Câmera
+    document.querySelector('[data-tab="camera"]').addEventListener('click', function() {
+        if (!stream) {
+            initCamera();
+        }
+    });
+
+    async function initCamera() {
+        try {
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false 
+            });
+            
+            videoElement.srcObject = stream;
+            captureBtn.disabled = false;
+            showMessage('✅ Câmera inicializada', 'success', 3000);
+        } catch (error) {
+            showMessage(`❌ Erro ao acessar a câmera: ${error.message}`, 'error');
+            captureBtn.disabled = true;
+        }
+    }
+
+    // Capturar foto
+    captureBtn.addEventListener('click', function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElement.videoWidth;
+        canvas.height = videoElement.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+        
+        const dataUrl = canvas.toDataURL('image/jpeg');
+        capturedPhotos.push(dataUrl);
+        
+        // Adicionar à visualização
+        const photoElement = document.createElement('div');
+        photoElement.className = 'preview-item';
+        
+        const img = document.createElement('img');
+        img.src = dataUrl;
+        
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-btn';
+        removeBtn.textContent = '×';
+        removeBtn.onclick = function() {
+            const index = capturedPhotos.indexOf(dataUrl);
+            if (index > -1) {
+                capturedPhotos.splice(index, 1);
+            }
+            photoElement.remove();
+            submitCamera.disabled = capturedPhotos.length === 0;
+            clearPhotosBtn.disabled = capturedPhotos.length === 0;
+        };
+        
+        photoElement.appendChild(img);
+        photoElement.appendChild(removeBtn);
+        cameraPreview.appendChild(photoElement);
+        
+        submitCamera.disabled = false;
+        clearPhotosBtn.disabled = false;
+    });
+
+    // Limpar fotos
+    clearPhotosBtn.addEventListener('click', function() {
+        capturedPhotos = [];
+        cameraPreview.innerHTML = '';
+        submitCamera.disabled = true;
+        clearPhotosBtn.disabled = true;
+    });
+
+    // Obter localização para câmera
+    btnCameraLocation.addEventListener('click', function() {
+        if (navigator.geolocation) {
+            showMessage('⏳ Obtendo localização...', 'warn');
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    cameraLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    cameraLocationStatus.textContent = `${cameraLocation.latitude.toFixed(6)}, ${cameraLocation.longitude.toFixed(6)}`;
+                    showMessage('✅ Localização obtida com sucesso', 'success', 3000);
+                },
+                error => {
+                    let errorMsg = '❌ Falha ao obter localização: ';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMsg += 'Permissão negada';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMsg += 'Localização indisponível';
+                            break;
+                        case error.TIMEOUT:
+                            errorMsg += 'Tempo esgotado';
+                            break;
+                        default:
+                            errorMsg += 'Erro desconhecido';
+                    }
+                    showMessage(errorMsg, 'error', 5000);
+                },
+                { timeout: 10000 }
+            );
+        } else {
+            showMessage('❌ Geolocalização não é suportada neste navegador', 'error');
+        }
+    });
+
+    // Enviar fotos da câmera
+    submitCamera.addEventListener('click', async function() {
+        if (capturedPhotos.length === 0) {
+            showMessage('❌ Capture pelo menos uma foto primeiro', 'error');
+            return;
+        }
+        
+        showLoading('Enviando fotos capturadas...');
+        submitCamera.disabled = true;
+        
+        try {
+            const formData = new FormData();
+            
+            // Converter DataURL para arquivos
+            for (let i = 0; i < capturedPhotos.length; i++) {
+                const dataUrl = capturedPhotos[i];
+                const response = await fetch(dataUrl);
+                const blob = await response.blob();
+                const file = new File([blob], `camera_photo_${i}.jpg`, { type: 'image/jpeg' });
+                formData.append('photos', file);
+            }
+            
+            // Adicionar título e descrição
+            formData.append('title', cameraTitle.value);
+            formData.append('description', cameraDescription.value);
+            
+            if (cameraLocation) {
+                formData.append('latitude', cameraLocation.latitude);
+                formData.append('longitude', cameraLocation.longitude);
+            }
+            
+            const response = await fetch(`${SERVER_URL}/api/upload/photos`, {
+                method: 'POST',
+                body: formData
+            });
+            
+            if (response.ok) {
+                const result = await response.json();
+                showMessage('✅ Fotos enviadas com sucesso!', 'success');
+                
+                // Limpar capturas
+                capturedPhotos = [];
+                cameraPreview.innerHTML = '';
+                cameraTitle.value = 'Foto com Localização';
+                cameraDescription.value = '';
+                cameraLocation = null;
+                cameraLocationStatus.textContent = 'Não obtida';
+                submitCamera.disabled = true;
+                clearPhotosBtn.disabled = true;
+                
+                // Recarregar dados
+                setTimeout(loadData, 2000);
+            } else {
+                throw new Error(`Erro no servidor: ${response.status}`);
+            }
+        } catch (error) {
+            showMessage(`❌ Falha no upload: ${error.message}`, 'error');
+            submitCamera.disabled = false;
+        }
+    });
+
+    // Monitoramento
+    btnHealthCheck.addEventListener('click', async function() {
+        showLoading('Verificando saúde do servidor...');
+        
+        try {
+            const result = await makeRequest('/health');
+            healthStatus.textContent = result.status;
+            healthStatus.className = result.status === 'healthy' ? 'success' : result.status === 'degraded' ? 'warn' : 'error';
+            showMessage(`✅ Status do servidor: ${result.status}`, 'success');
+            
+            // Atualizar status do OpenTelemetry
+            updateOtelStatus(result.status === 'healthy');
+        } catch (error) {
+            healthStatus.textContent = 'offline';
+            healthStatus.className = 'error';
+            showMessage(`❌ Servidor offline: ${error.message}`, 'error');
+            updateOtelStatus(false);
+        }
+    });
+
+    // Função para mostrar resultados do monitoramento
+    function showMonitoringResults(content) {
+        monitoringResults.style.display = 'block';
+        monitoringData.textContent = typeof content === 'string' ? content : JSON.stringify(content, null, 2);
+    }
+
+    // Verificar variáveis de ambiente
+    btnEnvCheck.addEventListener('click', async function() {
+        showMonitoringResults('Verificando variáveis de ambiente...');
+        
+        try {
+            const result = await makeRequest('/debug/environment');
+            showMonitoringResults(result);
+        } catch (error) {
+            showMonitoringResults(`Erro: ${error.message}`);
+        }
+    });
+
+    // Verificar credenciais
+    btnCredsCheck.addEventListener('click', async function() {
+        showMonitoringResults('Verificando credenciais...');
+        
+        try {
+            const result = await makeRequest('/debug/credentials');
+            showMonitoringResults(result);
+        } catch (error) {
+            showMonitoringResults(`Erro: ${error.message}`);
+        }
+    });
+
+    // Verificar Cloudinary
+    btnCloudinaryCheck.addEventListener('click', async function() {
+        showMonitoringResults('Verificando configuração do Cloudinary...');
+        
+        try {
+            const result = await makeRequest('/debug/cloudinary');
+            showMonitoringResults(result);
+        } catch (error) {
+            showMonitoringResults(`Erro: ${error.message}`);
+        }
+    });
+
+    // Buscar métricas
+    btnMetrics.addEventListener('click', async function() {
+        showMonitoringResults('Buscando métricas...');
+        
+        try {
+            const result = await makeRequest('/debug');
+            showMonitoringResults(result);
+        } catch (error) {
+            showMonitoringResults(`Erro: ${error.message}`);
+        }
+    });
+
+    // Auto atualizar métricas
+    btnAutoMetrics.addEventListener('click', function() {
+        if (autoMetricsEnabled) {
+            // Desativar auto atualização
+            clearInterval(metricsInterval);
+            autoMetricsEnabled = false;
+            btnAutoMetrics.textContent = '🔄 Auto Atualizar';
+            showMessage('❌ Auto atualização desativada', 'info', 3000);
+        } else {
+            // Ativar auto atualização
+            autoMetricsEnabled = true;
+            btnAutoMetrics.textContent = '⏹️ Parar Atualização';
+            showMessage('✅ Auto atualização ativada', 'success', 3000);
+            
+            // Atualizar imediatamente
+            getSystemMetrics();
+            
+            // Configurar intervalo
+            metricsInterval = setInterval(() => {
+                getSystemMetrics();
+            }, 5000);
+        }
+    });
+
+    // Inicializar gráficos
+    function initCharts() {
+        const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+        const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+        
+        cpuChart = new Chart(cpuCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Uso de CPU (%)',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+        
+        memoryChart = new Chart(memoryCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Uso de Memória (%)',
+                    data: [],
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+    }
+
+    // Atualizar gráficos
+    function updateCharts(cpu, memory) {
+        const now = new Date();
+        const timestamp = now.toLocaleTimeString();
+        
+        // Adicionar novos dados
+        metricHistory.timestamps.push(timestamp);
+        metricHistory.cpu.push(cpu);
+        metricHistory.memory.push(memory);
+        
+        // Manter apenas os últimos 20 pontos
+        if (metricHistory.timestamps.length > 20) {
+            metricHistory.timestamps.shift();
+            metricHistory.cpu.shift();
+            metricHistory.memory.shift();
+        }
+        
+        // Atualizar gráficos
+        cpuChart.data.labels = metricHistory.timestamps;
+        cpuChart.data.datasets[0].data = metricHistory.cpu;
+        cpuChart.update();
+        
+        memoryChart.data.labels = metricHistory.timestamps;
+        memoryChart.data.datasets[0].data = metricHistory.memory;
+        memoryChart.update();
+    }
+
+    // Event Listeners
+    btnTest.addEventListener('click', testConnection);
+    btnLoad.addEventListener('click', loadData);
+    btnRefresh.addEventListener('click', loadData);
+    modalClose.addEventListener('click', () => modal.style.display = 'none');
+    window.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    // Sistema de abas
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            
+            // Desativar todas as abas
+            tabs.forEach(t => t.classList.remove('active'));
+            tabContents.forEach(tc => tc.classList.remove('active'));
+            
+            // Ativar a aba clicada
+            tab.classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            // Inicializar câmera se for a aba de câmera
+            if (tabId === 'camera' && !stream) {
+                initCamera();
+            }
+        });
+    });
+
+    // Filtro de busca
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const filteredData = imageData.filter(item => {
+            const title = (item.title || item.titulo || item.Título || '').toLowerCase();
+            const description = (item.description || item.descricao || item.Descrição || '').toLowerCase();
+            return title.includes(searchTerm) || description.includes(searchTerm);
+        });
+        displayData(filteredData);
+    });
+
+    // Inicializar gráficos
+    document.addEventListener('DOMContentLoaded', function() {
+        initCharts();
+    });
+
+    // Botões para métricas OpenTelemetry
+    btnOtelMetrics.addEventListener('click', getOtelMetrics);
+    btnSystemMetrics.addEventListener('click', getSystemMetrics);
+  </script>
+</body>
+</html>
