@@ -465,6 +465,27 @@ def upload_to_cloudinary(file_content, original_filename):
             log_step("CLOUDINARY_UPLOAD", f"❌ Erro no upload: {str(e)}", False)
             raise Exception(f"Erro no upload para Cloudinary: {str(e)}")
 
+#2. Adicionar middleware manual para CORS
+@app.after_request
+def after_request(response):
+    """Adiciona headers CORS a todas as respostas"""
+    response.headers.add('Access-Control-Allow-Origin', 'https://stick35em10.github.io')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
+
+@app.before_request
+def handle_preflight():
+    """Lida com requisições OPTIONS (preflight)"""
+    if request.method == "OPTIONS":
+        response = jsonify({"status": "ok"})
+        response.headers.add('Access-Control-Allow-Origin', 'https://stick35em10.github.io')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+
 # ROTAS DE API
 @app.route('/images', methods=['GET'])
 def get_images():
