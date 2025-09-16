@@ -1,5 +1,9 @@
 
 
+[html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html  15:43 16.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html)
+
+[html/09.2025/16/deepseek_html_20250908_43714e_V1.html  06:45 16.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/16/deepseek_html_20250908_43714e_V1.html)
+
 [deepseek_html_20250915_293ce8.html, deepseek_html_20250908_43714e_V1.html e app.py peço para melhorar o html considerando a app.py  06:45 16.09.2025](https://stick35em10.github.io/visualizing-geospatial-data-in-python/html/09.2025/16/deepseek_html_20250908_43714e_V1_copy.html)
 
 
