@@ -130,6 +130,21 @@ def test_endpoint():
 FlaskInstrumentor().instrument_app(app)
 RequestsInstrumentor().instrument()
 
+# Configuração CORS correta
+CORS(app, 
+    origins=[
+        "https://stick35em10.github.io",
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+        "https://*.github.io"
+    ],
+    supports_credentials=True,
+    allow_headers=["Content-Type", "Authorization"],
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    expose_headers=["Content-Type"],
+    max_age=3600
+)
+
 """
 CORS(app, resources={
     r"/*": {
@@ -150,13 +165,14 @@ CORS(app, resources={
 # from flask_cors import CORS
 
 # Configuração CORS mais permissiva
+""" 
 CORS(app, origins=[
     "https://stick35em10.github.io",
     "http://localhost:*",
     "http://127.0.0.1:*",
     "https://*.github.io"
 ])
-
+"""
 # Variáveis globais para status e cache
 sheets_status = {
     'initialized': False,
@@ -465,10 +481,12 @@ def upload_to_cloudinary(file_content, original_filename):
             log_step("CLOUDINARY_UPLOAD", f"❌ Erro no upload: {str(e)}", False)
             raise Exception(f"Erro no upload para Cloudinary: {str(e)}")
 
+
 #2. Adicionar middleware manual para CORS
+"""
 @app.after_request
 def after_request(response):
-    """Adiciona headers CORS a todas as respostas"""
+    
     response.headers.add('Access-Control-Allow-Origin', 'https://stick35em10.github.io')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
@@ -477,7 +495,7 @@ def after_request(response):
 
 @app.before_request
 def handle_preflight():
-    """Lida com requisições OPTIONS (preflight)"""
+    #Lida com requisições OPTIONS (preflight)
     if request.method == "OPTIONS":
         response = jsonify({"status": "ok"})
         response.headers.add('Access-Control-Allow-Origin', 'https://stick35em10.github.io')
@@ -485,8 +503,26 @@ def handle_preflight():
         response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
+"""
 
 # ROTAS DE API
+
+@app.route('/debug/cors', methods=['GET', 'OPTIONS'])
+def debug_cors():
+    """Endpoint para debug de CORS"""
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        return response
+    
+    return jsonify({
+        'origin': request.headers.get('Origin'),
+        'cors_headers': {
+            'Access-Control-Allow-Origin': request.headers.get('Access-Control-Allow-Origin'),
+            'Access-Control-Allow-Methods': request.headers.get('Access-Control-Allow-Methods'),
+            'Access-Control-Allow-Headers': request.headers.get('Access-Control-Allow-Headers')
+        }
+    })
+    
 @app.route('/images', methods=['GET'])
 def get_images():
     """Endpoint para obter imagens da planilha"""
