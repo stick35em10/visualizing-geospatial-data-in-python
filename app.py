@@ -1055,6 +1055,70 @@ def metrics():
 
 #3. Problema na Inicialização do Servidor
 
+@app.route('/debug/full', methods=['GET'])
+def debug_full():
+    """Endpoint completo de debug que combina todas as informações"""
+    with tracer.start_as_current_span("debug_full"):
+        try:
+            # Coletar informações de todas as rotas de debug
+            sheets_info = debug_sheets().get_json()
+            cloudinary_info = debug_cloudinary().get_json()
+            credentials_info = debug_credentials().get_json()
+            environment_info = debug_environment().get_json()
+            
+            # Calcular tempo de resposta
+            start_time = datetime.now()
+            
+            # Testar conexão com Sheets se possível
+            sheets_connection = None
+            if sheets_info.get('environment_check', {}).get('all_found', False):
+                try:
+                    sheets_connection = test_google_sheets_connection()
+                except Exception as e:
+                    sheets_connection = {'success': False, 'error': str(e)}
+            
+            end_time = datetime.now()
+            duration = (end_time - start_time).total_seconds()
+            
+            return jsonify({
+                'success': True,
+                'timestamp': datetime.now().isoformat(),
+                'duration_seconds': duration,
+                'sheets': sheets_info,
+                'cloudinary': cloudinary_info,
+                'credentials': credentials_info,
+                'environment': environment_info,
+                'sheets_connection_test': sheets_connection,
+                'status': {
+                    'sheets_configured': sheets_info.get('environment_check', {}).get('all_found', False),
+                    'cloudinary_configured': cloudinary_info.get('configuration', {}).get('fully_configured', False),
+                    'sheets_connected': sheets_connection.get('success', False) if sheets_connection else False
+                }
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Erro no debug completo: {str(e)}',
+                'timestamp': datetime.now().isoformat()
+            }), 500
+            
+@app.route('/debug/simple', methods=['GET'])
+def debug_simple():
+    """Endpoint simples de debug"""
+    return jsonify({
+        'status': 'ok',
+        'message': 'Servidor está funcionando',
+        'timestamp': datetime.now().isoformat(),
+        'sheets_configured': os.getenv('GOOGLE_SHEETS_CREDENTIALS') is not None,
+        'cloudinary_configured': all([
+            os.getenv('CLOUDINARY_CLOUD_NAME'),
+            os.getenv('CLOUDINARY_API_KEY'),
+            os.getenv('CLOUDINARY_API_SECRET')
+        ])
+    })
+
+
 if __name__ == '__main__':
     # Inicialização automática ao iniciar o servidor
     with tracer.start_as_current_span("app_startup"):
