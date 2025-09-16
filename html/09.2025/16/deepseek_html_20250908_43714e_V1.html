@@ -45,26 +45,17 @@
     .modal img{max-width:100%;max-height:100%;border-radius:8px}
     .modal-close{position:absolute;top:10px;right:15px;background:none;border:none;color:#e6ecff;font-size:24px;cursor:pointer}
     .stats{display:flex;gap:20px;margin:10px 0;font-size:12px;color:#b0c4de}
-    
     .camera-container{text-align:center;margin:15px 0}
     #videoElement{width:100%;max-width:400px;border:2px solid #263276;border-radius:10px;background:#000}
     .camera-controls{display:flex;gap:10px;justify-content:center;margin:10px 0}
     .preview-image{max-width:300px;border-radius:10px;margin:10px 0;border:2px solid #263276}
-    
     .tabs{display:flex;border-bottom:1px solid #263276;margin-bottom:20px}
     .tab{background:none;border:none;color:#b0c4de;padding:10px 20px;cursor:pointer;border-bottom:2px solid transparent}
     .tab.active{color:#e6ecff;border-bottom-color:#1a4b8c}
     .tab-content{display:none}
     .tab-content.active{display:block}
-    
     .server-info{background:#0e2a1b;padding:10px;border-radius:8px;margin-bottom:15px;border:1px solid #1f8f55}
-    
-    .url-display {
-      word-break: break-all;
-      font-size: 12px;
-      max-width: 300px;
-      color: #b0c4de;
-    }
+    .url-display {word-break: break-all;font-size: 12px;max-width: 300px;color: #b0c4de;}
   </style>
 </head>
 <body>
@@ -78,8 +69,15 @@
 
   <main class="grid">
     <div class="server-info">
-      <strong>🌐 Servidor:</strong> https://visualizing-geospatial-data-in-python-4.onrender.com<br>
-      <strong>📋 Aba:</strong> Images
+      <label for="serverSelect">🌐 Servidor:</label>
+      <select id="serverSelect">
+        <option value="https://visualizing-geospatial-data-in-python-4.onrender.com" selected>v4</option>
+        <option value="https://visualizing-geospatial-data-in-python-3.onrender.com">v3</option>
+        <option value="https://visualizing-geospatial-data-in-python-2.onrender.com">v2</option>
+        <option value="https://visualizing-geospatial-data-in-python-1.onrender.com">v1</option>
+        <option value="custom">Outro…</option>
+      </select>
+      <input type="text" id="customServer" placeholder="Digite URL do servidor" style="display:none; margin-left:8px; width:60%" />
     </div>
     
     <div id="status" class="status">Clique em <strong>Testar Conexão</strong> para começar.</div>
@@ -90,7 +88,6 @@
       <button class="tab" data-tab="camera">📷 Câmera</button>
     </div>
 
-    <!-- Visualizar Dados -->
     <div class="tab-content active" id="tab-data">
       <div class="panel">
         <div class="controls">
@@ -108,95 +105,100 @@
       </div>
     </div>
 
-    <!-- Upload de Fotos -->
     <div class="tab-content" id="tab-upload">
       <div class="panel">
         <h3>📤 Upload de Fotos</h3>
         <form id="uploadForm">
           <div class="form-row">
             <label>Título:</label>
-            <input type="text" id="photoTitle" placeholder="Título da foto" required value="Foto com Localização" />
+            <input type="text" id="photoTitle" required value="Foto com Localização" />
           </div>
           <div class="form-row">
             <label>Descrição:</label>
-            <textarea id="photoDescription" placeholder="Descrição opcional"></textarea>
+            <textarea id="photoDescription"></textarea>
           </div>
           <div class="form-row">
             <label>Localização:</label>
             <button type="button" id="btnLocation">📍 Obter Localização</button>
             <span id="locationStatus"></span>
           </div>
-          
           <div class="upload-section" id="uploadZone">
             <p>📁 Arraste fotos aqui ou clique para selecionar</p>
             <input type="file" id="photoFiles" class="file-input" multiple accept="image/*" />
             <button type="button" class="upload-button" id="selectFilesBtn">Selecionar Fotos</button>
           </div>
-
           <div class="file-preview" id="filePreview"></div>
-          
           <div class="form-row" style="justify-content:center;margin-top:20px">
             <button type="submit" class="upload-button" disabled id="submitUpload">🚀 Enviar Fotos</button>
           </div>
         </form>
-        
         <div id="uploadResults" class="upload-results" style="display:none;"></div>
       </div>
     </div>
 
-    <!-- Câmera -->
     <div class="tab-content" id="tab-camera">
       <div class="panel">
         <h3>📷 Capturar Foto</h3>
         <form id="cameraForm">
           <div class="form-row">
             <label>Título:</label>
-            <input type="text" id="cameraTitle" placeholder="Título da foto" required value="Foto com Localização" />
+            <input type="text" id="cameraTitle" required value="Foto com Localização" />
           </div>
           <div class="form-row">
             <label>Descrição:</label>
-            <textarea id="cameraDescription" placeholder="Descrição opcional"></textarea>
+            <textarea id="cameraDescription"></textarea>
           </div>
           <div class="form-row">
             <label>Localização:</label>
             <button type="button" id="btnCameraLocation">📍 Obter Localização</button>
             <span id="cameraLocationStatus"></span>
           </div>
-
           <div class="camera-container">
             <video id="videoElement" autoplay playsinline></video>
           </div>
-
           <div class="camera-controls">
             <button type="button" id="captureBtn" disabled>📷 Tirar Foto</button>
             <button type="button" id="clearPhotosBtn" style="display:none">🗑️ Limpar Fotos</button>
           </div>
-
           <div id="cameraPreview"></div>
-          
           <div class="form-row" style="justify-content:center;margin-top:20px">
             <button type="submit" class="upload-button" disabled id="submitCamera">🚀 Enviar Fotos</button>
           </div>
         </form>
-        
         <div id="cameraResults" class="upload-results" style="display:none;"></div>
       </div>
     </div>
   </main>
 
-  <!-- Modal para visualizar imagens -->
   <div id="imageModal" class="modal">
     <div class="modal-content">
       <button class="modal-close" onclick="closeModal()">&times;</button>
       <img id="modalImage" src="" alt="Imagem ampliada" />
     </div>
   </div>
-
   <script>
     // Configuração fixa do servidor
     //const SERVER_URL = "https://visualizing-geospatial-data-in-python-3.onrender.com";
     const SERVER_URL = "https://visualizing-geospatial-data-in-python-4.onrender.com";
     const WORKSHEET_NAME = "Images";
+    const serverSelect = document.getElementById('serverSelect');
+    const customServer = document.getElementById('customServer');
+
+    serverSelect.addEventListener('change', () => {
+      if (serverSelect.value === 'custom') {
+        customServer.style.display = 'inline-block';
+        SERVER_URL = customServer.value || '';
+      } else {
+        customServer.style.display = 'none';
+        SERVER_URL = serverSelect.value;
+      }
+      document.getElementById('status').innerHTML = `🌐 Servidor selecionado: <b>${SERVER_URL}</b>`;
+    });
+
+    customServer.addEventListener('input', () => {
+      SERVER_URL = customServer.value.trim();
+      document.getElementById('status').innerHTML = `🌐 Servidor personalizado: <b>${SERVER_URL}</b>`;
+    });
 
     // Estado da aplicação
     let isConnected = false;
