@@ -19,11 +19,25 @@ jonel@DAS-IT:~/visualizing-geospatial-data$
                 (anonymous) @ deepseek_html_20250908_43714e_V1copy.html:757Understand this error
                 deepseek_html_20250908_43714e_V1copy.html:609  POST https://visualizing-geospatial-data-in-python-5.onrender.com/api/upload/photos net::ERR_CONNECTION_TIMED_OUT
 
+                Resumo das correções:
+                    Servidor Flask: Adicionei middleware para lidar com requisições OPTIONS e headers CORS
+
+                    Frontend HTML: Corrigi a reatribuição da variável constante SERVER_URL para let
+
+                    Tratamento de erros: Melhorei o tratamento de erros de CORS e conexão
+
+                    Verificação de servidor: Adicionei verificação mais tolerante do status do servidor
+
+                    Estas correções devem resolver os problemas de CORS e permitir que o frontend se comunique adequadamente com o servidor Flask.
                 Este erro indica que há problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas:
 
                 O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador
-                    git add app.py cmd.txt  html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html cmd.txt html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
-                    git commit -m " 16.09, [18:[51, 19] 16:[28,18] 13:22, 12:[35, 05], 11:[36, 19], 07:11, 6:48] problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas Este erro indica que há problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas: Você adicionou a rota /debug/full que o frontend está tentando acessar. Agora vou analisar o que ainda pode estar faltando. O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador "
+                    
+                    Este erro de CORS ocorre porque o servidor Flask não está respondendo corretamente às requisições OPTIONS (preflight) que o navegador envia automaticamente para verificar permissões CORS. Vou corrigir ambos os problemas:
+
+                    git rm html/09.2025/16/deepseek_html_20250916_a1e4a5.html html/09.2025/16/improved_photo_upload.html html/09.2025/16/photo-upload-fixed.html
+                    git add html/09.2025/16/deepseek_html_20250908_43714e_V1.html app.py cmd.txt  html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html cmd.txt html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
+                    git commit -m " [17.09, [1:34]] Este erro de CORS ocorre porque o servidor Flask não está respondendo corretamente às requisições OPTIONS (preflight) que o navegador envia automaticamente para verificar permissões CORS. Vou corrigir ambos os problemas: ,[16.09, [18:[51, 19] 16:[28,18] 13:22, 12:[35, 05], 11:[36, 19], 07:11, 6:48] problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas Este erro indica que há problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas: Você adicionou a rota /debug/full que o frontend está tentando acessar. Agora vou analisar o que ainda pode estar faltando. O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador "
                     git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa_to_galp_01
 
             html/09.2025/08/deepseek_html_20250908_43714e_V1.html

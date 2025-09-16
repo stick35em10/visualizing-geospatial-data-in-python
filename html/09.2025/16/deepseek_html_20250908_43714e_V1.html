@@ -71,10 +71,11 @@
     <div class="server-info">
       <label for="serverSelect">🌐 Servidor:</label>
       <select id="serverSelect">
-        <option value="https://visualizing-geospatial-data-in-python-4.onrender.com" selected>v4</option>
+        <option value="https://visualizing-geospatial-data-in-python-5.onrender.com" selected>v5</option>
         <option value="https://visualizing-geospatial-data-in-python-3.onrender.com">v3</option>
         <option value="https://visualizing-geospatial-data-in-python-2.onrender.com">v2</option>
         <option value="https://visualizing-geospatial-data-in-python-1.onrender.com">v1</option>
+        <option value="https://visualizing-geospatial-data-in-python-4.onrender.com">v4</option>
         <option value="custom">Outro…</option>
       </select>
       <input type="text" id="customServer" placeholder="Digite URL do servidor" style="display:none; margin-left:8px; width:60%" />
@@ -179,7 +180,8 @@
   <script>
     // Configuração fixa do servidor
     //const SERVER_URL = "https://visualizing-geospatial-data-in-python-3.onrender.com";
-    const SERVER_URL = "https://visualizing-geospatial-data-in-python-4.onrender.com";
+    //const SERVER_URL = "https://visualizing-geospatial-data-in-python-4.onrender.com";
+    let SERVER_URL = "https://visualizing-geospatial-data-in-python-4.onrender.com"; // Use LET em vez de CONST
     const WORKSHEET_NAME = "Images";
     const serverSelect = document.getElementById('serverSelect');
     const customServer = document.getElementById('customServer');
@@ -243,6 +245,30 @@
       tabContents: document.querySelectorAll('.tab-content')
     };
 
+    // Adicione esta função para verificação de servidor
+    async function checkServerStatus() {
+    try {
+        // Tente vários endpoints
+        const endpoints = ['/health', '/debug/simple', '/'];
+        
+        for (const endpoint of endpoints) {
+            try {
+                const response = await fetch(SERVER_URL + endpoint, {
+                    method: 'GET',
+                    mode: 'no-cors', // Modo no-cors para evitar problemas CORS neste teste básico
+                    cache: 'no-store'
+                });
+                return true;
+            } catch (e) {
+                continue;
+            }
+        }
+        return false;
+    } catch (error) {
+        return false;
+    }
+}
+
     // Funções utilitárias
     function showMessage(html, kind='info', timeout=0){
       els.status.className = 'status ' + (kind==='error'?'error':kind==='success'?'success':kind==='warning'?'warn':'');
@@ -264,13 +290,15 @@
       els.data.innerHTML = '';
     }
 
+// Problema 3: Melhorar o tratamento de erros no frontend
     // Requisições para o servidor
+    // Requisições para o servidor - VERSÃO MELHORADA
     async function makeRequest(path, options={}){
       const url = SERVER_URL.replace(/\/$/, '') + path;
       try {
         const res = await fetch(url, { 
           mode: 'cors',
-          credentials: 'omit',
+          credentials: 'include', // Mude para 'include' para suportar credenciais //'omit',
           headers: {
             'Accept': 'application/json',
             'Content-Type': options.body instanceof FormData ? undefined : 'application/json'
@@ -278,13 +306,24 @@
           ...options
         });
         
-        if(!res.ok){
-          const txt = await res.text().catch(()=>'Network error');
-          throw new Error(`HTTP ${res.status}: ${txt}`);
+        if (!res.ok) {
+            let errorText = `HTTP ${res.status}: `;
+            try {
+                const errorData = await res.json();
+                errorText += errorData.error || errorData.message || 'Erro desconhecido';
+            } catch {
+                errorText += await res.text().catch(() => 'Erro de rede');
+            }
+            throw new Error(errorText);
         }
+
         return res.json();
       } catch (error) {
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
+          // Verifica se é erro de CORS específico
+          if (error.message.includes('CORS') || error.message.includes('Access-Control')) {
+                throw new Error('Erro de CORS. O servidor não está configurado corretamente.');
+            }
           throw new Error(`Conexão falhou. Verifique se o servidor está rodando.`);
         }
         throw error;
@@ -292,20 +331,38 @@
     }
 
     // Testar conexão
+    // Testar conexão - VERSÃO MELHORADA
     async function testConnection(){
       showLoading('Testando conexão...');
       els.btnTest.disabled = true;
-      try{
-        const sheetsResult = await makeRequest('/debug/full');
+      try {
+          // Primeiro teste simples de conectividade
+          try {
+              // Tente uma requisição HEAD simples primeiro
+              await fetch(SERVER_URL, {
+                  method: 'HEAD',
+                mode: 'no-cors',
+                cache: 'no-store'
+            });
+        } catch (simpleError) {
+            console.log('Teste simples falhou, tentando abordagem alternativa');
+          }
+
+      //try{ // Agora tente a requisição completa
+        //const sheetsResult = await makeRequest('/debug/full');
+        const sheetsResult = await makeRequest('/debug/simple'); // Use endpoint mais simples primeiro
         const cloudResult = await makeRequest('/debug/cloudinary');
 
-        const sheetsOK = !!(sheetsResult && sheetsResult.success);
-        const cloudOK = !!(cloudResult && cloudResult.cloudinary_configured);
+        //const sheetsOK = !!(sheetsResult && sheetsResult.success);
+        const sheetsOK = !!(sheetsResult && sheetsResult.status === 'ok');
+        //const cloudOK = !!(cloudResult && cloudResult.cloudinary_configured);
+        const cloudOK = !!(cloudResult && cloudResult.configuration?.fully_configured);
 
         showMessage(`
           ✅ <strong>Conexão Estabelecida</strong><br>
           Sheets: ${sheetsOK ? '✅' : '❌'} |
           Cloudinary: ${cloudOK ? '✅' : '❌'}<br>
+          Servidor: ${SERVER_URL}
           Tempo: ${Number(sheetsResult?.duration_seconds||0).toFixed(2)}s
         `, 'success');
 
@@ -314,11 +371,26 @@
         els.btnRefresh.disabled = !sheetsOK;
 
         if (sheetsOK) {
-          startCamera();
+          //startCamera();
+          try {
+                await startCamera();
+            } catch (cameraError) {
+                console.warn('Câmera não disponível:', cameraError);
+            }
         }
-      }catch(err){
+      } catch (err) {
         console.error(err);
-        showMessage(`❌ Falha na conexão: ${err.message}`, 'error');
+
+        // Mensagem mais específica baseada no tipo de erro
+        let errorMessage = `❌ Falha na conexão: ${err.message}`;
+        if (err.message.includes('CORS')) {
+            errorMessage = '❌ Erro de CORS. O servidor precisa ser configurado para permitir requisições desta origem.';
+        } else if (err.message.includes('servidor')) {
+            errorMessage = '❌ Servidor não responde. Verifique se está online e a URL está correta.';
+        }
+
+        //showMessage(`❌ Falha na conexão: ${err.message}`, 'error');
+        showMessage(errorMessage, 'error');
         resetConnection();
       }finally{
         els.btnTest.disabled = false;
@@ -757,10 +829,26 @@
     
     window.addEventListener('load', () => {
       console.log('📄 Página completamente carregada');
+
+      setTimeout(async () => {
+        console.log('🤖 Verificando servidor...');
+        
+        try {
+            const isServerUp = await checkServerStatus();
+            if (isServerUp) {
+                showMessage('🌐 Servidor detectado. Clique em "Testar Conexão" para verificar funcionalidade completa.', 'success');
+            } else {
+                showMessage('⚠️ Servidor pode estar offline. Verifique a URL e tente novamente.', 'warn');
+            }
+        } catch (error) {
+            showMessage('⚠️ Não foi possível verificar o servidor.', 'warn');
+        }
+      }, 1000);
+      /*
       setTimeout(() => {
         console.log('🤖 Executando auto-conexão...');
         testConnection();
-      }, 2000);
+      }, 2000);*/
     });
   </script>
 </body>
