@@ -130,16 +130,17 @@ def test_endpoint():
 FlaskInstrumentor().instrument_app(app)
 RequestsInstrumentor().instrument()
 
-# Configuração CORS correta
+# Configuração CORS correta - APENAS ESTA
 CORS(app, 
     origins=[
         "https://stick35em10.github.io",
         "http://localhost:*",
         "http://127.0.0.1:*",
-        "https://*.github.io"
+        "https://*.github.io",
+        "http://localhost:5500"  # ADICIONE esta linha
     ],
     supports_credentials=True,
-    allow_headers=["Content-Type", "Authorization"],
+    allow_headers=["Content-Type", "Authorization", "Accept"],  # ADICIONE "Accept"],
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     expose_headers=["Content-Type"],
     max_age=3600
@@ -147,7 +148,7 @@ CORS(app,
 
 
 # Adicione este handler manual para OPTIONS
-@app.before_request
+"""@app.before_request
 def handle_preflight():
     if request.method == "OPTIONS":
         response = jsonify({"status": "ok"})
@@ -156,8 +157,7 @@ def handle_preflight():
         response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
         response.headers.add("Access-Control-Allow-Credentials", "true")
         return response
-    
-"""
+   """ 
 CORS(app, resources={
     r"/*": {
         "origins": [
@@ -178,13 +178,14 @@ CORS(app, resources={
 
 # Configuração CORS mais permissiva
 """ 
+""" 
 CORS(app, origins=[
     "https://stick35em10.github.io",
     "http://localhost:*",
     "http://127.0.0.1:*",
     "https://*.github.io"
-])
-"""
+])"""
+
 # Variáveis globais para status e cache
 sheets_status = {
     'initialized': False,
@@ -202,7 +203,7 @@ _spreadsheet_cache = None
 SHARED_DRIVE_ID = '1T3bLqnSCLg3_zkqnj5JXzH8tvN-h63yy'
 
 def log_step(step, message, success=True):
-    """Registra cada passo com timestamp"""
+    #Registra cada passo com timestamp"""
     timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     level = "INFO" if success else "ERROR"
     log_message = f"[{timestamp}] {step}: {message}"
@@ -679,6 +680,22 @@ def handle_preflight():
 """
 
 # ROTAS DE API
+# Endpoint local para teste CORS
+@app.route('/debug/cors-test', methods=['GET', 'OPTIONS'])
+def local_cors_test():
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'preflight ok'})
+        response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5500')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
+    return jsonify({
+        'message': 'Local CORS test successful',
+        'origin': request.headers.get('Origin'),
+        'timestamp': datetime.now().isoformat()
+    })
 
 @app.route('/debug/cors', methods=['GET', 'OPTIONS'])
 def debug_cors():
