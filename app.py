@@ -137,7 +137,8 @@ CORS(app,
         "http://localhost:*",
         "http://127.0.0.1:*",
         "https://*.github.io",
-        "http://localhost:5500"  # ADICIONE esta linha
+        "http://localhost:5500",  # ADICIONE esta linha
+        "http://127.0.0.1:5500"
     ],
     supports_credentials=True,
     allow_headers=["Content-Type", "Authorization", "Accept"],  # ADICIONE "Accept"],
@@ -678,7 +679,17 @@ def handle_preflight():
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
 """
-
+# Adicione este handler manual para OPTIONS para garantir o tratamento de preflight
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = jsonify({"status": "ok"})
+        response.headers.add("Access-Control-Allow-Origin", request.headers.get('Origin', '*'))
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,Accept")
+        response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        return response
+    
 # ROTAS DE API
 # Endpoint local para teste CORS
 @app.route('/debug/cors-test', methods=['GET', 'OPTIONS'])
