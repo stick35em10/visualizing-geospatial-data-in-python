@@ -691,6 +691,65 @@ def handle_preflight():
         return response
     
 # ROTAS DE API
+
+
+@app.route('/api/sheets/worksheets', methods=['GET'])
+def get_worksheets():
+    """Endpoint para obter a lista de worksheets da planilha"""
+    with tracer.start_as_current_span("get_worksheets"):
+        try:
+            if not sheets_status['initialized']:
+                # Tenta reconectar se não estiver inicializado
+                try:
+                    test_google_sheets_connection()
+                except Exception as e:
+                    return jsonify({
+                        'success': False,
+                        'error': f'Erro de conexão: {str(e)}'
+                    }), 500
+            
+            client, spreadsheet = get_sheets_client()
+            
+            # Listar todas as worksheets
+            worksheets = spreadsheet.worksheets()
+            
+            worksheet_info = []
+            for ws in worksheets:
+                try:
+                    # Obter informações básicas de cada worksheet
+                    row_count = ws.row_count
+                    col_count = ws.col_count
+                    
+                    worksheet_info.append({
+                        'title': ws.title,
+                        'row_count': row_count,
+                        'col_count': col_count,
+                        'index': ws.index,
+                        'id': ws.id
+                    })
+                except Exception as e:
+                    # Se houver erro em uma worksheet, continuar com as outras
+                    worksheet_info.append({
+                        'title': ws.title,
+                        'row_count': 0,
+                        'col_count': 0,
+                        'error': str(e)
+                    })
+            
+            return jsonify({
+                'success': True,
+                'spreadsheet_title': spreadsheet.title,
+                'spreadsheet_id': os.getenv('SPREADSHEET_ID'),
+                'worksheets': worksheet_info,
+                'total_worksheets': len(worksheets)
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Erro ao obter worksheets: {str(e)}'
+            }), 500
+            
 # Endpoint local para teste CORS
 @app.route('/debug/cors-test', methods=['GET', 'OPTIONS'])
 def local_cors_test():
