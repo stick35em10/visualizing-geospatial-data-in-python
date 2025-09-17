@@ -145,6 +145,18 @@ CORS(app,
     max_age=3600
 )
 
+
+# Adicione este handler manual para OPTIONS
+@app.before_request
+def handle_preflight():
+    if request.method == "OPTIONS":
+        response = jsonify({"status": "ok"})
+        response.headers.add("Access-Control-Allow-Origin", "https://stick35em10.github.io")
+        response.headers.add("Access-Control-Allow-Headers", "Content-Type,Authorization,Accept")
+        response.headers.add("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE,OPTIONS")
+        response.headers.add("Access-Control-Allow-Credentials", "true")
+        return response
+    
 """
 CORS(app, resources={
     r"/*": {
@@ -1336,6 +1348,24 @@ def get_sheets_data():
                 'success': False,
                 'error': f'Erro ao obter dados: {str(e)}'
             }), 500
+
+# 17.09 10:19, 3. Verificação da configuração atual do servidor
+@app.route('/debug/cors-test', methods=['GET', 'OPTIONS'])
+def debug_cors_test():
+    """Endpoint para testar configuração CORS"""
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'preflight ok'})
+        response.headers.add('Access-Control-Allow-Origin', 'https://stick35em10.github.io')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
+    return jsonify({
+        'message': 'CORS test successful',
+        'origin': request.headers.get('Origin'),
+        'timestamp': datetime.now().isoformat()
+    })
 
 if __name__ == '__main__':
     # Inicialização automática ao iniciar o servidor

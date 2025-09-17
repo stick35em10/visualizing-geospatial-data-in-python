@@ -1,4 +1,26 @@
 jonel@DAS-IT:~/visualizing-geospatial-data$
+        17.09.2025
+            09:55
+                deepseek_html_20250821_add7d2.html:1 Access to fetch at 'https://visualizing-geospatial-data-in-python-5.onrender.com/api/sheets/worksheets' from origin 'https://stick35em10.github.io' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: It does not have HTTP ok status.Understand this error
+                deepseek_html_20250821_add7d2.html:1411  GET https://visualizing-geospatial-data-in-python-5.onrender.com/api/sheets/worksheets net::ERR_FAILED
+                makeRequest @ deepseek_html_20250821_add7d2.html:1411
+                loadWorksheets @ deepseek_html_20250821_add7d2.html:1943Understand this error
+                deepseek_html_20250821_add7d2.html:1445 ❌ Request error: TypeError: Failed to fetch
+                    at makeRequest (deepseek_html_20250821_add7d2.html:1411:40)
+                    at HTMLButtonElement.loadWorksheets (deepseek_html_20250821_add7d2.html:1943:38)
+                makeRequest @ deepseek_html_20250821_add7d2.html:1445
+                await in makeRequest
+                loadWorksheets @ deepseek_html_20250821_add7d2.html:1943Understand this error
+                deepseek_html_20250821_add7d2.html:1989 Failed to load worksheets: Error: Problema de CORS: O servidor não está configurado para aceitar requisições do GitHub Pages. Tente usar uma opção de proxy.
+                    at makeRequest (deepseek_html_20250821_add7d2.html:1453:39)
+                    at async HTMLButtonElement.loadWorksheets (deepseek_html_20250821_add7d2.html:1943:32)
+
+                    deepseek_html_20250821_add7d2.html  app.py
+
+                    git add html/21.08/deepseek_html_20250821_add7d2.html html/09.2025/16/deepseek_html_20250908_43714e_V1.html app.py cmd.txt  html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html cmd.txt html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
+                    git commit -m " [17.09, [1:34]] Este erro de CORS ocorre porque o servidor Flask não está respondendo corretamente às requisições OPTIONS (preflight) que o navegador envia automaticamente para verificar permissões CORS. Vou corrigir ambos os problemas: ,[16.09, [18:[51, 19] 16:[28,18] 13:22, 12:[35, 05], 11:[36, 19], 07:11, 6:48] problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas Este erro indica que há problemas de comunicação entre o frontend e o servidor. Vamos analisar os problemas: Você adicionou a rota /debug/full que o frontend está tentando acessar. Agora vou analisar o que ainda pode estar faltando. O erro que você está enfrentando é relacionado a CORS (Cross-Origin Resource Sharing). O servidor está retornando múltiplos cabeçalhos Access-Control-Allow-Origin, o que não é permitido pelo navegador "
+                    git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa_to_galp_01
+
 
         16.09.2025
             19:41, 18:[51, 37, 19]
