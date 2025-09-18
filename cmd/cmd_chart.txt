@@ -1,6 +1,19 @@
 18.09.2025
 
-    [13:17, 12:00, 10:[45, 26]]
+    [15:02 14:36, 13:17, 12:00, 10:[45, 26]]
+        📝 Resumo das mudanças necessárias:
+                Adicione a rota /api/sheets/add-data no seu app.py
+                Atualize a função addNewData() no frontend para usar o novo endpoint
+                Remova o uso do endpoint /upload para dados normais
+                Isso resolverá o erro "Nenhum arquivo enviado" porque você estará usando o endpoint correto para o tipo de dado que está enviando.
+
+        Problema Identificado
+        O erro HTTP 400 com a mensagem "Nenhum arquivo enviado" indica que o código está tentando fazer upload de arquivos usando o endpoint /upload, mas o formulário de adição de dados não está enviando nenhum arquivo - está enviando apenas dados de texto.
+
+        Causa do Erro
+        Na função addNewData(), você está usando o endpoint /upload que é destinado para upload de fotos, mas está tentando enviar apenas dados de formulário:
+
+
         modificar o código para definir https://visualizing-geospatial-data-in-python-5.onrender.com como servidor padrão.
 
         O erro ReferenceError: Chart is not defined indica que a biblioteca Chart.js não está carregada no seu HTML. Você precisa adicionar o script do Chart.js antes de usar a classe Chart.
@@ -18,7 +31,7 @@
                 Solução: Precisamos atualizar a função loadWorksheets() para popular também o select de gráficos:
 
                 git add cmd/ html/21.08/deepseek_html_20250821_add7d2.html html/09.2025/16/deepseek_html_20250908_43714e_V1.html app.py html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
-                git commit -m " 18.09, [13:17, 12:00, 11:00, 10:29], modificar o código para definir https://visualizing-geospatial-data-in-python-5.onrender.com como servidor padrão.,O erro ReferenceError: Chart is not defined indica que a biblioteca Chart.js não está carregada no seu HTML. Você precisa adicionar o script do Chart.js antes de usar a classe Chart. ,conectar o seletor de gráficos às abas reais da sua planilha, não apenas ao exemplo. Vou corrigir o código para que o dropdown de gráficos mostre as abas reais da sua planilha, Execute o código e verifique se os gráficos estão sendo renderizados corretamente com os dados da sua planilha real."
+                git commit -m " 18.09, [15:04, 14:37, 13:17, 12:00, 11:00, 10:29], Isso resolverá o erro "Nenhum arquivo enviado" porque você estará usando o endpoint correto para o tipo de dado que está enviando., addNewData(), você está usando o endpoint /upload que é destinado para upload de fotos, mas está tentando enviar apenas dados de formulário, modificar o código para definir https://visualizing-geospatial-data-in-python-5.onrender.com como servidor padrão.,O erro ReferenceError: Chart is not defined indica que a biblioteca Chart.js não está carregada no seu HTML. Você precisa adicionar o script do Chart.js antes de usar a classe Chart. ,conectar o seletor de gráficos às abas reais da sua planilha, não apenas ao exemplo. Vou corrigir o código para que o dropdown de gráficos mostre as abas reais da sua planilha, Execute o código e verifique se os gráficos estão sendo renderizados corretamente com os dados da sua planilha real."
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa_to_galp_01
 
             Essas modificações vão:

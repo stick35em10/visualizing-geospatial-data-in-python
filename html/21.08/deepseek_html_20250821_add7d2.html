@@ -2670,9 +2670,38 @@
             
             try {
                 showLoading('Salvando dados...');
+                // Use um endpoint diferente para dados normais (não para upload de arquivos)
+                const result = await makeRequest('/api/sheets/add-data', 'POST', {
+                    worksheet: currentWorksheet,
+                    data: formData
+                });
+                // const result = await makeRequest('/api/sheets/add-data', 'POST', {
                 
+                if (result.success) {
+                    showSuccess('✅ Dados Salvos', `Dados salvos com sucesso!`);
+            
+                    // Clear form
+                    currentHeaders.forEach(header => {
+                        document.getElementById(header).value = '';
+                    });
+            
+                    // Reload data to show the new entry
+                    await loadData();
+        } else {
+            throw new Error(result.error || 'Erro ao salvar dados');
+        }
+    } catch (error) {
+        console.error('Failed to add data:', error);
+        showError(
+            '❌ Erro ao Salvar Dados',
+            error.message,
+            'Verifique os dados e tente novamente.'
+        );
+    }
+}
+                /*
                 // Using the upload endpoint to add new data
-                const result = await makeRequest('/upload', 'POST', {
+                const result = a    wait makeRequest('/upload', 'POST', {
                     coords: {
                         latitude: formData.latitude || '',
                         longitude: formData.longitude || '',
@@ -2682,7 +2711,8 @@
                         userAgent: navigator.userAgent
                     },
                     // You can add more fields as needed based on your spreadsheet structure
-                });
+                    */
+ /*               });
                 
                 if (result.success) {
                     showSuccess('✅ Dados Salvos', `Dados salvos com sucesso! ID: ${result.id}`);
@@ -2706,7 +2736,7 @@
                 );
             }
         }
-        
+  */      
         async function searchData() {
             const term = searchTerm.value.trim();
             if (!term) {
