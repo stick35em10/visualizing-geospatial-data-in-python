@@ -1,0 +1,106 @@
+18.09.2025
+    10:26
+            Essas modificações vão:
+
+                Processar os dados reais da sua planilha de estoque
+
+                Criar um gráfico de linha mostrando a evolução do saldo atual
+
+                Adicionar gráficos de barras para mostrar entradas e saídas
+
+                Usar eixos diferentes para saldo e movimentações
+
+                Os dados da sua API mostram claramente a flutuação do estoque ao longo do tempo, com entradas (100, 50) e saídas (20, 15) de produto, resultando em um saldo atual de 115 unidades.
+
+            Execute o código e verifique se os gráficos estão sendo renderizados corretamente com os dados da sua planilha real.
+
+            git add cmd/ html/21.08/deepseek_html_20250821_add7d2.html html/09.2025/16/deepseek_html_20250908_43714e_V1.html app.py cmd.txt  html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html cmd.txt html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
+            git commit -m " 18.09, 10:29  Execute o código e verifique se os gráficos estão sendo renderizados corretamente com os dados da sua planilha real."
+            git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa_to_galp_01
+
+    09:27
+        ✅ Processar dados reais da planilha
+        Detecta automaticamente colunas de data, numéricas e categóricas
+
+        Processa os dados para diferentes tipos de gráficos
+
+        ✅ Identificar automaticamente colunas relevantes
+        detectDateColumns(): Encontra colunas temporais
+
+        detectNumericColumns(): Identifica colunas numéricas
+
+        detectCategoricalColumns(): Detecta colunas categóricas
+
+        ✅ Renderizar gráficos baseado nos dados disponíveis
+        Gráficos temporais para dados com datas
+
+        Gráficos de barras para análise categórica
+
+        Previsões simples para tendências
+
+        Métricas estatísticas básicas
+
+        ✅ Fornecer fallbacks quando dados específicos não forem encontrados
+        Mensagens informativas quando dados são insuficientes
+
+        showChartFallback() substitui gráficos não viáveis
+
+        ✅ Limpar adequadamente os gráficos anteriores
+        clearAllCharts() destrói todas as instâncias anteriores
+
+        Limpeza proper dos canvases
+
+        ✅ Funcionalidade de teste
+        testChartData() mostra informações detalhadas no console
+
+        Detecção automática de tipos de colunas
+
+        Agora quando você executar testChartData() no console, verá informações detalhadas sobre os dados carregados e as colunas detectadas!
+    08:00
+        Essas correções vão:
+            ✅ Processar os dados reais da sua planilha
+            ✅ Identificar automaticamente as colunas relevantes
+            ✅ Renderizar gráficos com base nos dados disponíveis
+            ✅ Fornecer fallbacks quando dados específicos não forem encontrados
+
+            ✅ Limpar adequadamente os gráficos anteriores
+
+            Teste primeiro com a planilha de estoque e depois com a de vendas para ver se os gráficos são renderizados corretamente!
+    06:27
+        Problemas Identificados:
+            Dados de exemplo vs dados reais: Os gráficos estão usando dados de exemplo (sampleData) em vez de processar os dados reais da planilha
+
+            Funções de renderização não estão sendo chamadas: As funções renderStockChart(), renderClientsChart(), etc., não estão sendo executadas
+
+            Elementos Canvas não estão sendo limpos corretamente
+
+            Falta de integração com os dados reais da planilha
+    05:58, 
+        Recursos Implementados
+
+            📈 Gráfico 1: Evolução do Estoque (Linha)
+            Mostra a variação do estoque ao longo do tempo
+            Visualização clara com preenchimento abaixo da linha
+
+            📊 Gráfico 2: Top 5 Clientes (Barras)
+            Apresenta os principais clientes por volume de vendas
+            Cores distintas para melhor visualização
+
+            🔮 Gráfico 3: Previsão de Reposição (Linha com Previsão)
+            Mostra dados históricos e projeção futura
+            Linha tracejada para diferenciar a previsão
+
+            💰 Gráfico 4: Métricas Financeiras
+            Alterna entre três visualizações:
+            Faturamento por Mês (gráfico de barras)
+            Status de Pagamento (gráfico de pizza)
+            Formas de Pagamento (gráfico de pizza)
+            Funcionalidades Adicionais
+            Seleção entre dados de "CONTROLE DE ESTOQUE" e "CONTROLE DE VENDAS"
+            Design responsivo que se adapta a diferentes tamanhos de tela
+            Instruções detalhadas sobre como criar esses gráficos no Google Sheets
+            Animações e efeitos visuais para melhor experiência do usuário
+
+            Os gráficos usam dados de exemplo, mas podem ser facilmente adaptados para usar dados reais da sua planilha do Google Sheets.
+
+        html/21.08/deepseek_html_20250821_add7d2.html

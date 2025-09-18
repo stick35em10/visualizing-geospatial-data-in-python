@@ -5,6 +5,97 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>📊 Google Sheets Data Manager</title>
     <style>
+        /* Estilos para a nova aba de gráficos */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .chart-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .chart-title {
+            font-size: 1.2rem;
+            color: #495057;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+            text-align: center;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .chart-instructions {
+            margin-top: 40px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            border: 2px solid #dee2e6;
+        }
+
+        .instruction-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+        }
+
+        .instruction-card h4 {
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+
+        .instruction-card ol, .instruction-card ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+
+        .instruction-card li {
+            margin-bottom: 8px;
+        }
+
+        /* Responsividade para a nova aba */
+        @media (max-width: 768px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-card {
+                padding: 15px;
+            }
+            
+            .chart-instructions {
+                padding: 15px;
+            }
+        }
+        /* Estilos gerais (mantidos do original) */
         * {
             margin: 0;
             padding: 0;
@@ -786,6 +877,8 @@
                 <div class="tab" data-tab="search">🔍 Pesquisar Dados</div>
                 <div class="tab" data-tab="images">🖼️ Visualizar Imagens</div>
                 <div class="tab" data-tab="upload">📤 Upload de Fotos</div>
+                <!-- Adicionar esta nova tab à seção de tabs existente -->
+                <div class="tab" data-tab="charts">📈 Gráficos Recomendados</div>
             </div>
             
             <!-- View Data Tab -->
@@ -945,6 +1038,115 @@
                 </div>
                 
                 <div id="uploadResults"></div>
+            </div>
+
+            <!-- Adicionar este conteúdo à seção de tab-content -->
+            <div class="tab-content" id="chartsTab">
+                <h3>📈 Gráficos Recomendados e Como Fazer</h3>
+                <p>Visualize dados importantes do seu negócio com estes gráficos recomendados</p>
+                
+                <div class="worksheet-selector">
+                    <label for="chartsWorksheetSelect">📋 Selecionar Fonte de Dados:</label>
+                    <select id="chartsWorksheetSelect">
+                        <option value="">Selecione uma aba...</option>
+                        <option value="estoque" selected>CONTROLE DE ESTOQUE (Exemplo)</option>
+                        <option value="vendas">CONTROLE DE VENDAS (Exemplo)</option>
+                        <!--
+                        <option value="CONTROLE DE ESTOQUE">CONTROLE DE ESTOQUE</option>
+                        <option value="CONTROLE DE VENDAS">CONTROLE DE VENDAS</option>
+                        -->
+                    </select>
+                </div>
+                
+                <div class="charts-container" id="chartsContainer">
+                    <!-- Gráfico 1: Evolução do Estoque -->
+                    <div class="chart-card">
+                        <div class="chart-title">📈 Evolução do Estoque (Linha)</div>
+                        <div class="chart-container">
+                            <canvas id="stockChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Gráfico 2: Top 5 Clientes -->
+                    <div class="chart-card">
+                        <div class="chart-title">📊 Top 5 Clientes (Barras)</div>
+                        <div class="chart-container">
+                            <canvas id="clientsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Gráfico 3: Previsão de Reposição -->
+                    <div class="chart-card">
+                        <div class="chart-title">🔮 Previsão de Reposição (Linha com Previsão)</div>
+                        <div class="chart-container">
+                            <canvas id="forecastChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Gráfico 4: Métricas Financeiras -->
+                    <div class="chart-card">
+                        <div class="chart-title">💰 Métricas Financeiras</div>
+                        <div class="chart-container">
+                            <canvas id="metricsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Selecione uma fonte de dados para ver os gráficos recomendados</p>
+                    </div>
+                </div>
+                
+                <div class="chart-instructions" id="chartInstructions" style="display: none;">
+                    <h3>📋 Como Criar Estes Gráficos no Google Sheets</h3>
+                    
+                    <div class="instruction-card">
+                        <h4>📈 Gráfico 1: Evolução do Estoque (Linha)</h4>
+                        <p><strong>O que mostra:</strong> A variação do seu estoque ao longo do tempo. Perfeito para identificar quando está na hora de fazer um novo pedido.</p>
+                        <p><strong>Como criar:</strong></p>
+                        <ol>
+                            <li>Na planilha CONTROLE DE ESTOQUE, selecione as colunas Data e Saldo Atual.</li>
+                            <li>Vá em Inserir > Gráficos > Linha.</li>
+                            <li>Dê um título como "Evolução do Estoque de Gás".</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="instruction-card">
+                        <h4>📊 Gráfico 2: Top 5 Clientes (Barras)</h4>
+                        <p><strong>O que mostra:</strong> Quais revendedores são seus melhores clientes em quantidade ou valor.</p>
+                        <p><strong>Como criar:</strong></p>
+                        <ol>
+                            <li>Na planilha CONTROLE DE VENDAS, crie uma Tabela Dinâmica.</li>
+                            <li>Arraste o campo "Cliente" para RÓTULOS.</li>
+                            <li>Arraste o campo "Quantidade" ou "Valor Total" para VALORES.</li>
+                            <li>Com a Tabela Dinâmica criada, insira um Gráfico de Barras.</li>
+                            <li>Ordene os dados do maior para o menor para visualizar facilmente os principais clientes.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="instruction-card">
+                        <h4>🔮 Gráfico 3: Previsão de Reposição (Linha com Previsão)</h4>
+                        <p><strong>O que mostra:</strong> Uma projeção de quando seu estoque chegará a zero, baseado na média de consumo.</p>
+                        <p><strong>Como criar:</strong></p>
+                        <ol>
+                            <li>No gráfico de Evolução do Estoque, clique com o botão direito na linha.</li>
+                            <li>Selecione "Adicionar Linha de Tendência".</li>
+                            <li>Na janela que abrir, escolha "Linear" e marque a opção "Exibir equação no gráfico".</li>
+                            <li>A linha de tendência se estenderá para o futuro, mostrando uma previsão de esgotamento.</li>
+                        </ol>
+                    </div>
+                    
+                    <div class="instruction-card">
+                        <h4>💰 Gráfico 4: Métricas Financeiras (Pizza ou Barretta)</h4>
+                        <p><strong>O que mostra:</strong> A saúde financeira do negócio.</p>
+                        <p><strong>Sugestões:</strong></p>
+                        <ul>
+                            <li><strong>Faturamento por Mês (Barras):</strong> Controle mensal para ver tendências de crescimento.</li>
+                            <li><strong>Status de Pagamento (Pizza):</strong> % de contas pagas vs. pendentes.</li>
+                            <li><strong>Formas de Pagamento (Pizza):</strong> Mostra se a maioria paga em PIX, dinheiro, etc.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
             
         </div>
@@ -1561,6 +1763,7 @@
             }
         }
         
+        /* 1766
         async function loadWorksheets() {
             if (!isConnected) {
                 showError('❌ Erro', 'Teste a conexão primeiro.');
@@ -1577,14 +1780,33 @@
                 if (result.success && result.worksheets) {
                     console.log(`✅ ${result.worksheets.length} worksheet(s) encontrada(s)`);
                     worksheets = result.worksheets;
+                    
+                    // Limpar selects
                     worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                    imageWorksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                    document.getElementById('chartsWorksheetSelect').innerHTML = '<option value="">Selecione uma aba...</option>';
                     
                     worksheets.forEach(ws => {
                         console.log(`📄 Worksheet: ${ws.title} (${ws.row_count} linhas, ${ws.col_count} colunas)`);
+                        
+                        // Popular seletor de dados
                         const option = document.createElement('option');
                         option.value = ws.title;
                         option.textContent = `${ws.title} (${ws.row_count} linhas)`;
                         worksheetSelect.appendChild(option);
+                    
+                    // Popular seletor de imagens
+                    const imageOption = document.createElement('option');
+                    imageOption.value = ws.title;
+                    imageOption.textContent = `${ws.title} (${ws.row_count} linhas)`;
+                    imageWorksheetSelect.appendChild(imageOption);
+                    
+                    // Popular seletor de gráficos
+                    const chartOption = document.createElement('option');
+                    chartOption.value = ws.title;
+                    chartOption.textContent = `${ws.title} (${ws.row_count} linhas)`;
+                    document.getElementById('chartsWorksheetSelect').appendChild(chartOption);
+
                     });
                     
                     worksheetSelector.style.display = 'block';
@@ -1628,7 +1850,7 @@
                 loadWorksheetsBtn.disabled = false;
             }
         }
-        
+        */
         async function loadData() {
             const selectedWorksheet = worksheetSelect.value;
             if (!selectedWorksheet) {
@@ -2763,44 +2985,44 @@
             }
         };
         window.debugWorksheets = async function() {
-    console.clear();
-    console.log('🔍 Debug de Worksheets iniciado...');
-    
-    try {
-        const result = await makeRequest('/api/sheets/worksheets');
-        
-        if (result.success && result.worksheets) {
-            console.log('✅ Conexão bem-sucedida');
-            console.log('📋 Worksheets disponíveis:');
+            console.clear();
+            console.log('🔍 Debug de Worksheets iniciado...');
             
-            result.worksheets.forEach((ws, index) => {
-                console.log(`${index + 1}. ${ws.title} (${ws.row_count} linhas, ${ws.col_count} colunas)`);
-            });
-            
-            console.log('📊 Total de worksheets:', result.worksheets.length);
-            console.log('📝 Nome da planilha:', result.spreadsheet_title);
-            
-            // Atualizar o dropdown no UI
-            worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
-            result.worksheets.forEach(ws => {
-                const option = document.createElement('option');
-                option.value = ws.title;
-                option.textContent = `${ws.title} (${ws.row_count} linhas)`;
-                worksheetSelect.appendChild(option);
-            });
-            
-            return result.worksheets;
-            
-        } else {
-            console.error('❌ Erro no servidor:', result.error);
-            return null;
-        }
-        
-    } catch (error) {
-        console.error('💥 Erro ao carregar worksheets:', error);
-        return null;
-    }
-};
+            try {
+                const result = await makeRequest('/api/sheets/worksheets');
+                
+                if (result.success && result.worksheets) {
+                    console.log('✅ Conexão bem-sucedida');
+                    console.log('📋 Worksheets disponíveis:');
+                    
+                    result.worksheets.forEach((ws, index) => {
+                        console.log(`${index + 1}. ${ws.title} (${ws.row_count} linhas, ${ws.col_count} colunas)`);
+                    });
+                    
+                    console.log('📊 Total de worksheets:', result.worksheets.length);
+                    console.log('📝 Nome da planilha:', result.spreadsheet_title);
+                    
+                    // Atualizar o dropdown no UI
+                    worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+                    result.worksheets.forEach(ws => {
+                        const option = document.createElement('option');
+                        option.value = ws.title;
+                        option.textContent = `${ws.title} (${ws.row_count} linhas)`;
+                        worksheetSelect.appendChild(option);
+                    });
+                    
+                    return result.worksheets;
+                    
+                } else {
+                    console.error('❌ Erro no servidor:', result.error);
+                    return null;
+                }
+                
+            } catch (error) {
+                console.error('💥 Erro ao carregar worksheets:', error);
+                return null;
+            }
+        };
 
 // Adicione também esta função para testar worksheets específicas
         window.testWorksheet = async function(worksheetName) {
@@ -2891,7 +3113,7 @@
             }
         };
 
-// Função para verificar se a worksheet existe e é acessível
+        // Função para verificar se a worksheet existe e é acessível
         window.checkWorksheetAccess = async function(worksheetName) {
             console.log(`🔐 Verificando acesso à worksheet: ${worksheetName}`);
             
@@ -3180,6 +3402,1299 @@
         // Initialize
         console.log('📊 Google Sheets Data Manager inicializado');
         console.log('🛠️ Para debug, execute: debugConnection() no console');
+
+        // Adicionar estas variáveis globais
+        let chartData = [];
+        let currentChartWorksheet = '';
+
+        // Adicionar este event listener para o seletor de worksheets de gráficos
+        document.getElementById('chartsWorksheetSelect').addEventListener('change', function() {
+            currentChartWorksheet = this.value;
+            if (currentChartWorksheet) {
+                loadDataForCharts();
+            } else {
+                document.getElementById('chartsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Selecione uma fonte de dados para ver os gráficos recomendados</p>
+                    </div>
+                `;
+                document.getElementById('chartInstructions').style.display = 'none';
+            }
+        });
+
+        // Função para carregar dados para os gráficos
+        async function loadDataForCharts() {
+            if (!currentChartWorksheet) return;
+            
+            const chartsContainer = document.getElementById('chartsContainer');
+            chartsContainer.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Carregando dados para gráficos...</div>
+                </div>
+            `;
+            
+            try {
+                const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(currentChartWorksheet)}`);
+                
+                if (result.success && result.data) {
+                    chartData = result.data;
+                    renderRecommendedCharts();
+                    document.getElementById('chartInstructions').style.display = 'block';
+                } else {
+                    throw new Error(result.error || 'Nenhum dado encontrado');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados para gráficos:', error);
+                chartsContainer.innerHTML = `
+                    <div class="error-container">
+                        <h3>❌ Erro ao Carregar Dados</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Função para renderizar os gráficos recomendados
+        function renderRecommendedCharts() {
+            const chartsContainer = document.getElementById('chartsContainer');
+            
+            if (chartData.length === 0) {
+                chartsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Nenhum dado disponível para gerar gráficos</p>
+                    </div>
+                `;
+                return;
+            } //if (chartData.length === 0) 
+            
+            // Limpar container
+            chartsContainer.innerHTML = `
+                <div class="chart-card">
+                    <div class="chart-title">📈 Evolução do Estoque (Linha)</div>
+                    <div class="chart-container">
+                        <canvas id="stockChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">📊 Top 5 Clientes (Barras)</div>
+                    <div class="chart-container">
+                        <canvas id="clientsChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">🔮 Previsão de Reposição (Linha com Previsão)</div>
+                    <div class="chart-container">
+                        <canvas id="forecastChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">💰 Métricas Financeiras</div>
+                    <div class="chart-container">
+                        <canvas id="metricsChart"></canvas>
+                    </div>
+                </div>
+            `;
+            
+            // Processar dados reais da planilha
+            processChartData();
+            
+            // Renderizar gráficos baseado no tipo de worksheet
+            if (currentChartWorksheet.includes('ESTOQUE') || currentChartWorksheet.includes('estoque')) {
+                renderStockChart();
+                renderForecastChart();
+            } else if (currentChartWorksheet.includes('VENDA') || currentChartWorksheet.includes('venda') || 
+                    currentChartWorksheet.includes('CAIXA') || currentChartWorksheet.includes('caixa')) {
+                renderClientsChart();
+                renderMetricsChart();
+            } else {
+                // Para outras worksheets, tentar detectar automaticamente
+                detectAndRenderCharts();
+            }
+            
+            document.getElementById('chartInstructions').style.display = 'block';
+        }
+
+        // Função para processar dados reais da planilha
+        function processChartData() {
+            if (chartData.length === 0) return;
+            
+            // Extrair cabeçalhos
+            const headers = Object.keys(chartData[0]);
+            
+            // Processar dados baseado no tipo de worksheet
+            if (currentChartWorksheet.includes('ESTOQUE') || currentChartWorksheet.includes('estoque')) {
+                processStockData(headers);
+            } else if (currentChartWorksheet.includes('VENDA') || currentChartWorksheet.includes('venda')) {
+                processSalesData(headers);
+            } else if (currentChartWorksheet.includes('CAIXA') || currentChartWorksheet.includes('caixa')) {
+                processCashData(headers);
+            } else {
+                // Tentar detectar automaticamente
+                autoDetectData(headers);
+            }
+        }
+
+        // Processar dados de estoque
+        function processStockData(headers) {
+            // Procurar colunas relevantes
+            // Encontrar colunas relevantes baseado nos dados da API
+            const dateCol = headers.find(h => h.toLowerCase().includes('data'));
+            const stockCol = headers.find(h => h.toLowerCase().includes('saldo'));
+            const quantityCol = headers.find(h => h.toLowerCase().includes('quantidade'));
+            const typeCol = headers.find(h => h.toLowerCase().includes('tipo'));
+
+            //const dateCol = headers.find(h => h.toLowerCase().includes('data') || h.toLowerCase().includes('date'));
+            //const stockCol = headers.find(h => h.toLowerCase().includes('estoque') || h.toLowerCase().includes('saldo') || h.toLowerCase().includes('quantidade'));
+            
+            if (dateCol && stockCol) {
+                // Extrair dados para o gráfico
+                const dates = [];
+                const stockValues = [];
+                const operations = []; // Para diferenciar entradas e saídas
+                
+                chartData.forEach(row => {
+                    if (row[dateCol] && row[stockCol]) {
+                        dates.push(row[dateCol]);
+                        stockValues.push(parseFloat(row[stockCol]) || 0);
+                    }
+                    // Classificar operações para cores diferentes
+                    if (row[typeCol] && row[typeCol].toLowerCase().includes('entrada')) {
+                        operations.push('entrada');
+                    } else if (row[typeCol] && row[typeCol].toLowerCase().includes('saída')) {
+                        operations.push('saida');
+                    } else {
+                        operations.push('outro');
+                    }
+                });
+                
+                // Atualizar sampleData com dados reais
+                sampleData.estoque.labels = dates;
+                sampleData.estoque.datasets[0].data = stockValues;
+                sampleData.estoque.datasets[0].label = 'Saldo Atual de Estoque';
+
+                // Criar dataset para operações (entradas/saídas)
+                if (quantityCol) {
+                    const entradaData = [];
+                    const saidaData = [];
+                    
+                    chartData.forEach(row => {
+                        const qty = parseFloat(row[quantityCol]) || 0;
+                        if (row[typeCol] && row[typeCol].toLowerCase().includes('entrada')) {
+                            entradaData.push(qty);
+                            saidaData.push(null);
+                        } else if (row[typeCol] && row[typeCol].toLowerCase().includes('saída')) {
+                            saidaData.push(Math.abs(qty)); // Valor absoluto para visualização
+                            entradaData.push(null);
+                        } else {
+                            entradaData.push(null);
+                            saidaData.push(null);
+                        }
+                    });
+                    
+                    // Adicionar datasets para operações
+                    sampleData.estoque.datasets.push({
+                        label: 'Entradas',
+                        data: entradaData,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                        type: 'bar',
+                        yAxisID: 'y1'
+                    });
+                    
+                    sampleData.estoque.datasets.push({
+                        label: 'Saídas',
+                        data: saidaData,
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        type: 'bar',
+                        yAxisID: 'y1'
+                    });
+                }
+            }
+        }
+
+        // Processar dados de vendas
+        function processSalesData(headers) {
+            // Procurar colunas relevantes
+            const clientCol = headers.find(h => h.toLowerCase().includes('cliente') || h.toLowerCase().includes('client'));
+            const valueCol = headers.find(h => h.toLowerCase().includes('valor') || h.toLowerCase().includes('total') || h.toLowerCase().includes('venda'));
+            
+            if (clientCol && valueCol) {
+                // Agrupar vendas por cliente
+                const clientSales = {};
+                
+                chartData.forEach(row => {
+                    if (row[clientCol] && row[valueCol]) {
+                        const client = row[clientCol];
+                        const value = parseFloat(row[valueCol]) || 0;
+                        
+                        if (!clientSales[client]) {
+                            clientSales[client] = 0;
+                        }
+                        clientSales[client] += value;
+                    }
+                });
+                
+                // Ordenar clientes por valor de venda
+                const topClients = Object.entries(clientSales)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+                
+                // Atualizar sampleData
+                sampleData.vendas.topClientes.labels = topClients.map(([client]) => client);
+                sampleData.vendas.topClientes.data = topClients.map(([, value]) => value);
+            }
+        }
+
+        // Função para detectar e renderizar gráficos automaticamente
+        function detectAndRenderCharts() {
+            const headers = Object.keys(chartData[0]);
+            
+            // Verificar se temos dados temporais e numéricos (para gráfico de linha)
+            const hasDate = headers.some(h => h.toLowerCase().includes('data') || h.toLowerCase().includes('date'));
+            const hasNumeric = headers.some(h => {
+                // Verificar se a coluna contém valores numéricos
+                return chartData.some(row => {
+                    const val = row[h];
+                    return val && !isNaN(parseFloat(val)) && isFinite(val);
+                });
+            });
+            
+            // Verificar se temos dados de clientes/vendas (para gráfico de barras)
+            const hasClient = headers.some(h => h.toLowerCase().includes('cliente') || h.toLowerCase().includes('client'));
+            const hasSales = headers.some(h => h.toLowerCase().includes('venda') || h.toLowerCase().includes('valor'));
+            
+            if (hasDate && hasNumeric) {
+                renderStockChart();
+                renderForecastChart();
+            }
+            
+            if (hasClient && hasSales) {
+                renderClientsChart();
+                renderMetricsChart();
+            }
+        }
+            
+        // Adicionar este event listener para o seletor de worksheets de gráficos
+        document.getElementById('chartsWorksheetSelect').addEventListener('change', function() {
+            currentChartWorksheet = this.value;
+            if (currentChartWorksheet) {
+                loadDataForCharts();
+            } else {
+                document.getElementById('chartsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Selecione uma fonte de dados para ver os gráficos recomendados</p>
+                    </div>
+                `;
+                document.getElementById('chartInstructions').style.display = 'none';
+                
+                // Destruir todos os gráficos existentes
+                [window.stockChartInstance, window.clientsChartInstance, 
+                window.forecastChartInstance, window.metricsChartInstance].forEach(chart => {
+                    if (chart) chart.destroy();
+                });
+            }
+        });
+        // Dados de exemplo para os gráficos
+        const sampleData = {
+            estoque: {
+                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+                datasets: [{
+                    label: 'Saldo Atual (unidades)',
+                    data: [120, 95, 80, 65, 50, 40, 30, 25, 20, 15, 10, 5],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            vendas: {
+                topClientes: {
+                    labels: ['Super Gas', 'Distribuidora ABC', 'Comércio XYZ', 'Mercado Central', 'Posto Shell'],
+                    data: [12500, 9800, 7600, 5400, 4800]
+                },
+                faturamentoMensal: {
+                    labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+                    data: [28500, 31200, 29800, 33400, 36700, 39500]
+                },
+                statusPagamento: {
+                    labels: ['Pago', 'Pendente', 'Atrasado'],
+                    data: [65, 25, 10],
+                    colors: ['#4caf50', '#ff9800', '#f44336']
+                },
+                formasPagamento: {
+                    labels: ['PIX', 'Dinheiro', 'Cartão Débito', 'Cartão Crédito'],
+                    data: [45, 25, 15, 15],
+                    colors: ['#2196f3', '#4caf50', '#ff9800', '#9c27b0']
+                }
+            }
+        };
+
+        // Inicializar gráficos
+        document.addEventListener('DOMContentLoaded', function() {
+            renderCharts('estoque');
+            
+            // Event listener para mudança de worksheet
+            document.getElementById('chartsWorksheetSelect').addEventListener('change', function() {
+                renderCharts(this.value);
+            });
+        });
+
+        function renderCharts(worksheetType) {
+            if (worksheetType === 'estoque') {
+                renderStockChart();
+                renderForecastChart();
+                // Para estoque, mostrar placeholders nos outros gráficos
+                document.getElementById('clientsChart').getContext('2d').clearRect(0, 0, 300, 300);
+                document.getElementById('metricsChart').getContext('2d').clearRect(0, 0, 300, 300);
+                
+                document.querySelectorAll('.chart-card')[1].querySelector('.chart-container').innerHTML = 
+                    '<div class="chart-placeholder">Selecione "CONTROLE DE VENDAS" para ver este gráfico</div>';
+                document.querySelectorAll('.chart-card')[3].querySelector('.chart-container').innerHTML = 
+                    '<div class="chart-placeholder">Selecione "CONTROLE DE VENDAS" para ver este gráfico</div>';
+            } else if (worksheetType === 'vendas') {
+                renderClientsChart();
+                renderMetricsChart();
+                // Para vendas, mostrar placeholders nos gráficos de estoque
+                document.getElementById('stockChart').getContext('2d').clearRect(0, 0, 300, 300);
+                document.getElementById('forecastChart').getContext('2d').clearRect(0, 0, 300, 300);
+                
+                document.querySelectorAll('.chart-card')[0].querySelector('.chart-container').innerHTML = 
+                    '<div class="chart-placeholder">Selecione "CONTROLE DE ESTOQUE" para ver este gráfico</div>';
+                document.querySelectorAll('.chart-card')[2].querySelector('.chart-container').innerHTML = 
+                    '<div class="chart-placeholder">Selecione "CONTROLE DE ESTOQUE" para ver este gráfico</div>';
+            }
+        }
+
+        // Gráfico 1: Evolução do Estoque (Linha)
+        function renderStockChart() {
+            const ctx = document.getElementById('stockChart').getContext('2d');
+            
+            // Destruir gráfico existente se houver
+            if (window.stockChartInstance) {
+                window.stockChartInstance.destroy();
+            }
+            
+            window.stockChartInstance = new Chart(ctx, {
+                type: isMixedChart ? 'line' : 'line', // Gráfico principal é de linha
+                //type: 'line',
+                data: sampleData.estoque,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            //text: 'Evolução do Estoque ao Longo do Ano',
+                            text: 'Evolução do Estoque e Movimentações',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                //text: 'Quantidade em Estoque'
+                                text: 'Saldo Atual'
+                            },
+                            position: 'left'
+                        },
+                        //x: {
+                        y1: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                //text: 'Mês'
+                                text: 'Quantidade Movimentada'
+                            },
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            }
+                        }
+                    }
+                }
+                
+                // Testar os dados processados
+                console.log('Dados processados para gráficos:', sampleData.estoque);
+            });
+        }
+
+        // Gráfico 2: Top 5 Clientes (Barras)
+        function renderClientsChart() {
+            const ctx = document.getElementById('clientsChart').getContext('2d');
+            
+            // Destruir gráfico existente se houver
+            if (window.clientsChartInstance) {
+                window.clientsChartInstance.destroy();
+            }
+            
+            window.clientsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sampleData.vendas.topClientes.labels,
+                    datasets: [{
+                        label: 'Valor em Vendas (R$)',
+                        data: sampleData.vendas.topClientes.data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Top 5 Clientes por Volume de Vendas',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valor em Reais'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico 3: Previsão de Reposição (Linha com Previsão)
+        function renderForecastChart() {
+            const ctx = document.getElementById('forecastChart').getContext('2d');
+            
+            // Dados reais + previsão
+            const realData = sampleData.estoque.datasets[0].data;
+            const forecastData = [...realData];
+            
+            // Adicionar previsão para os próximos 3 meses
+            const lastValue = realData[realData.length - 1];
+            const trend = (realData[realData.length - 1] - realData[realData.length - 6]) / 5;
+            
+            for (let i = 1; i <= 3; i++) {
+                forecastData.push(Math.max(0, Math.round(lastValue - (trend * i))));
+            }
+            
+            const allLabels = [...sampleData.estoque.labels, 'Jan+1', 'Fev+1', 'Mar+1'];
+            
+            // Destruir gráfico existente se houver
+            if (window.forecastChartInstance) {
+                window.forecastChartInstance.destroy();
+            }
+            
+            window.forecastChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: allLabels,
+                    datasets: [
+                        {
+                            label: 'Dados Reais',
+                            data: [...realData, null, null, null],
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Previsão',
+                            data: [...Array(realData.length).fill(null), ...forecastData.slice(realData.length)],
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderDash: [5, 5],
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Previsão de Reposição de Estoque',
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Quantidade em Estoque'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Mês'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Gráfico 4: Métricas Financeiras (combinação de gráficos)
+        function renderMetricsChart() {
+            const ctx = document.getElementById('metricsChart').getContext('2d');
+            
+            // Destruir gráfico existente se houver
+            if (window.metricsChartInstance) {
+                window.metricsChartInstance.destroy();
+            }
+            
+            // Criar um canvas para o gráfico combinado
+            window.metricsChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sampleData.vendas.faturamentoMensal.labels,
+                    datasets: [{
+                        label: 'Faturamento Mensal (R$)',
+                        data: sampleData.vendas.faturamentoMensal.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Faturamento Mensal',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valor em Reais'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Adicionar botões para alternar entre as visualizações
+            const metricsContainer = document.querySelectorAll('.chart-card')[3].querySelector('.chart-container');
+            
+            // Remover botões existentes se houver
+            const existingButtons = metricsContainer.querySelectorAll('.metric-toggle');
+            existingButtons.forEach(btn => btn.remove());
+            
+            // Criar botões de toggle
+            const buttonContainer = document.createElement('div');
+            buttonContainer.style.marginTop = '10px';
+            buttonContainer.style.textAlign = 'center';
+            
+            const buttons = [
+                { label: 'Faturamento', type: 'bar', data: 'faturamento' },
+                { label: 'Status Pagamento', type: 'doughnut', data: 'status' },
+                { label: 'Formas Pagamento', type: 'doughnut', data: 'formas' }
+            ];
+            
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.textContent = btn.label;
+                button.classList.add('metric-toggle');
+                button.style.margin = '0 5px';
+                button.style.padding = '5px 10px';
+                button.style.border = '1px solid #007bff';
+                button.style.borderRadius = '5px';
+                button.style.backgroundColor = btn.data === 'faturamento' ? '#007bff' : 'white';
+                button.style.color = btn.data === 'faturamento' ? 'white' : '#007bff';
+                button.style.cursor = 'pointer';
+                
+                button.addEventListener('click', function() {
+                    // Atualizar estilos dos botões
+                    document.querySelectorAll('.metric-toggle').forEach(b => {
+                        b.style.backgroundColor = 'white';
+                        b.style.color = '#007bff';
+                    });
+                    this.style.backgroundColor = '#007bff';
+                    this.style.color = 'white';
+                    
+                    // Atualizar gráfico
+                    updateMetricsChart(btn.type, btn.data);
+                });
+                
+                buttonContainer.appendChild(button);
+            });
+            
+            metricsContainer.appendChild(buttonContainer);
+        }
+
+        function updateMetricsChart(type, dataType) {
+            // Destruir gráfico existente
+            if (window.metricsChartInstance) {
+                window.metricsChartInstance.destroy();
+            }
+            
+            const ctx = document.getElementById('metricsChart').getContext('2d');
+            let data, options, title;
+            
+            if (dataType === 'faturamento') {
+                title = 'Faturamento Mensal';
+                data = {
+                    labels: sampleData.vendas.faturamentoMensal.labels,
+                    datasets: [{
+                        label: 'Faturamento Mensal (R$)',
+                        data: sampleData.vendas.faturamentoMensal.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                };
+                options = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title,
+                            font: { size: 16 }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Valor em Reais'
+                            }
+                        }
+                    }
+                };
+            } else if (dataType === 'status') {
+                title = 'Status de Pagamento';
+                data = {
+                    labels: sampleData.vendas.statusPagamento.labels,
+                    datasets: [{
+                        data: sampleData.vendas.statusPagamento.data,
+                        backgroundColor: sampleData.vendas.statusPagamento.colors,
+                        borderWidth: 1
+                    }]
+                };
+                options = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title,
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                };
+            } else if (dataType === 'formas') {
+                title = 'Formas de Pagamento';
+                data = {
+                    labels: sampleData.vendas.formasPagamento.labels,
+                    datasets: [{
+                        data: sampleData.vendas.formasPagamento.data,
+                        backgroundColor: sampleData.vendas.formasPagamento.colors,
+                        borderWidth: 1
+                    }]
+                };
+                options = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: title,
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                };
+            }
+            
+            window.metricsChartInstance = new Chart(ctx, {
+                type: type,
+                data: data,
+                options: options
+            });
+        }
+
+        // Função de teste para verificar os dados
+        window.testChartData = function() {
+            console.log('📊 Dados disponíveis para gráficos:');
+            console.log('Worksheet:', currentChartWorksheet);
+            console.log('Total de registros:', chartData.length);
+            
+            if (chartData.length > 0) {
+                console.log('Cabeçalhos:', Object.keys(chartData[0]));
+                console.log('Primeiros 3 registros:', chartData.slice(0, 3));
+            } // Executar no console: testChartData()
+        };
+        
+        // Variáveis globais para gráficos
+        // let chartData = []; //'chartData' has already been declared
+        // let currentChartWorksheet = '';
+        let chartInstances = {
+            stock: null,
+            clients: null,
+            forecast: null,
+            metrics: null
+        };
+
+        // Event listener para o seletor de worksheets de gráficos
+        document.getElementById('chartsWorksheetSelect').addEventListener('change', function() {
+            currentChartWorksheet = this.value;
+            if (currentChartWorksheet) {
+                loadDataForCharts();
+            } else {
+                clearAllCharts();
+                showChartPlaceholder();
+            }
+        }); //document.getElementById('chartsWorksheetSelect').addEventListener('change', function() {
+
+        // Função para carregar dados para os gráficos
+        async function loadDataForCharts() {
+            if (!currentChartWorksheet) return;
+            
+            const chartsContainer = document.getElementById('chartsContainer');
+            chartsContainer.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">Carregando dados para gráficos...</div>
+                </div>
+            `;
+            
+            try {
+                const result = await makeRequest(`/api/sheets/data?worksheet=${encodeURIComponent(currentChartWorksheet)}`);
+                
+                if (result.success && result.data) {
+                    chartData = result.data;
+                    renderRecommendedCharts();
+                    document.getElementById('chartInstructions').style.display = 'block';
+                } else {
+                    throw new Error(result.error || 'Nenhum dado encontrado');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dados para gráficos:', error);
+                chartsContainer.innerHTML = `
+                    <div class="error-container">
+                        <h3>❌ Erro ao Carregar Dados</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }//   async function loadDataForCharts() {
+        //  async function loadDataForCharts() {
+
+        // Função para limpar todos os gráficos
+        function clearAllCharts() {
+            Object.values(chartInstances).forEach(chart => {
+                if (chart) {
+                    chart.destroy();
+                    chart = null;
+                }
+            }); // function clearAllCharts() {
+            
+            // Limpar canvases
+            ['stockChart', 'clientsChart', 'forecastChart', 'metricsChart'].forEach(id => {
+                const canvas = document.getElementById(id);
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                }
+            });
+        }
+
+        // Mostrar placeholder quando não há dados
+        function showChartPlaceholder() {
+            document.getElementById('chartsContainer').innerHTML = `
+                <div class="empty-state">
+                    <h3>📊</h3>
+                    <p>Selecione uma fonte de dados para ver os gráficos recomendados</p>
+                </div>
+            `;
+            document.getElementById('chartInstructions').style.display = 'none';
+        } // function showChartPlaceholder() {
+
+        // Função principal para renderizar gráficos recomendados
+        function renderRecommendedCharts() {
+            const chartsContainer = document.getElementById('chartsContainer');
+            
+            if (chartData.length === 0) {
+                chartsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Nenhum dado disponível para gerar gráficos</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Limpar gráficos anteriores
+            clearAllCharts();
+            
+            // Criar estrutura HTML para os gráficos
+            chartsContainer.innerHTML = `
+                <div class="chart-card">
+                    <div class="chart-title">📈 Evolução Temporal</div>
+                    <div class="chart-container">
+                        <canvas id="stockChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">📊 Análise de Categorias</div>
+                    <div class="chart-container">
+                        <canvas id="clientsChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">🔮 Tendências e Previsões</div>
+                    <div class="chart-container">
+                        <canvas id="forecastChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-card">
+                    <div class="chart-title">💰 Métricas Financeiras</div>
+                    <div class="chart-container">
+                        <canvas id="metricsChart"></canvas>
+                    </div>
+                </div>
+            `;
+            
+            // Processar dados e renderizar gráficos
+            processChartDataAndRender();
+        } 
+        // function renderRecommendedCharts() {
+
+        // Processar dados e renderizar gráficos automaticamente
+        function processChartDataAndRender() {
+            const headers = Object.keys(chartData[0]);
+            
+            // 1. Detectar colunas temporais
+            const dateColumns = detectDateColumns(headers);
+            
+            // 2. Detectar colunas numéricas
+            const numericColumns = detectNumericColumns(headers);
+            
+            // 3. Detectar colunas categóricas
+            const categoricalColumns = detectCategoricalColumns(headers);
+            
+            console.log('Colunas detectadas:', {
+                dateColumns,
+                numericColumns,
+                categoricalColumns
+            });
+            
+            // Renderizar gráficos baseado nos dados disponíveis
+            if (dateColumns.length > 0 && numericColumns.length > 0) {
+                renderTemporalChart(dateColumns[0], numericColumns);
+            } else {
+                showChartFallback('stockChart', 'Dados temporais insuficientes para este gráfico');
+            }
+            
+            if (categoricalColumns.length > 0 && numericColumns.length > 0) {
+                renderCategoricalChart(categoricalColumns[0], numericColumns[0]);
+            } else {
+                showChartFallback('clientsChart', 'Dados categóricos insuficientes para este gráfico');
+            }
+            
+            if (dateColumns.length > 0 && numericColumns.length > 0) {
+                renderForecastChart(dateColumns[0], numericColumns[0]);
+            } else {
+                showChartFallback('forecastChart', 'Dados insuficientes para análise de tendências');
+            }
+            
+            if (numericColumns.length >= 2) {
+                renderMetricsChart(numericColumns);
+            } else {
+                showChartFallback('metricsChart', 'Dados numéricos insuficientes para métricas');
+            }
+        } // function processChartDataAndRender() {
+
+        // Funções de detecção de colunas
+        function detectDateColumns(headers) {
+            const datePatterns = [
+                /data/i, /date/i, /dia/i, /mes/i, /ano/i, /timestamp/i,
+                /hora/i, /time/i, /periodo/i, /semana/i
+            ];
+            
+            return headers.filter(header => 
+                datePatterns.some(pattern => pattern.test(header))
+            );
+        }
+        //}function detectDateColumns(headers) {
+
+        function detectNumericColumns(headers) {
+            return headers.filter(header => {
+                // Verificar se a coluna contém principalmente valores numéricos
+                const numericValues = chartData.filter(row => {
+                    const val = row[header];
+                    return val !== null && val !== undefined && !isNaN(parseFloat(val)) && isFinite(val);
+                }).length;
+                
+                return numericValues > chartData.length * 0.3; // Pelo menos 30% dos valores são numéricos
+            });
+        }
+        // function detectNumericColumns(headers) {
+
+        function detectCategoricalColumns(headers) {
+            return headers.filter(header => {
+                // Colunas com valores únicos limitados (categóricas)
+                const uniqueValues = new Set(chartData.map(row => String(row[header])).filter(Boolean));
+                return uniqueValues.size > 1 && uniqueValues.size <= 20; // Entre 2 e 20 valores únicos
+            });
+        }
+
+        // Funções de renderização de gráficos
+        function renderTemporalChart(dateColumn, numericColumns) {
+            try {
+                // Preparar dados para o gráfico temporal
+                const dates = [];
+                const datasets = [];
+                
+                // Usar até 3 colunas numéricas para não sobrecarregar o gráfico
+                const columnsToUse = numericColumns.slice(0, 3);
+                
+                columnsToUse.forEach((column, index) => {
+                    const data = [];
+                    const color = getColor(index);
+                    
+                    chartData.forEach(row => {
+                        if (row[dateColumn] && row[column]) {
+                            if (dates.length <= chartData.length) {
+                                dates.push(formatDateForChart(row[dateColumn]));
+                            }
+                            data.push(parseFloat(row[column]) || 0);
+                        }
+                    });
+                    
+                    datasets.push({
+                        label: column,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color.replace(')', ', 0.2)').replace('rgb', 'rgba'),
+                        tension: 0.4,
+                        fill: index === 0 // Preencher apenas o primeiro dataset
+                    });
+                });
+                
+                const ctx = document.getElementById('stockChart').getContext('2d');
+                chartInstances.stock = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates.slice(0, Math.min(dates.length, 50)), // Limitar a 50 pontos
+                        datasets: datasets
+                    },
+                    options: getChartOptions('Evolução Temporal')
+                });
+                
+            } catch (error) {
+                console.error('Erro ao renderizar gráfico temporal:', error);
+                showChartFallback('stockChart', 'Erro ao processar dados temporais');
+            }
+        }
+
+        function renderCategoricalChart(categoryColumn, valueColumn) {
+            try {
+                // Agrupar dados por categoria
+                const categories = {};
+                
+                chartData.forEach(row => {
+                    if (row[categoryColumn] && row[valueColumn]) {
+                        const category = String(row[categoryColumn]);
+                        const value = parseFloat(row[valueColumn]) || 0;
+                        
+                        if (!categories[category]) {
+                            categories[category] = 0;
+                        }
+                        categories[category] += value;
+                    }
+                });
+                
+                // Ordenar e limitar a top 10 categorias
+                const sortedCategories = Object.entries(categories)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 10);
+                
+                const ctx = document.getElementById('clientsChart').getContext('2d');
+                chartInstances.clients = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: sortedCategories.map(([category]) => category),
+                        datasets: [{
+                            label: valueColumn,
+                            data: sortedCategories.map(([, value]) => value),
+                            backgroundColor: sortedCategories.map((_, index) => getColor(index, 0.7)),
+                            borderColor: sortedCategories.map((_, index) => getColor(index)),
+                            borderWidth: 1
+                        }]
+                    },
+                    options: getChartOptions('Análise por ' + categoryColumn)
+                });
+                
+            } catch (error) {
+                console.error('Erro ao renderizar gráfico categórico:', error);
+                showChartFallback('clientsChart', 'Erro ao processar dados categóricos');
+            }
+        }
+
+        function renderForecastChart(dateColumn, valueColumn) {
+            try {
+                // Preparar dados para previsão simples
+                const dates = [];
+                const values = [];
+                
+                chartData.forEach(row => {
+                    if (row[dateColumn] && row[valueColumn]) {
+                        dates.push(formatDateForChart(row[dateColumn]));
+                        values.push(parseFloat(row[valueColumn]) || 0);
+                    }
+                });
+                
+                if (values.length < 3) {
+                    throw new Error('Dados insuficientes para previsão');
+                }
+                
+                // Previsão simples (média móvel)
+                const forecastValues = [...values];
+                const lastValue = values[values.length - 1];
+                const secondLastValue = values[values.length - 2];
+                const trend = lastValue - secondLastValue;
+                
+                // Adicionar previsão para 3 períodos futuros
+                for (let i = 1; i <= 3; i++) {
+                    forecastValues.push(lastValue + (trend * i));
+                    dates.push(`Previsão ${i}`);
+                }
+                
+                const ctx = document.getElementById('forecastChart').getContext('2d');
+                chartInstances.forecast = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: dates,
+                        datasets: [
+                            {
+                                label: 'Dados Reais',
+                                data: [...values, null, null, null],
+                                borderColor: getColor(0),
+                                backgroundColor: getColor(0).replace(')', ', 0.2)').replace('rgb', 'rgba'),
+                                tension: 0.4,
+                                fill: true
+                            },
+                            {
+                                label: 'Previsão',
+                                data: [...Array(values.length).fill(null), ...forecastValues.slice(values.length)],
+                                borderColor: getColor(1),
+                                backgroundColor: getColor(1).replace(')', ', 0.2)').replace('rgb', 'rgba'),
+                                borderDash: [5, 5],
+                                tension: 0.4,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: getChartOptions('Tendência e Previsão')
+                });
+                
+            } catch (error) {
+                console.error('Erro ao renderizar gráfico de previsão:', error);
+                showChartFallback('forecastChart', 'Dados insuficientes para análise de tendências');
+            }
+        }
+
+        function renderMetricsChart(numericColumns) {
+            try {
+                // Calcular métricas básicas para as colunas numéricas
+                const metrics = numericColumns.map(column => {
+                    const values = chartData
+                        .map(row => parseFloat(row[column]))
+                        .filter(val => !isNaN(val));
+                    
+                    if (values.length === 0) return null;
+                    
+                    return {
+                        column: column,
+                        sum: values.reduce((a, b) => a + b, 0),
+                        avg: values.reduce((a, b) => a + b, 0) / values.length,
+                        min: Math.min(...values),
+                        max: Math.max(...values),
+                        count: values.length
+                    };
+                }).filter(Boolean);
+                
+                const ctx = document.getElementById('metricsChart').getContext('2d');
+                chartInstances.metrics = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: metrics.map(m => m.column),
+                        datasets: [
+                            {
+                                label: 'Média',
+                                data: metrics.map(m => m.avg),
+                                backgroundColor: getColor(0, 0.7),
+                                borderColor: getColor(0),
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Máximo',
+                                data: metrics.map(m => m.max),
+                                backgroundColor: getColor(1, 0.7),
+                                borderColor: getColor(1),
+                                borderWidth: 1
+                            }
+                        ]
+                    },
+                    options: getChartOptions('Métricas por Coluna')
+                });
+                
+            } catch (error) {
+                console.error('Erro ao renderizar gráfico de métricas:', error);
+                showChartFallback('metricsChart', 'Erro ao calcular métricas');
+            }
+        }
+
+        // Funções utilitárias
+        function showChartFallback(canvasId, message) {
+            const container = document.getElementById(canvasId).parentElement;
+            container.innerHTML = `
+                <div class="chart-placeholder">
+                    ${message}
+                </div>
+            `;
+        }
+
+        function getColor(index, opacity = 1) {
+            const colors = [
+                `rgba(75, 192, 192, ${opacity})`,
+                `rgba(255, 99, 132, ${opacity})`,
+                `rgba(54, 162, 235, ${opacity})`,
+                `rgba(255, 206, 86, ${opacity})`,
+                `rgba(153, 102, 255, ${opacity})`,
+                `rgba(255, 159, 64, ${opacity})`
+            ];
+            return colors[index % colors.length];
+        }
+
+        function getChartOptions(title) {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: title,
+                        font: { size: 16 }
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            };
+        }
+
+        function formatDateForChart(dateString) {
+            // Tentar converter para formato mais legível
+            try {
+                const date = new Date(dateString);
+                if (!isNaN(date.getTime())) {
+                    return date.toLocaleDateString('pt-BR');
+                }
+            } catch (e) {
+                // Se falhar, retornar o original
+            }
+            return String(dateString).substring(0, 20); // Limitar tamanho
+        }
+
+        // Função de teste para verificar os dados
+        window.testChartData = function() {
+            console.log('📊 Dados disponíveis para gráficos:');
+            console.log('Worksheet:', currentChartWorksheet);
+            console.log('Total de registros:', chartData.length);
+            
+            if (chartData.length > 0) {
+                console.log('Cabeçalhos:', Object.keys(chartData[0]));
+                console.log('Primeiros 3 registros:', chartData.slice(0, 3));
+                
+                // Detectar automaticamente tipos de colunas
+                const headers = Object.keys(chartData[0]);
+                console.log('Colunas de data:', detectDateColumns(headers));
+                console.log('Colunas numéricas:', detectNumericColumns(headers));
+                console.log('Colunas categóricas:', detectCategoricalColumns(headers));
+            }
+        };
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Configurar o select para usar "CONTROLE DE ESTOQUE" como padrão
+            const chartsSelect = document.getElementById('chartsWorksheetSelect');
+            if (chartsSelect) {
+                chartsSelect.value = 'estoque';
+                currentChartWorksheet = 'estoque';
+                
+                // Carregar dados de exemplo para demonstração
+                setTimeout(() => {
+                    loadDataForCharts();
+                }, 1000);
+            }
+        });
+
     </script>
 </body>
 </html>
