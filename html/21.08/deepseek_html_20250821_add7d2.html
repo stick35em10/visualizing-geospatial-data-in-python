@@ -825,7 +825,7 @@
             transition: width 0.3s ease;
         }
     </style>
-
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="container">
@@ -1049,8 +1049,10 @@
                     <label for="chartsWorksheetSelect">📋 Selecionar Fonte de Dados:</label>
                     <select id="chartsWorksheetSelect">
                         <option value="">Selecione uma aba...</option>
+                        <!-- 
                         <option value="estoque" selected>CONTROLE DE ESTOQUE (Exemplo)</option>
                         <option value="vendas">CONTROLE DE VENDAS (Exemplo)</option>
+                        -->
                         <!--
                         <option value="CONTROLE DE ESTOQUE">CONTROLE DE ESTOQUE</option>
                         <option value="CONTROLE DE VENDAS">CONTROLE DE VENDAS</option>
@@ -2176,6 +2178,9 @@
                     
                     // NOVO: Limpar e popular select de gráficos
                     const chartsWorksheetSelect = document.getElementById('chartsWorksheetSelect');
+                    // Verificar se o select está sendo populado
+                    console.log('Opções do select de gráficos:', document.getElementById('chartsWorksheetSelect').options);
+
                     chartsWorksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
 
                     worksheets.forEach(ws => {
@@ -2199,7 +2204,9 @@
                         chartOption.textContent = `${ws.title} (${ws.row_count} linhas)`;
                         chartsWorksheetSelect.appendChild(chartOption);
                     });
-                    
+                    // Verificar se o select está sendo populado
+                    console.log('Opções do select de gráficos:', document.getElementById('chartsWorksheetSelect').options);
+
                     worksheetSelector.style.display = 'block';
                     loadDataBtn.disabled = false;
                     
