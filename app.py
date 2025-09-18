@@ -668,11 +668,24 @@ def calculate_current_balance(spreadsheet, worksheet_name):
         
         if not records:
             return 0.0  # Saldo inicial zero se não houver registros
-        
         # Ordenar por timestamp se existir a coluna
         if 'timestamp' in records[0]:
             records.sort(key=lambda x: x.get('timestamp', ''))
+            
+        for record in reversed(records):  # Começar do último registro
+            saldo_atual = record.get('Saldo Atual', '')
+            
+            # Verificar se tem saldo válido (não vazio e numérico)
+            if saldo_atual and str(saldo_atual).strip() and str(saldo_atual).replace('.', '').isdigit():
+                try:
+                    last_valid_balance = float(saldo_atual)
+                    break
+                except ValueError:
+                    continue
         
+        return last_valid_balance
+    
+        """
         # Calcular saldo acumulado
         current_balance = 0.0
         for record in records:
@@ -688,7 +701,7 @@ def calculate_current_balance(spreadsheet, worksheet_name):
                 current_balance = saldo_anterior + entrada - saida
         
         return current_balance
-        
+        """
     except Exception as e:
         logger.error(f"Erro ao calcular saldo: {str(e)}")
         return 0.0
@@ -1515,11 +1528,12 @@ def add_data_to_sheet():
                     'error': 'Nenhum dado fornecido'
                 }), 400
             
-            worksheet_name = data.get('worksheet', 'Fluxo de Caixa') #'Dados')
+            worksheet_name = data.get('worksheet', 'estoque')#'Fluxo de Caixa') #'Dados')
             row_data = data.get('data', {})#[])
             
             span.set_attribute("worksheet", worksheet_name)
             client, spreadsheet = get_sheets_client()
+            
             # Verificar se a worksheet existe, se não, criar
             try:
                 worksheet = spreadsheet.worksheet(worksheet_name)
@@ -1528,8 +1542,8 @@ def add_data_to_sheet():
                 
                 # Adicionar cabeçalhos padrão para fluxo de caixa
                 headers = [
-                    "Data", "Descrição", "Categoria", "Entrada", "Saída", 
-                    "Saldo Anterior", "Saldo Atual", "Tipo", "Observações"
+                    "Data", "Tipo",	"Quantidade", "Fornecedor/Revendedor", 
+                    "Nº Da Factura",	"Saldo Atual",	"Observações"
                 ]
                 worksheet.append_row(headers)
                 log_step("ADD_DATA", f"✅ Nova worksheet criada: {worksheet_name}")
@@ -1538,21 +1552,39 @@ def add_data_to_sheet():
             saldo_anterior = calculate_current_balance(spreadsheet, worksheet_name)
             
             # Extrair valores de entrada e saída
-            entrada = float(row_data.get('Entrada', 0) or 0)
-            saida = float(row_data.get('Saída', 0) or 0)
-            saldo_atual = saldo_anterior + entrada - saida
+            #entrada = float(row_data.get('Entrada', 0) or 0)
+            #saida = float(row_data.get('Saída', 0) or 0)
+            #saldo_atual = saldo_anterior + entrada - saida
             
+            # Extrair valores de quantidade
+            quantidade = float(row_data.get('Quantidade', 0) or 0)
+            tipo = row_data.get('Tipo', '')
+            
+            # Calcular novo saldo baseado no tipo (Entrada/Saída)
+            if tipo.lower() == 'entrada':
+                saldo_atual = saldo_anterior + quantidade
+            elif tipo.lower() == 'saída':
+                saldo_atual = saldo_anterior - quantidade
+            else:
+                saldo_atual = saldo_anterior  # Se tipo não especificado, mantém o saldo
+                
             # Preparar dados completos para a linha
             complete_row_data = {
                 "Data": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                "Descrição": row_data.get('Descrição', ''),
-                "Categoria": row_data.get('Categoria', ''),
-                "Entrada": entrada,
-                "Saída": saida,
-                "Saldo Anterior": saldo_anterior,
+                "Fornecedor": row_data.get('Fornecedor', ''),
+                "Nº Da Factura": row_data.get('Nº Da Factura', ''),
+                "Observações": row_data.get('Observações', ''),
+                "Quantidade": quantidade,
                 "Saldo Atual": saldo_atual,
-                "Tipo": row_data.get('Tipo', ''),
-                "Observações": row_data.get('Observações', '')
+                "Tipo": tipo
+                #"Descrição": row_data.get('Descrição', ''),
+                #"Categoria": row_data.get('Categoria', ''),
+                #"Entrada": entrada,
+                #"Saída": saida,
+                #"Saldo Anterior": saldo_anterior,
+                #"Saldo Atual": saldo_atual,
+                #"Tipo": row_data.get('Tipo', ''),
+                #"Observações": row_data.get('Observações', '')
             }
             
             # Obter cabeçalhos existentes
@@ -1692,7 +1724,7 @@ def recalculate_balance():
     """Recalcula todos os saldos da planilha"""
     with tracer.start_as_current_span("recalculate_balance"):
         try:
-            worksheet_name = request.args.get('worksheet', 'Fluxo de Caixa')
+            worksheet_name = request.args.get('worksheet', 'estoque') #'Fluxo de Caixa')
             
             if not sheets_status['initialized']:
                 return jsonify({
@@ -1715,19 +1747,30 @@ def recalculate_balance():
             updated_count = 0
             
             for i, record in enumerate(records, start=2):  # start=2 porque a linha 1 são cabeçalhos
-                entrada = float(record.get('Entrada', 0) or 0)
-                saida = float(record.get('Saída', 0) or 0)
+                #entrada = float(record.get('Entrada', 0) or 0)
+                #saida = float(record.get('Saída', 0) or 0)
                 
+                quantidade = float(record.get('Quantidade', 0) or 0)
+                tipo = record.get('Tipo', '').lower()
+                
+                # Calcular baseado no tipo
+                if tipo == 'entrada':
+                    saldo_atual += quantidade
+                elif tipo == 'saída':
+                    saldo_atual -= quantidade
+                    
                 # Atualizar saldo anterior (saldo da linha anterior)
-                worksheet.update_cell(i, 6, saldo_atual)  # Coluna 6 = Saldo Anterior
+                worksheet.update_cell(i, 6, saldo_atual)  # Coluna 6 = Saldo Atual #Saldo Anterior
+                updated_count += 1
                 
+                """
                 # Calcular novo saldo atual
                 novo_saldo = saldo_atual + entrada - saida
                 worksheet.update_cell(i, 7, novo_saldo)  # Coluna 7 = Saldo Atual
                 
                 saldo_atual = novo_saldo
                 updated_count += 1
-            
+                """
             return jsonify({
                 'success': True,
                 'message': f'Recalculado {updated_count} registros',
