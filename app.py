@@ -137,6 +137,7 @@ CORS(app,
         "http://localhost:*",
         "http://127.0.0.1:*",
         "https://*.github.io",
+        
         "http://localhost:5500",  # ADICIONE esta linha
         "http://127.0.0.1:5500"
     ],
@@ -657,6 +658,41 @@ def debug_environment_internal():
     except Exception as e:
         return {'error': f'Erro ao coletar variáveis de ambiente: {str(e)}'}
 
+# 18.09, 16:00 Para calcular e gravar o Saldo Atual com base em entradas, saídas e o saldo anterior, você precisa modificar sua aplicação para incluir essa lógica. Aqui está uma implementação completa:
+# 1. Primeiro, adicione esta função auxiliar no seu código:
+def calculate_current_balance(spreadsheet, worksheet_name):
+    """Calcula o saldo atual baseado nos dados existentes"""
+    try:
+        worksheet = spreadsheet.worksheet(worksheet_name)
+        records = worksheet.get_all_records()
+        
+        if not records:
+            return 0.0  # Saldo inicial zero se não houver registros
+        
+        # Ordenar por timestamp se existir a coluna
+        if 'timestamp' in records[0]:
+            records.sort(key=lambda x: x.get('timestamp', ''))
+        
+        # Calcular saldo acumulado
+        current_balance = 0.0
+        for record in records:
+            entrada = float(record.get('Entrada', 0) or 0)
+            saida = float(record.get('Saída', 0) or 0)
+            saldo_anterior = float(record.get('Saldo Anterior', 0) or 0)
+            
+            # Se já tem saldo calculado, usar como base
+            if record.get('Saldo Atual'):
+                current_balance = float(record.get('Saldo Atual', 0))
+            else:
+                # Calcular novo saldo
+                current_balance = saldo_anterior + entrada - saida
+        
+        return current_balance
+        
+    except Exception as e:
+        logger.error(f"Erro ao calcular saldo: {str(e)}")
+        return 0.0
+    
 #2. Adicionar middleware manual para CORS
 """
 @app.after_request
@@ -1454,7 +1490,7 @@ def debug_cors_test():
         'timestamp': datetime.now().isoformat()
     })
 
-# 18.09.2025
+# 18.09.2025, 16:10, 2. Modifique a rota /api/sheets/add-data para incluir o cálculo do saldo: 
 @app.route('/api/sheets/add-data', methods=['POST', 'OPTIONS'])
 def add_data_to_sheet():
     """Endpoint para adicionar dados à planilha"""
@@ -1479,9 +1515,81 @@ def add_data_to_sheet():
                     'error': 'Nenhum dado fornecido'
                 }), 400
             
-            worksheet_name = data.get('worksheet', 'Dados')
-            row_data = data.get('data', [])
+            worksheet_name = data.get('worksheet', 'Fluxo de Caixa') #'Dados')
+            row_data = data.get('data', {})#[])
             
+            span.set_attribute("worksheet", worksheet_name)
+            client, spreadsheet = get_sheets_client()
+            # Verificar se a worksheet existe, se não, criar
+            try:
+                worksheet = spreadsheet.worksheet(worksheet_name)
+            except gspread.exceptions.WorksheetNotFound:
+                worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="10")
+                
+                # Adicionar cabeçalhos padrão para fluxo de caixa
+                headers = [
+                    "Data", "Descrição", "Categoria", "Entrada", "Saída", 
+                    "Saldo Anterior", "Saldo Atual", "Tipo", "Observações"
+                ]
+                worksheet.append_row(headers)
+                log_step("ADD_DATA", f"✅ Nova worksheet criada: {worksheet_name}")
+            
+            # CALCULAR SALDO
+            saldo_anterior = calculate_current_balance(spreadsheet, worksheet_name)
+            
+            # Extrair valores de entrada e saída
+            entrada = float(row_data.get('Entrada', 0) or 0)
+            saida = float(row_data.get('Saída', 0) or 0)
+            saldo_atual = saldo_anterior + entrada - saida
+            
+            # Preparar dados completos para a linha
+            complete_row_data = {
+                "Data": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                "Descrição": row_data.get('Descrição', ''),
+                "Categoria": row_data.get('Categoria', ''),
+                "Entrada": entrada,
+                "Saída": saida,
+                "Saldo Anterior": saldo_anterior,
+                "Saldo Atual": saldo_atual,
+                "Tipo": row_data.get('Tipo', ''),
+                "Observações": row_data.get('Observações', '')
+            }
+            
+            # Obter cabeçalhos existentes
+            headers = worksheet.row_values(1)
+            if not headers:
+                headers = list(complete_row_data.keys())
+                worksheet.append_row(headers)
+            
+            # Criar linha na ordem dos cabeçalhos
+            row_values = []
+            for header in headers:
+                row_values.append(complete_row_data.get(header, ''))
+            
+            # Adicionar à planilha
+            worksheet.append_row(row_values)
+            
+            log_step("ADD_DATA", f"✅ Dados adicionados com saldo: R$ {saldo_atual:.2f}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Dados adicionados com sucesso',
+                'worksheet': worksheet_name,
+                'saldo_anterior': saldo_anterior,
+                'saldo_atual': saldo_atual,
+                'spreadsheet_title': spreadsheet.title
+            }), 200
+            
+        except Exception as e:
+            span.record_exception(e)
+            span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+            error_msg = f"Erro ao adicionar dados: {str(e)}"
+            log_step("ADD_DATA", error_msg, False)
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+            """
             if not row_data:
                 return jsonify({
                     'success': False,
@@ -1544,6 +1652,94 @@ def add_data_to_sheet():
                 'success': False,
                 'error': str(e)
             }), 500
+            
+            """
+
+# 18.09 16:22, 3. Adicione uma rota para obter o saldo atual:
+@app.route('/api/sheets/balance', methods=['GET'])
+def get_current_balance():
+    """Endpoint para obter o saldo atual"""
+    with tracer.start_as_current_span("get_current_balance"):
+        try:
+            worksheet_name = request.args.get('worksheet', 'Fluxo de Caixa')
+            
+            if not sheets_status['initialized']:
+                try:
+                    test_google_sheets_connection()
+                except:
+                    pass
+            
+            client, spreadsheet = get_sheets_client()
+            
+            saldo_atual = calculate_current_balance(spreadsheet, worksheet_name)
+            
+            return jsonify({
+                'success': True,
+                'worksheet': worksheet_name,
+                'saldo_atual': saldo_atual,
+                'timestamp': datetime.now().isoformat()
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Erro ao obter saldo: {str(e)}'
+            }), 500
+
+# 18.09 16:24, 4. Adicione uma rota para recálculo completo do saldo:
+@app.route('/api/sheets/recalculate-balance', methods=['POST'])
+def recalculate_balance():
+    """Recalcula todos os saldos da planilha"""
+    with tracer.start_as_current_span("recalculate_balance"):
+        try:
+            worksheet_name = request.args.get('worksheet', 'Fluxo de Caixa')
+            
+            if not sheets_status['initialized']:
+                return jsonify({
+                    'success': False,
+                    'error': 'Google Sheets não inicializado'
+                }), 500
+            
+            client, spreadsheet = get_sheets_client()
+            worksheet = spreadsheet.worksheet(worksheet_name)
+            
+            records = worksheet.get_all_records()
+            if not records:
+                return jsonify({
+                    'success': True,
+                    'message': 'Nenhum dado para recalcular'
+                }), 200
+            
+            # Recalcular todos os saldos
+            saldo_atual = 0.0
+            updated_count = 0
+            
+            for i, record in enumerate(records, start=2):  # start=2 porque a linha 1 são cabeçalhos
+                entrada = float(record.get('Entrada', 0) or 0)
+                saida = float(record.get('Saída', 0) or 0)
+                
+                # Atualizar saldo anterior (saldo da linha anterior)
+                worksheet.update_cell(i, 6, saldo_atual)  # Coluna 6 = Saldo Anterior
+                
+                # Calcular novo saldo atual
+                novo_saldo = saldo_atual + entrada - saida
+                worksheet.update_cell(i, 7, novo_saldo)  # Coluna 7 = Saldo Atual
+                
+                saldo_atual = novo_saldo
+                updated_count += 1
+            
+            return jsonify({
+                'success': True,
+                'message': f'Recalculado {updated_count} registros',
+                'novo_saldo': saldo_atual,
+                'worksheet': worksheet_name
+            }), 200
+            
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'error': f'Erro ao recalcular saldos: {str(e)}'
+            }), 500 
 
 if __name__ == '__main__':
     # Inicialização automática ao iniciar o servidor
