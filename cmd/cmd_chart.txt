@@ -1,6 +1,8 @@
 18.09.2025
 
-    [12:00, 10:[45, 26]]
+    [13:17, 12:00, 10:[45, 26]]
+        modificar o código para definir https://visualizing-geospatial-data-in-python-5.onrender.com como servidor padrão.
+
         O erro ReferenceError: Chart is not defined indica que a biblioteca Chart.js não está carregada no seu HTML. Você precisa adicionar o script do Chart.js antes de usar a classe Chart.
 
             Solução: Adicione o CDN do Chart.js no seu HTML, antes do seu script principal.
@@ -16,7 +18,7 @@
                 Solução: Precisamos atualizar a função loadWorksheets() para popular também o select de gráficos:
 
                 git add cmd/ html/21.08/deepseek_html_20250821_add7d2.html html/09.2025/16/deepseek_html_20250908_43714e_V1.html app.py html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
-                git commit -m " 18.09, [12:00, 11:00, 10:29] O erro ReferenceError: Chart is not defined indica que a biblioteca Chart.js não está carregada no seu HTML. Você precisa adicionar o script do Chart.js antes de usar a classe Chart. ,conectar o seletor de gráficos às abas reais da sua planilha, não apenas ao exemplo. Vou corrigir o código para que o dropdown de gráficos mostre as abas reais da sua planilha, Execute o código e verifique se os gráficos estão sendo renderizados corretamente com os dados da sua planilha real."
+                git commit -m " 18.09, [13:17, 12:00, 11:00, 10:29], modificar o código para definir https://visualizing-geospatial-data-in-python-5.onrender.com como servidor padrão.,O erro ReferenceError: Chart is not defined indica que a biblioteca Chart.js não está carregada no seu HTML. Você precisa adicionar o script do Chart.js antes de usar a classe Chart. ,conectar o seletor de gráficos às abas reais da sua planilha, não apenas ao exemplo. Vou corrigir o código para que o dropdown de gráficos mostre as abas reais da sua planilha, Execute o código e verifique se os gráficos estão sendo renderizados corretamente com os dados da sua planilha real."
                 git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa_to_galp_01
 
             Essas modificações vão:

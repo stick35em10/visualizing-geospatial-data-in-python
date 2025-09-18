@@ -839,15 +839,15 @@
             <div class="server-config">
                 <h3>🌐 Configuração do Servidor</h3>
                 <div class="server-options">
-                    <div class="server-option" data-url="https://visualizing-geospatial-data-in-python-1.onrender.com">
-                        🚀 Render v1 (Servidor Novo)
+                    <div class="server-option" data-url="https://visualizing-geospatial-data-in-python-5.onrender.com">
+                        🚀 Render v5 (Servidor Novo)
                     </div>
                     <!-- Use o proxy CORS que você já tem configurado -->
-                    <div class="server-option" data-url="https://cors-anywhere.herokuapp.com/https://visualizing-geospatial-data-in-python-5.onrender.com">
+                    <div class="server-option" data-url="https://cors-anywhere.herokuapp.com/https://visualizing-geospatial-data-in-python-4.onrender.com">
                         🔄 Proxy CORS (Heroku)
                     </div>
-                    <div class="server-option" data-url="http://localhost:5000">
-                        💻 Local (5000)
+                    <div class="server-option" data-url="http://localhost:5500">
+                        💻 Local (5500)
                     </div>
                     <div class="server-option" data-url="custom">
                         ⚙️ URL Personalizada
@@ -3770,7 +3770,7 @@
             }
         };
 
-        // Inicializar gráficos
+        // Inicializar gráficos 3773
         document.addEventListener('DOMContentLoaded', function() {
             renderCharts('estoque');
             
@@ -4724,8 +4724,24 @@
             }
         };
 
-        // Inicialização
+        // Inicialização 4727
         document.addEventListener('DOMContentLoaded', function() {
+            // Configurar servidor padrão
+            const defaultServer = "https://visualizing-geospatial-data-in-python-5.onrender.com";
+            
+            // Encontrar a opção do servidor padrão e ativá-la
+            serverOptions.forEach(option => {
+                if (option.dataset.url === defaultServer) {
+                    option.classList.add('active');
+                    SERVER_URL = defaultServer;
+                    currentUrlSpan.textContent = SERVER_URL;
+                } else {
+                    option.classList.remove('active');
+                }
+            });
+
+            // Esconder input personalizado se estiver visível
+            customUrlInput.style.display = 'none';
             // Configurar o select para usar "CONTROLE DE ESTOQUE" como padrão
             const chartsSelect = document.getElementById('chartsWorksheetSelect');
             if (chartsSelect) {
@@ -4737,6 +4753,10 @@
                     loadDataForCharts();
                 }, 1000);
             }
+            // Inicializar funcionalidade de upload
+            setupUploadListeners();
+            
+            console.log('✅ Servidor padrão configurado:', SERVER_URL);
         });
 
     </script>
