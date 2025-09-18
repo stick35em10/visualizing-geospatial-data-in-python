@@ -1454,6 +1454,97 @@ def debug_cors_test():
         'timestamp': datetime.now().isoformat()
     })
 
+# 18.09.2025
+@app.route('/api/sheets/add-data', methods=['POST', 'OPTIONS'])
+def add_data_to_sheet():
+    """Endpoint para adicionar dados à planilha"""
+    if request.method == 'OPTIONS':
+        return jsonify({'status': 'ok'}), 200
+    
+    with tracer.start_as_current_span("add_data_to_sheet") as span:
+        try:
+            if not sheets_status['initialized']:
+                sheets_result = test_google_sheets_connection()
+                if not sheets_result.get('success', False):
+                    return jsonify({
+                        'success': False,
+                        'error': 'Erro de autenticação com o Google Sheets'
+                    }), 500
+            
+            # Obter dados do JSON
+            data = request.get_json()
+            if not data:
+                return jsonify({
+                    'success': False,
+                    'error': 'Nenhum dado fornecido'
+                }), 400
+            
+            worksheet_name = data.get('worksheet', 'Dados')
+            row_data = data.get('data', [])
+            
+            if not row_data:
+                return jsonify({
+                    'success': False,
+                    'error': 'Nenhum dado para adicionar'
+                }), 400
+            
+            span.set_attribute("worksheet", worksheet_name)
+            span.set_attribute("data_length", len(row_data))
+            
+            client, spreadsheet = get_sheets_client()
+            
+            # Verificar se a worksheet existe, se não, criar
+            try:
+                worksheet = spreadsheet.worksheet(worksheet_name)
+            except gspread.exceptions.WorksheetNotFound:
+                worksheet = spreadsheet.add_worksheet(title=worksheet_name, rows="1000", cols="20")
+                log_step("ADD_DATA", f"✅ Nova worksheet criada: {worksheet_name}")
+            
+            # Adicionar timestamp se não estiver presente
+            if isinstance(row_data, list):
+                # Se for uma lista de valores, adicionar timestamp no início
+                row_data = [datetime.now().strftime('%Y-%m-%d %H:%M:%S')] + row_data
+            elif isinstance(row_data, dict):
+                # Se for um dicionário, adicionar campo de timestamp
+                row_data['timestamp'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            
+            # Adicionar à planilha
+            if isinstance(row_data, list):
+                worksheet.append_row(row_data)
+            else:
+                # Para dicionários, precisamos obter os cabeçalhos primeiro
+                headers = worksheet.row_values(1)
+                if not headers:
+                    # Se não houver cabeçalhos, criar com as chaves do dicionário
+                    headers = list(row_data.keys())
+                    worksheet.append_row(headers)
+                
+                # Criar linha na ordem dos cabeçalhos
+                row_values = []
+                for header in headers:
+                    row_values.append(row_data.get(header, ''))
+                
+                worksheet.append_row(row_values)
+            
+            log_step("ADD_DATA", f"✅ Dados adicionados à worksheet '{worksheet_name}'")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Dados adicionados com sucesso',
+                'worksheet': worksheet_name,
+                'spreadsheet_title': spreadsheet.title
+            }), 200
+            
+        except Exception as e:
+            span.record_exception(e)
+            span.set_status(trace.Status(trace.StatusCode.ERROR, str(e)))
+            error_msg = f"Erro ao adicionar dados: {str(e)}"
+            log_step("ADD_DATA", error_msg, False)
+            return jsonify({
+                'success': False,
+                'error': str(e)
+            }), 500
+
 if __name__ == '__main__':
     # Inicialização automática ao iniciar o servidor
     with tracer.start_as_current_span("app_startup"):
