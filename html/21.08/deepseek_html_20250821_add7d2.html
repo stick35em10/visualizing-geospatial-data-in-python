@@ -4218,13 +4218,23 @@
         };
 
         // Event listener para o seletor de worksheets de gráficos
+        // 18.09 11:20 Adicionar este código na seção de event listeners (procure por outros event listeners)
         document.getElementById('chartsWorksheetSelect').addEventListener('change', function() {
             currentChartWorksheet = this.value;
             if (currentChartWorksheet) {
                 loadDataForCharts();
+            //} //else {
+                //clearAllCharts();
+                //showChartPlaceholder();
+                //loadDataForCharts();
             } else {
-                clearAllCharts();
-                showChartPlaceholder();
+                document.getElementById('chartsContainer').innerHTML = `
+                    <div class="empty-state">
+                        <h3>📊</h3>
+                        <p>Selecione uma fonte de dados para ver os gráficos recomendados</p>
+                    </div>
+                `;
+                document.getElementById('chartInstructions').style.display = 'none';
             }
         }); //document.getElementById('chartsWorksheetSelect').addEventListener('change', function() {
 
