@@ -2152,6 +2152,7 @@
         }
         
         // Atualizar a função loadWorksheets para popular o seletor de imagens
+        // 18.09 10:49 Modificar a função loadWorksheets() para popular o select de gráficos
         async function loadWorksheets() {
             if (!isConnected) {
                 showError('❌ Erro', 'Teste a conexão primeiro.');
@@ -2168,9 +2169,15 @@
                 if (result.success && result.worksheets) {
                     console.log(`✅ ${result.worksheets.length} worksheet(s) encontrada(s)`);
                     worksheets = result.worksheets;
+                    
+                    // Limpar selects
                     worksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
                     imageWorksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
                     
+                    // NOVO: Limpar e popular select de gráficos
+                    const chartsWorksheetSelect = document.getElementById('chartsWorksheetSelect');
+                    chartsWorksheetSelect.innerHTML = '<option value="">Selecione uma aba...</option>';
+
                     worksheets.forEach(ws => {
                         console.log(`📄 Worksheet: ${ws.title} (${ws.row_count} linhas, ${ws.col_count} colunas)`);
                         
@@ -2185,6 +2192,12 @@
                         imageOption.value = ws.title;
                         imageOption.textContent = `${ws.title} (${ws.row_count} linhas)`;
                         imageWorksheetSelect.appendChild(imageOption);
+
+                        // NOVO: Popular seletor de gráficos
+                        const chartOption = document.createElement('option');
+                        chartOption.value = ws.title;
+                        chartOption.textContent = `${ws.title} (${ws.row_count} linhas)`;
+                        chartsWorksheetSelect.appendChild(chartOption);
                     });
                     
                     worksheetSelector.style.display = 'block';
@@ -2211,6 +2224,19 @@
             } catch (error) {
                 console.error('Failed to load worksheets:', error);
                 // ... (código de tratamento de erro existente) ...
+                let errorMessage = error.message;
+                let suggestion = 'Verifique as permissões da planilha.';
+
+                if (error.message.includes('500')) {
+                    errorMessage = 'Erro interno do servidor';
+                    suggestion = 'O servidor pode estar com problemas. Tente novamente mais tarde.';
+                }
+
+                showError(
+                    '❌ Erro ao Carregar Abas',
+                    errorMessage,
+                    suggestion
+                );
             } finally {
                 loadWorksheetsBtn.disabled = false;
             }
@@ -3829,9 +3855,10 @@
                     }
                 }
                 
-                // Testar os dados processados
-                console.log('Dados processados para gráficos:', sampleData.estoque);
+                
             });
+            // Testar os dados processados
+            console.log('Dados processados para gráficos:', sampleData.estoque);
         }
 
         // Gráfico 2: Top 5 Clientes (Barras)
