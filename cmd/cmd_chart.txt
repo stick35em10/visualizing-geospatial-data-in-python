@@ -1,3 +1,15 @@
+19.09.2025
+    07:39
+        o campo Fornecedor/Revendedor	 não está sendo preenchido apesar de colocar informação para preencher
+            Vejo o problema! O campo "Fornecedor/Revendedor" não está sendo preenchido porque há uma incompatibilidade entre o nome do campo no código e o nome real na planilha.
+
+            Problema identificado:
+            No seu código, você está usando Fornecedor mas o cabeçalho real na planilha é "Fornecedor/Revendedor".
+
+                git add app.py cmd/ html/21.08/deepseek_html_20250821_add7d2.html html/09.2025/16/deepseek_html_20250908_43714e_V1.html html/09.2025/16/deepseek_html_20250908_43714e_V1copy.html html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html README.md html/09.2025/16/deepseek_html_20250908_43714e__V1copy.html html/09.2025/16/deepseek_html_20250908_43714e_V1.html 
+                git commit -m " 19.09, [07:39], No seu código, você está usando Fornecedor mas o cabeçalho real na planilha é 'Fornecedor/Revendedor'."
+                git push --set-upstream origin 01_03_01_Plotting_view_2_01_rsa_to_galp_01
+
 18.09.2025
 
     [20:01, 15:25, 15:02 14:36, 13:17, 12:00, 10:[45, 26]]

@@ -1571,7 +1571,7 @@ def add_data_to_sheet():
             # Preparar dados completos para a linha
             complete_row_data = {
                 "Data": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-                "Fornecedor": row_data.get('Fornecedor', ''),
+                "Fornecedor/Revendedor": row_data.get('Fornecedor/Revendedor', ''),
                 "Nº Da Factura": row_data.get('Nº Da Factura', ''),
                 "Observações": row_data.get('Observações', ''),
                 "Quantidade": quantidade,
@@ -1601,7 +1601,7 @@ def add_data_to_sheet():
             # Adicionar à planilha
             worksheet.append_row(row_values)
             
-            log_step("ADD_DATA", f"✅ Dados adicionados com saldo: R$ {saldo_atual:.2f}")
+            log_step("ADD_DATA", f"✅ Dados adicionados com saldo: {saldo_atual}") # R$ {saldo_atual:.2f}")
             
             return jsonify({
                 'success': True,
@@ -1718,7 +1718,7 @@ def get_current_balance():
                 'error': f'Erro ao obter saldo: {str(e)}'
             }), 500
 
-# 18.09 16:24, 4. Adicione uma rota para recálculo completo do saldo:
+# [19,18].09 [[07:31,],16:24], 4. Adicione uma rota para recálculo completo do saldo:
 @app.route('/api/sheets/recalculate-balance', methods=['POST'])
 def recalculate_balance():
     """Recalcula todos os saldos da planilha"""
@@ -1734,6 +1734,15 @@ def recalculate_balance():
             
             client, spreadsheet = get_sheets_client()
             worksheet = spreadsheet.worksheet(worksheet_name)
+            
+            
+            # Obter cabeçalhos para encontrar a posição correta das colunas
+            headers = worksheet.row_values(1)
+            
+            # Encontrar índices das colunas
+            quantidade_col = headers.index('Quantidade') + 1 if 'Quantidade' in headers else 4
+            tipo_col = headers.index('Tipo') + 1 if 'Tipo' in headers else 2
+            saldo_col = headers.index('Saldo Atual') + 1 if 'Saldo Atual' in headers else 6
             
             records = worksheet.get_all_records()
             if not records:
@@ -1760,7 +1769,8 @@ def recalculate_balance():
                     saldo_atual -= quantidade
                     
                 # Atualizar saldo anterior (saldo da linha anterior)
-                worksheet.update_cell(i, 6, saldo_atual)  # Coluna 6 = Saldo Atual #Saldo Anterior
+                #worksheet.update_cell(i, 6, saldo_atual)  # Coluna 6 = Saldo Atual #Saldo Anterior
+                worksheet.update_cell(i, saldo_col, saldo_atual)
                 updated_count += 1
                 
                 """
